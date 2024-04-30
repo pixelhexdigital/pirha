@@ -128,3 +128,20 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Logs
+logs
+
+/tmp
+/.vscode
+
+# ignore the image files uploaded in the public/images folder
+/public/images/*
+/public/temp/*
+
+# except .gitkeep to push empty folder to the git repo
+!/public/images/.gitkeep
+!/public/temp/.gitkeep
+
+NOTES.md
+.DS_Store
