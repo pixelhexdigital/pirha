@@ -78,7 +78,12 @@ router
     validate,
     updatePost
   )
-  .delete(verifyJWT, mongoIdPathVariableValidator("postId"), validate, deletePost);
+  .delete(
+    verifyJWT,
+    mongoIdPathVariableValidator("postId"),
+    validate,
+    deletePost
+  );
 
 router
   .route("/remove/image/:postId/:imageId")

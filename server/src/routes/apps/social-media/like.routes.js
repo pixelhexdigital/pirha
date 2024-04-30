@@ -11,7 +11,12 @@ const router = Router();
 
 router
   .route("/post/:postId")
-  .post(verifyJWT, mongoIdPathVariableValidator("postId"), validate, likeDislikePost);
+  .post(
+    verifyJWT,
+    mongoIdPathVariableValidator("postId"),
+    validate,
+    likeDislikePost
+  );
 
 router
   .route("/comment/:commentId")

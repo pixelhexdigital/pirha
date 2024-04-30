@@ -13,6 +13,10 @@ router.route("/").get(getBookMarkedPosts); // getBookMarkedPosts controller is p
 
 router
   .route("/:postId")
-  .post(mongoIdPathVariableValidator("postId"), validate, bookmarkUnBookmarkPost);
+  .post(
+    mongoIdPathVariableValidator("postId"),
+    validate,
+    bookmarkUnBookmarkPost
+  );
 
 export default router;

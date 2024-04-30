@@ -9,27 +9,22 @@ import {
   UserLoginType,
   UserRolesEnum,
 } from "../../../constants.js";
-import { Cart } from "../ecommerce/cart.models.js";
-import { EcomProfile } from "../ecommerce/profile.models.js";
-import { SocialProfile } from "../social-media/profile.models.js";
 
 const userSchema = new Schema(
   {
-    avatar: {
-      type: {
-        url: String,
-        localPath: String,
-      },
-      default: {
-        url: `https://via.placeholder.com/200x200.png`,
-        localPath: "",
-      },
-    },
     username: {
       type: String,
       required: true,
       unique: true,
       lowercase: true,
+      trim: true,
+      index: true,
+    },
+    gstNumber: {
+      type: String,
+      required: true,
+      unique: true,
+      uppercase: true,
       trim: true,
       index: true,
     },
@@ -39,6 +34,13 @@ const userSchema = new Schema(
       unique: true,
       lowercase: true,
       trim: true,
+      validate: {
+        validator: function (v) {
+          let emailRegex = /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/;
+          return emailRegex.test(v);
+        },
+        message: (props) => `${props.value} is not a valid email address!`,
+      },
     },
     role: {
       type: String,
@@ -49,6 +51,14 @@ const userSchema = new Schema(
     password: {
       type: String,
       required: [true, "Password is required"],
+      validate: {
+        validator: function (v) {
+          return /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+])(?=.*[a-zA-Z]).{8,}$/.test(
+            v
+          );
+        },
+        message: (props) => `${props.value} is not a valid password!`,
+      },
     },
     loginType: {
       type: String,
@@ -59,6 +69,73 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    companyName: {
+      type: String,
+      index: true,
+      default: null,
+    },
+    mobileNumber: {
+      type: Number,
+      validate: {
+        validator: function (v) {
+          return /\d{10}/.test(v);
+        },
+        message: (props) => `${props.value} is not a valid mobile number!`,
+      },
+    },
+    ownerFullName: {
+      type: String,
+      default: null,
+    },
+    hqLocation: {
+      type: String,
+      default: null,
+    },
+    serviceLocation: {
+      type: String,
+      default: null,
+    },
+    industry: {
+      type: String,
+    },
+    service: {
+      type: String,
+      default: null,
+    },
+    yearOfEstablishment: {
+      type: Date,
+      default: null,
+    },
+    socialLink: [
+      {
+        insta: { type: String },
+        fb: { type: String },
+        twitter: { type: String },
+        thread: { type: String },
+        yt: { type: String },
+      },
+    ],
+    avatar: {
+      type: {
+        url: String,
+        public_id: String,
+      },
+      default: {
+        url: null,
+        public_id: null,
+      },
+    },
+    coverImage: {
+      type: {
+        url: String,
+        public_id: String,
+      },
+      default: {
+        url: null,
+        public_id: null,
+      },
+    },
+
     refreshToken: {
       type: String,
     },
@@ -81,35 +158,6 @@ const userSchema = new Schema(
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 10);
-  next();
-});
-
-userSchema.post("save", async function (user, next) {
-  // ! Generally, querying data on every user save is not a good idea and not necessary when you are working on a specific application which has concrete models which are tightly coupled
-  // ! However, in this application this user model is being referenced in many loosely coupled models so we need to do some initial setups before proceeding to make sure the data consistency and integrity
-  const ecomProfile = await EcomProfile.findOne({ owner: user._id });
-  const socialProfile = await SocialProfile.findOne({ owner: user._id });
-  const cart = await Cart.findOne({ owner: user._id });
-
-  // Setup necessary ecommerce models for the user
-  if (!ecomProfile) {
-    await EcomProfile.create({
-      owner: user._id,
-    });
-  }
-  if (!cart) {
-    await Cart.create({
-      owner: user._id,
-      items: [],
-    });
-  }
-
-  // Setup necessary social media models for the user
-  if (!socialProfile) {
-    await SocialProfile.create({
-      owner: user._id,
-    });
-  }
   next();
 });
 

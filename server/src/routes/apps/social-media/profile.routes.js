@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   getMySocialProfile,
   getProfileByUserName,
+  updateAvatar,
   updateCoverImage,
   updateSocialProfile,
 } from "../../../controllers/apps/social-media/profile.controllers.js";
@@ -36,5 +37,7 @@ router
 router
   .route("/cover-image")
   .patch(upload.single("coverImage"), updateCoverImage);
+
+router.route("/avatar").patch(upload.single("avatar"), updateAvatar);
 
 export default router;

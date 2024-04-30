@@ -8,12 +8,12 @@ import {
   getCurrentUser,
   handleSocialLogin,
   loginUser,
+  verifyUsername,
   logoutUser,
   refreshAccessToken,
   registerUser,
   resendEmailVerification,
   resetForgottenPassword,
-  updateUserAvatar,
   verifyEmail,
 } from "../../../controllers/apps/auth/user.controllers.js";
 import {
@@ -26,6 +26,7 @@ import {
   userChangeCurrentPasswordValidator,
   userForgotPasswordValidator,
   userLoginValidator,
+  usernameValidator,
   userRegisterValidator,
   userResetForgottenPasswordValidator,
 } from "../../../validators/apps/auth/user.validators.js";
@@ -38,6 +39,9 @@ const router = Router();
 // Unsecured route
 router.route("/register").post(userRegisterValidator(), validate, registerUser);
 router.route("/login").post(userLoginValidator(), validate, loginUser);
+router
+  .route("/verify-username")
+  .post(usernameValidator(), validate, verifyUsername);
 router.route("/refresh-token").post(refreshAccessToken);
 router.route("/verify-email/:verificationToken").get(verifyEmail);
 
@@ -54,9 +58,9 @@ router
 
 // Secured routes
 router.route("/logout").post(verifyJWT, logoutUser);
-router
-  .route("/avatar")
-  .patch(verifyJWT, upload.single("avatar"), updateUserAvatar);
+// router
+//   .route("/avatar")
+//   .patch(verifyJWT, upload.single("avatar"), updateUserAvatar);
 router.route("/current-user").get(verifyJWT, getCurrentUser);
 router
   .route("/change-password")

@@ -1,21 +1,16 @@
 import mongoose from "mongoose";
 import { User } from "../../../models/apps/auth/user.models.js";
 import { SocialFollow } from "../../../models/apps/social-media/follow.models.js";
-import { SocialProfile } from "../../../models/apps/social-media/profile.models.js";
 import { ApiError } from "../../../utils/ApiError.js";
 import { ApiResponse } from "../../../utils/ApiResponse.js";
 import { asyncHandler } from "../../../utils/asyncHandler.js";
-import {
-  getLocalPath,
-  getStaticFilePath,
-  removeLocalFile,
-} from "../../../utils/helpers.js";
+import { uploadOnCloudinary } from "../../../utils/cloudinary.js";
 
 /**
  *
  * @param {string} userId
  * @param {import("express").Request} req
- * @description A utility function, which querys the {@link SocialProfile} model and returns the profile with account details
+ * @description A utility function, which querys the {@link User} model and returns the profile with account details
  */
 const getUserSocialProfile = async (userId, req) => {
   const user = await User.findById(userId);
@@ -24,34 +19,26 @@ const getUserSocialProfile = async (userId, req) => {
     throw new ApiError(404, "User does not exist");
   }
 
-  let profile = await SocialProfile.aggregate([
+  let profile = await User.aggregate([
     {
       $match: {
-        owner: new mongoose.Types.ObjectId(userId),
+        _id: new mongoose.Types.ObjectId(userId),
       },
     },
     {
-      $lookup: {
-        from: "users",
-        localField: "owner",
-        foreignField: "_id",
-        as: "account",
-        pipeline: [
-          {
-            $project: {
-              avatar: 1,
-              username: 1,
-              email: 1,
-              isEmailVerified: 1,
-            },
-          },
-        ],
+      $project: {
+        refreshToken: 0,
+        forgotPasswordToken: 0,
+        forgotPasswordExpiry: 0,
+        emailVerificationToken: 0,
+        emailVerificationExpiry: 0,
+        password: 0,
       },
     },
     {
       $lookup: {
         from: "socialfollows",
-        localField: "owner",
+        localField: "_id",
         foreignField: "followerId",
         as: "following", // users that are followed by current user
       },
@@ -59,14 +46,13 @@ const getUserSocialProfile = async (userId, req) => {
     {
       $lookup: {
         from: "socialfollows",
-        localField: "owner",
+        localField: "_id",
         foreignField: "followeeId",
         as: "followedBy", // users that are following the current user
       },
     },
     {
       $addFields: {
-        account: { $first: "$account" },
         followersCount: { $size: "$followedBy" },
         followingCount: { $size: "$following" },
       },
@@ -110,7 +96,9 @@ const getMySocialProfile = asyncHandler(async (req, res) => {
 const getProfileByUserName = asyncHandler(async (req, res) => {
   const { username } = req.params;
 
-  const user = await User.findOne({ username });
+  const user = await User.findOne({
+    username: username.toLowerCase(),
+  });
 
   if (!user) {
     throw new ApiError(404, "User does not exist");
@@ -126,25 +114,32 @@ const getProfileByUserName = asyncHandler(async (req, res) => {
 });
 
 const updateSocialProfile = asyncHandler(async (req, res) => {
-  const { firstName, lastName, phoneNumber, countryCode, bio, dob, location } =
-    req.body;
+  const {
+    companyName,
+    mobileNumber,
+    ownerFullName,
+    hqLocation,
+    serviceLocation,
+    yearOfEstablishment,
+    socialLink,
+  } = req.body;
 
-  let profile = await SocialProfile.findOneAndUpdate(
-    {
-      owner: req.user._id,
-    },
+  let profile = await User.findByIdAndUpdate(
+    req.user?._id,
     {
       $set: {
-        firstName,
-        lastName,
-        phoneNumber,
-        countryCode,
-        bio,
-        dob,
-        location,
+        companyName,
+        mobileNumber,
+        ownerFullName,
+        hqLocation,
+        serviceLocation,
+        yearOfEstablishment,
+        socialLink,
       },
     },
     { new: true }
+  ).select(
+    "-password -refreshToken -emailVerificationToken -emailVerificationExpiry"
   );
 
   profile = await getUserSocialProfile(req.user._id, req);
@@ -155,44 +150,74 @@ const updateSocialProfile = asyncHandler(async (req, res) => {
 });
 
 const updateCoverImage = asyncHandler(async (req, res) => {
-  // Check if user has uploaded a cover image
-  if (!req.file?.filename) {
-    throw new ApiError(400, "Cover image is required");
+  const coverImageLocalPath = req.file?.path;
+
+  const userId = req.user?._id;
+
+  const user = await User.findById(userId);
+  let publicId = null;
+  if (user.coverImage.public_id) {
+    publicId = user.coverImage.public_id;
   }
-  // get cover image file's system url and local path
-  const coverImageUrl = getStaticFilePath(req, req.file?.filename);
-  const coverImageLocalPath = getLocalPath(req.file?.filename);
 
-  const profile = await SocialProfile.findOne({
-    owner: req.user._id,
-  });
+  if (!coverImageLocalPath)
+    throw new ApiError(400, "coverImage file is missing");
+  const coverImage = await uploadOnCloudinary(coverImageLocalPath, publicId);
 
-  let updatedProfile = await SocialProfile.findOneAndUpdate(
-    {
-      owner: req.user._id,
-    },
+  if (!coverImage.url)
+    throw new ApiError(400, "Error while uploading cover image");
+  const updatedUser = await User.findByIdAndUpdate(
+    req.user?._id,
     {
       $set: {
-        // set the newly uploaded cover image
-        coverImage: {
-          url: coverImageUrl,
-          localPath: coverImageLocalPath,
-        },
+        "coverImage.url": coverImage.url,
+        "coverImage.public_id": coverImage.public_id,
       },
     },
     { new: true }
+  ).select(
+    "-password -refreshToken -emailVerificationToken -emailVerificationExpiry"
   );
-
-  // remove the old cover image
-  removeLocalFile(profile.coverImage.localPath);
-
-  updatedProfile = await getUserSocialProfile(req.user._id, req);
 
   return res
     .status(200)
     .json(
-      new ApiResponse(200, updatedProfile, "Cover image updated successfully")
+      new ApiResponse(200, updatedUser, "user coverImage updated successfully")
     );
+});
+
+const updateAvatar = asyncHandler(async (req, res) => {
+  // Check if user has uploaded an avatar
+  const avatarLocalPath = req.file?.path;
+  const userId = req.user?._id;
+
+  const user = await User.findById(userId);
+  let publicId = null;
+  if (user.avatar.public_id) {
+    publicId = user.avatar.public_id;
+  }
+
+  if (!avatarLocalPath) throw new ApiError(400, "avatar file is missing");
+  const avatar = await uploadOnCloudinary(avatarLocalPath, publicId);
+
+  if (!avatar.url)
+    throw new ApiError(400, "Error while uploading avatar image");
+  const updatedUser = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: {
+        "avatar.url": avatar.url,
+        "avatar.public_id": avatar.public_id,
+      },
+    },
+    { new: true }
+  ).select(
+    "-password -refreshToken -emailVerificationToken -emailVerificationExpiry"
+  );
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updatedUser, "Avatar updated successfully"));
 });
 
 export {
@@ -200,4 +225,5 @@ export {
   getProfileByUserName,
   updateSocialProfile,
   updateCoverImage,
+  updateAvatar,
 };

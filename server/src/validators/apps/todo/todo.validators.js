@@ -38,9 +38,4 @@ const updateTodoValidator = () => {
   ];
 };
 
-
-export {
-  createTodoValidator,
-  updateTodoValidator,
-  getAllTodosQueryValidators,
-};
+export { createTodoValidator, updateTodoValidator, getAllTodosQueryValidators };

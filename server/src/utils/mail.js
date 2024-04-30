@@ -1,6 +1,6 @@
 import Mailgen from "mailgen";
 import nodemailer from "nodemailer";
-import { Product } from "../models/apps/ecommerce/product.models.js";
+// import { Product } from "../models/apps/ecommerce/product.models.js";
 
 /**
  *
@@ -11,8 +11,8 @@ const sendEmail = async (options) => {
   const mailGenerator = new Mailgen({
     theme: "default",
     product: {
-      name: "FreeAPI",
-      link: "https://freeapi.app",
+      name: "BNM",
+      link: "https://bnmindia.onrender.com",
     },
   });
 
@@ -34,7 +34,7 @@ const sendEmail = async (options) => {
   });
 
   const mail = {
-    from: "mail.freeapi@gmail.com", // We can name this anything. The mail will go to your Mailtrap inbox
+    from: process.env.MAILSENDER_NAME, // We can name this anything. The mail will go to your Mailtrap inbox
     to: options.email, // receiver's mail
     subject: options.subject, // mail subject
     text: emailTextual, // mailgen content textual variant
@@ -64,7 +64,7 @@ const emailVerificationMailgenContent = (username, verificationUrl) => {
   return {
     body: {
       name: username,
-      intro: "Welcome to our app! We're very excited to have you on board.",
+      intro: "Welcome to BNM-India! We're very excited to have you on board.",
       action: {
         instructions:
           "To verify your email please click on the following button:",
@@ -91,7 +91,7 @@ const forgotPasswordMailgenContent = (username, passwordResetUrl) => {
   return {
     body: {
       name: username,
-      intro: "We got a request to reset the password of our account",
+      intro: "We got a request to reset the password of our BNM-India account",
       action: {
         instructions:
           "To reset your password click on the following button or link:",
@@ -107,52 +107,51 @@ const forgotPasswordMailgenContent = (username, passwordResetUrl) => {
   };
 };
 
-/**
- *
- * @param {string} username
- * @param {{_id: string, product: Product, quantity: number}[]} items
- * @param {number} totalCost
- * @returns {Mailgen.Content}
- * @description It designs the order creation invoice mail
- */
-const orderConfirmationMailgenContent = (username, items, totalCost) => {
-  return {
-    body: {
-      name: username,
-      intro: "Your order has been processed successfully.",
-      table: {
-        data: items?.map((item) => {
-          return {
-            item: item.product?.name,
-            price: "INR " + item.product?.price + "/-",
-            quantity: item.quantity,
-          };
-        }),
-        columns: {
-          // Optionally, customize the column widths
-          customWidth: {
-            item: "20%",
-            price: "15%",
-            quantity: "15%",
-          },
-          // Optionally, change column text alignment
-          customAlignment: {
-            price: "right",
-            quantity: "right",
-          },
-        },
-      },
-      outro: [
-        `Total order cost: INR ${totalCost}/-`,
-        "You can check the status of your order and more in your order history",
-      ],
-    },
-  };
-};
+// /**
+//  *
+//  * @param {string} username
+//  * @param {{_id: string, product: Product, quantity: number}[]} items
+//  * @param {number} totalCost
+//  * @returns {Mailgen.Content}
+//  * @description It designs the order creation invoice mail
+//  */
+// const orderConfirmationMailgenContent = (username, items, totalCost) => {
+//   return {
+//     body: {
+//       name: username,
+//       intro: "Your order has been processed successfully.",
+//       table: {
+//         data: items?.map((item) => {
+//           return {
+//             item: item.product?.name,
+//             price: "INR " + item.product?.price + "/-",
+//             quantity: item.quantity,
+//           };
+//         }),
+//         columns: {
+//           // Optionally, customize the column widths
+//           customWidth: {
+//             item: "20%",
+//             price: "15%",
+//             quantity: "15%",
+//           },
+//           // Optionally, change column text alignment
+//           customAlignment: {
+//             price: "right",
+//             quantity: "right",
+//           },
+//         },
+//       },
+//       outro: [
+//         `Total order cost: INR ${totalCost}/-`,
+//         "You can check the status of your order and more in your order history",
+//       ],
+//     },
+//   };
+// };
 
 export {
   sendEmail,
   emailVerificationMailgenContent,
   forgotPasswordMailgenContent,
-  orderConfirmationMailgenContent,
 };

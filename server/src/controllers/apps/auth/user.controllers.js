@@ -5,16 +5,13 @@ import { User } from "../../../models/apps/auth/user.models.js";
 import { ApiError } from "../../../utils/ApiError.js";
 import { ApiResponse } from "../../../utils/ApiResponse.js";
 import { asyncHandler } from "../../../utils/asyncHandler.js";
-import {
-  getLocalPath,
-  getStaticFilePath,
-  removeLocalFile,
-} from "../../../utils/helpers.js";
+import { removeLocalFile } from "../../../utils/helpers.js";
 import {
   emailVerificationMailgenContent,
   forgotPasswordMailgenContent,
   sendEmail,
 } from "../../../utils/mail.js";
+import { gstData } from "../../../models/apps/gst-numbers/gstData.models.js";
 
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
@@ -37,16 +34,26 @@ const generateAccessAndRefreshTokens = async (userId) => {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { email, username, password, role } = req.body;
+  const { username, email, gstNumber, password, role } = req.body;
 
   const existedUser = await User.findOne({
-    $or: [{ username }, { email }],
+    $or: [{ username }, { email }, { gstNumber }],
   });
 
   if (existedUser) {
-    throw new ApiError(409, "User with email or username already exists", []);
+    throw new ApiError(
+      409,
+      "User with email or username or gstNumber already exists",
+      []
+    );
   }
+  const verifiedGst = await gstData.findOne({ gstNumber });
+  if (!verifiedGst) {
+    throw new ApiError(422, "gstNumber not verified", []);
+  }
+
   const user = await User.create({
+    gstNumber,
     email,
     password,
     username,
@@ -72,7 +79,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   await sendEmail({
     email: user?.email,
-    subject: "Please verify your email",
+    subject: "Please verify your email for BNM-India",
     mailgenContent: emailVerificationMailgenContent(
       user.username,
       `${req.protocol}://${req.get(
@@ -101,14 +108,14 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 const loginUser = asyncHandler(async (req, res) => {
-  const { email, username, password } = req.body;
+  const { username, password } = req.body;
 
-  if (!username && !email) {
-    throw new ApiError(400, "Username or email is required");
+  if (!username) {
+    throw new ApiError(400, "Username or email or gstNumber is required");
   }
 
   const user = await User.findOne({
-    $or: [{ username }, { email }],
+    $or: [{ username: username }, { email: username }, { gstNumber: username }],
   });
 
   if (!user) {
@@ -162,13 +169,30 @@ const loginUser = asyncHandler(async (req, res) => {
       )
     );
 });
+const verifyUsername = asyncHandler(async (req, res) => {
+  const { username } = req.body;
+
+  if (!username) {
+    throw new ApiError(400, "Username  is required");
+  }
+
+  const lowercaseUsername = username.toLowerCase();
+
+  const user = await User.findOne({ username: lowercaseUsername });
+
+  if (user) {
+    throw new ApiError(404, "User already exist");
+  }
+
+  return res.status(200).json(new ApiResponse(200, {}, "Username available"));
+});
 
 const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id,
     {
-      $set: {
-        refreshToken: undefined,
+      $unset: {
+        refreshToken: 1,
       },
     },
     { new: true }
@@ -249,7 +273,7 @@ const resendEmailVerification = asyncHandler(async (req, res) => {
 
   await sendEmail({
     email: user?.email,
-    subject: "Please verify your email",
+    subject: "Please verify your email for BNM-India",
     mailgenContent: emailVerificationMailgenContent(
       user.username,
       `${req.protocol}://${req.get(
@@ -422,6 +446,9 @@ const assignRole = asyncHandler(async (req, res) => {
   if (!user) {
     throw new ApiError(404, "User does not exist");
   }
+  if (user.role !== "admin") {
+    throw new ApiError(404, "Only Admin can change user roles");
+  }
   user.role = role;
   await user.save({ validateBeforeSave: false });
 
@@ -462,43 +489,6 @@ const handleSocialLogin = asyncHandler(async (req, res) => {
     );
 });
 
-const updateUserAvatar = asyncHandler(async (req, res) => {
-  // Check if user has uploaded an avatar
-  if (!req.file?.filename) {
-    throw new ApiError(400, "Avatar image is required");
-  }
-
-  // get avatar file system url and local path
-  const avatarUrl = getStaticFilePath(req, req.file?.filename);
-  const avatarLocalPath = getLocalPath(req.file?.filename);
-
-  const user = await User.findById(req.user._id);
-
-  let updatedUser = await User.findByIdAndUpdate(
-    req.user._id,
-
-    {
-      $set: {
-        // set the newly uploaded avatar
-        avatar: {
-          url: avatarUrl,
-          localPath: avatarLocalPath,
-        },
-      },
-    },
-    { new: true }
-  ).select(
-    "-password -refreshToken -emailVerificationToken -emailVerificationExpiry"
-  );
-
-  // remove the old avatar
-  removeLocalFile(user.avatar.localPath);
-
-  return res
-    .status(200)
-    .json(new ApiResponse(200, updatedUser, "Avatar updated successfully"));
-});
-
 export {
   assignRole,
   changeCurrentPassword,
@@ -506,11 +496,11 @@ export {
   getCurrentUser,
   handleSocialLogin,
   loginUser,
+  verifyUsername,
   logoutUser,
   refreshAccessToken,
   registerUser,
   resendEmailVerification,
   resetForgottenPassword,
-  updateUserAvatar,
   verifyEmail,
 };
