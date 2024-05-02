@@ -8,33 +8,8 @@ import passport from "passport";
 import requestIp from "request-ip";
 import { Server } from "socket.io";
 import { ApiError } from "./utils/ApiError.js";
-import AdminJS from "adminjs";
-import AdminJSExpress from "@adminjs/express";
-import * as AdminJSMongoose from "@adminjs/mongoose";
 
 const app = express();
-
-AdminJS.registerAdapter({
-  Resource: AdminJSMongoose.Resource,
-  Database: AdminJSMongoose.Database,
-});
-
-const admin = new AdminJS({
-  resources: [
-    User,
-    SocialPost,
-    SocialComment,
-    SocialFollow,
-    SocialLike,
-    ChatMessage,
-    Chat,
-    gstData,
-  ],
-});
-
-const adminRouter = AdminJSExpress.buildRouter(admin);
-app.use(admin.options.rootPath, adminRouter);
-admin.watch();
 
 const httpServer = createServer(app);
 
@@ -103,26 +78,12 @@ import healthcheckRouter from "./routes/healthcheck.routes.js";
 // * Public routes
 
 // * App routes
-import userRouter from "./routes/apps/auth/user.routes.js";
+import userRouter from "./routes/apps/auth/restaurant.routes.js";
 
-import socialBookmarkRouter from "./routes/apps/social-media/bookmark.routes.js";
-import socialCommentRouter from "./routes/apps/social-media/comment.routes.js";
-import socialFollowRouter from "./routes/apps/social-media/follow.routes.js";
-import socialLikeRouter from "./routes/apps/social-media/like.routes.js";
-import socialPostRouter from "./routes/apps/social-media/post.routes.js";
-import socialProfileRouter from "./routes/apps/social-media/profile.routes.js";
+//Manage Restaurant routes
 
-import chatRouter from "./routes/apps/chat-app/chat.routes.js";
-import messageRouter from "./routes/apps/chat-app/message.routes.js";
-import gstnRouter from "./routes/apps/verify-gstn/gstn.routes.js";
-import { User } from "./models/apps/auth/user.models.js";
-import { SocialPost } from "./models/apps/social-media/post.models.js";
-import { SocialComment } from "./models/apps/social-media/comment.models.js";
-import { SocialFollow } from "./models/apps/social-media/follow.models.js";
-import { SocialLike } from "./models/apps/social-media/like.models.js";
-import { ChatMessage } from "./models/apps/chat-app/message.models.js";
-import { Chat } from "./models/apps/chat-app/chat.models.js";
-import { gstData } from "./models/apps/gst-numbers/gstData.models.js";
+import tableRouter from "./routes/apps/manageRestaurant/table.routes.js";
+import restaurantAdmin from "./routes/apps/auth/restaurantAdmin.routes.js";
 
 // * healthcheck
 app.use("/api/v1/healthcheck", healthcheckRouter);
@@ -130,31 +91,11 @@ app.use("/api/v1/healthcheck", healthcheckRouter);
 // * App apis
 app.use("/api/v1/users", userRouter);
 
-app.use("/api/v1/bnm/profile", socialProfileRouter);
-app.use("/api/v1/bnm/follow", socialFollowRouter);
-app.use("/api/v1/bnm/posts", socialPostRouter);
-app.use("/api/v1/bnm/like", socialLikeRouter);
-app.use("/api/v1/bnm/bookmarks", socialBookmarkRouter);
-app.use("/api/v1/bnm/comments", socialCommentRouter);
+// Manage Restaurant apis
 
-app.use("/api/v1/bnm/chats", chatRouter);
-app.use("/api/v1/bnm/messages", messageRouter);
-app.use("/api/v1/bnm/verify-gstn", gstnRouter);
+app.use("/api/v1/tables", tableRouter);
+app.use("/api/v1/admin", restaurantAdmin);
 
-// * API DOCS
-// ? Keeping swagger code at the end so that we can load swagger on "/" route
-// app.use(
-//   "/",
-//   swaggerUi.serve,
-//   swaggerUi.setup(swaggerDocument, {
-//     swaggerOptions: {
-//       docExpansion: "none", // keep all the sections collapsed by default
-//     },
-//     customSiteTitle: "FreeAPI docs",
-//   })
-// );
-
-// common error handling middleware
 app.use(errorHandler);
 
 export { httpServer };

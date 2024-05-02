@@ -1,11 +1,9 @@
 import { Router } from "express";
 import {
-  getMySocialProfile,
-  getProfileByUserName,
   updateAvatar,
   updateCoverImage,
   updateSocialProfile,
-} from "../../../controllers/apps/social-media/profile.controllers.js";
+} from "../../../controllers/apps/auth/restaurantAdmin.controllers.js";
 import {
   getLoggedInUserOrIgnore,
   verifyJWT,
@@ -19,19 +17,19 @@ import { validate } from "../../../validators/validate.js";
 
 const router = Router();
 
-// public route
-router.route("/u/:username").get(
-  getLoggedInUserOrIgnore, // hover over the middleware to know more
-  getProfileByUserNameValidator(),
-  validate,
-  getProfileByUserName
-);
+// // public route
+// router.route("/u/:username").get(
+//   getLoggedInUserOrIgnore, // hover over the middleware to know more
+//   getProfileByUserNameValidator(),
+//   validate,
+//   getProfileByUserName
+// );
 
 router.use(verifyJWT);
 
 router
   .route("/")
-  .get(getMySocialProfile)
+  //   .get(getMySocialProfile)
   .patch(updateSocialProfileValidator(), validate, updateSocialProfile);
 
 router

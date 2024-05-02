@@ -10,21 +10,13 @@ import {
   UserRolesEnum,
 } from "../../../constants.js";
 
-const userSchema = new Schema(
+const restaurantSchema = new Schema(
   {
     username: {
       type: String,
       required: true,
       unique: true,
       lowercase: true,
-      trim: true,
-      index: true,
-    },
-    gstNumber: {
-      type: String,
-      required: true,
-      unique: true,
-      uppercase: true,
       trim: true,
       index: true,
     },
@@ -69,9 +61,13 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    companyName: {
+    restroName: {
       type: String,
       index: true,
+      default: null,
+    },
+    baseURL: {
+      type: String,
       default: null,
     },
     mobileNumber: {
@@ -87,20 +83,13 @@ const userSchema = new Schema(
       type: String,
       default: null,
     },
-    hqLocation: {
+    location: {
       type: String,
       default: null,
     },
-    serviceLocation: {
+    restroType: {
       type: String,
-      default: null,
-    },
-    industry: {
-      type: String,
-    },
-    service: {
-      type: String,
-      default: null,
+      default: "Casual dining",
     },
     yearOfEstablishment: {
       type: Date,
@@ -155,17 +144,17 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
-userSchema.pre("save", async function (next) {
+restaurantSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 
-userSchema.methods.isPasswordCorrect = async function (password) {
+restaurantSchema.methods.isPasswordCorrect = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
-userSchema.methods.generateAccessToken = function () {
+restaurantSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     {
       _id: this._id,
@@ -178,7 +167,7 @@ userSchema.methods.generateAccessToken = function () {
   );
 };
 
-userSchema.methods.generateRefreshToken = function () {
+restaurantSchema.methods.generateRefreshToken = function () {
   return jwt.sign(
     {
       _id: this._id,
@@ -191,7 +180,7 @@ userSchema.methods.generateRefreshToken = function () {
 /**
  * @description Method responsible for generating tokens for email verification, password reset etc.
  */
-userSchema.methods.generateTemporaryToken = function () {
+restaurantSchema.methods.generateTemporaryToken = function () {
   // This token should be client facing
   // for example: for email verification unHashedToken should go into the user's mail
   const unHashedToken = crypto.randomBytes(20).toString("hex");
@@ -207,4 +196,4 @@ userSchema.methods.generateTemporaryToken = function () {
   return { unHashedToken, hashedToken, tokenExpiry };
 };
 
-export const User = mongoose.model("User", userSchema);
+export const Restaurant = mongoose.model("Restaurant", restaurantSchema);

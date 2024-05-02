@@ -15,7 +15,7 @@ import {
   resendEmailVerification,
   resetForgottenPassword,
   verifyEmail,
-} from "../../../controllers/apps/auth/user.controllers.js";
+} from "../../../controllers/apps/auth/restaurant.controllers.js";
 import {
   verifyJWT,
   verifyPermission,
