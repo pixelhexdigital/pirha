@@ -11,6 +11,7 @@ import {
   forgotPasswordMailgenContent,
   sendEmail,
 } from "../../../utils/mail.js";
+import { Menu } from "../../../models/apps/manageRestaurant/menu.models.js";
 
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
@@ -54,6 +55,18 @@ const registerUser = asyncHandler(async (req, res) => {
     isEmailVerified: false,
     role: role || UserRolesEnum.USER,
   });
+
+  const menu = await Menu.findOne({ restaurantId: restaurant._id });
+  if (!menu) {
+    menu = await Menu.create({
+      restaurantId: restaurant._id,
+      categories: [
+        { name: "Starter", items: [] },
+        { name: "Main Course", items: [] },
+        { name: "Dessert", items: [] },
+      ],
+    });
+  }
 
   /**
    * unHashedToken: unHashed token is something we will send to the restaurant's mail

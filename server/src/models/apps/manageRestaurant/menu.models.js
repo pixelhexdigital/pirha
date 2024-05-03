@@ -17,6 +17,20 @@ const menuItemSchema = new Schema({
     type: Number,
     default: 0,
   },
+  image: {
+    type: {
+      url: String,
+      public_id: String,
+    },
+    default: {
+      url: null,
+      public_id: null,
+    },
+  },
+  estimatedPrepTime: {
+    type: Number,
+    default: 0,
+  },
 });
 
 const menuCategorySchema = new Schema({
