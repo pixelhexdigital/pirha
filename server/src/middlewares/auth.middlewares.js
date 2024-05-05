@@ -1,5 +1,6 @@
 import { AvailableUserRoles } from "../constants.js";
 import { Restaurant } from "../models/apps/auth/restaurant.models.js";
+import { Customer } from "../models/apps/manageRestaurant/customer.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
@@ -55,6 +56,33 @@ export const verifyAdmin = asyncHandler(async (req, res, next) => {
       throw new ApiError(401, "Invalid role");
     }
     req.restaurant = restaurant;
+    next();
+  } catch (error) {
+    // Client should make a request to /api/v1/users/refresh-token if they have refreshToken present in their cookie
+    // Then they will get a new access token which will allow them to refresh the access token without logging out the restaurant
+    throw new ApiError(401, error?.message || "Invalid access token");
+  }
+});
+
+export const verifyCustomer = asyncHandler(async (req, res) => {
+  const token =
+    req.cookies?.accessToken ||
+    req.header("Authorization")?.replace("Bearer ", "");
+
+  if (!token) {
+    throw new ApiError(401, "Unauthorized request");
+  }
+
+  try {
+    const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const customer = await Customer.findById(decodedToken?._id);
+    if (!customer) {
+      // Client should make a request to /api/v1/users/refresh-token if they have refreshToken present in their cookie
+      // Then they will get a new access token which will allow them to refresh the access token without logging out the restaurant
+      throw new ApiError(401, "Invalid access token");
+    }
+
+    req.customer = customer;
     next();
   } catch (error) {
     // Client should make a request to /api/v1/users/refresh-token if they have refreshToken present in their cookie

@@ -132,21 +132,25 @@ const registerTables = asyncHandler(async (req, res) => {
     highestNumber = lastNumber;
   }
 
-  const tablePromises = [];
+  const bulkOperations = [];
 
   for (let i = 1; i <= tables; i++) {
     const nextTableNumber = `${letter}-${highestNumber + i}`;
 
-    const newTable = new Table({
-      title: nextTableNumber,
-      restaurantId: restaurant._id,
-      baseUrl: restaurant.baseURL,
-    });
+    const newTableDocument = {
+      insertOne: {
+        document: {
+          title: nextTableNumber,
+          restaurantId: restaurant._id,
+          baseUrl: restaurant.baseURL,
+        },
+      },
+    };
 
-    tablePromises.push(newTable.save());
+    bulkOperations.push(newTableDocument);
   }
 
-  await Promise.all(tablePromises);
+  await Table.bulkWrite(bulkOperations);
 
   res.json(new ApiResponse(201, {}, "Tables created successfully"));
 });

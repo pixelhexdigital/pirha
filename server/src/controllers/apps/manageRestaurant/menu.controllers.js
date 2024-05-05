@@ -44,6 +44,10 @@ const deleteMenuById = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Menu not found");
   }
 
+  if (menu.categories) {
+    throw new ApiError(404, "Categories must be deleted first to delete menu");
+  }
+
   res.status(200).json(new ApiResponse(200, {}, "Menu deleted successfully"));
 });
 
@@ -124,6 +128,10 @@ const deleteCategory = asyncHandler(async (req, res) => {
 
   // Extract item IDs from the category
   const itemIds = category.items.map((item) => item._id);
+
+  if (itemIds && itemIds.length) {
+    throw new ApiError(404, "Category containing items can not be deleted");
+  }
 
   // Delete all items associated with the category
   await Menu.updateOne(

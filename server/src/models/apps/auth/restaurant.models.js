@@ -70,6 +70,12 @@ const restaurantSchema = new Schema(
       type: String,
       default: null,
     },
+    customers: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Customer",
+      },
+    ],
     mobileNumber: {
       type: Number,
       validate: {
