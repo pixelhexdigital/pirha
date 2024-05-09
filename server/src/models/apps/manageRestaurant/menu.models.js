@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
 const menuItemSchema = new Schema({
   title: {
@@ -112,5 +113,7 @@ menuSchema.methods.removeItemFromCategory = function (categoryId, itemId) {
   category.items.id(itemId).remove();
   return this.save();
 };
+
+menuSchema.plugin(mongooseAggregatePaginate);
 
 export const Menu = mongoose.model("Menu", menuSchema);

@@ -24,6 +24,12 @@ const customerSchema = new Schema(
       type: Number,
       default: 0,
     },
+    restaurants: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Restaurant",
+      },
+    ],
     orders: [
       {
         type: Schema.Types.ObjectId,
@@ -34,7 +40,7 @@ const customerSchema = new Schema(
   { timestamps: true }
 );
 
-restaurantSchema.methods.generateAccessToken = function () {
+customerSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     {
       _id: this._id,

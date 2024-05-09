@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import QRCode from "qrcode";
-
+import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 const tableSchema = new Schema(
   {
     title: {
@@ -44,5 +44,5 @@ const tableSchema = new Schema(
   },
   { timestamps: true }
 );
-
+tableSchema.plugin(mongooseAggregatePaginate);
 export const Table = mongoose.model("Table", tableSchema);

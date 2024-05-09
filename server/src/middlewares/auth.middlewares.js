@@ -64,7 +64,7 @@ export const verifyAdmin = asyncHandler(async (req, res, next) => {
   }
 });
 
-export const verifyCustomer = asyncHandler(async (req, res) => {
+export const verifyCustomer = asyncHandler(async (req, res, next) => {
   const token =
     req.cookies?.accessToken ||
     req.header("Authorization")?.replace("Bearer ", "");

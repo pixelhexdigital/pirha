@@ -9,6 +9,7 @@ import {
   UserLoginType,
   UserRolesEnum,
 } from "../../../constants.js";
+import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
 const restaurantSchema = new Schema(
   {
@@ -201,5 +202,7 @@ restaurantSchema.methods.generateTemporaryToken = function () {
 
   return { unHashedToken, hashedToken, tokenExpiry };
 };
+
+restaurantSchema.plugin(mongooseAggregatePaginate);
 
 export const Restaurant = mongoose.model("Restaurant", restaurantSchema);

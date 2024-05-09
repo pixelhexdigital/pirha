@@ -85,6 +85,7 @@ import userRouter from "./routes/apps/auth/restaurant.routes.js";
 import tableRouter from "./routes/apps/manageRestaurant/table.routes.js";
 import menuRouter from "./routes/apps/manageRestaurant/menu.routes.js";
 import customerRouter from "./routes/apps/manageRestaurant/customer.routes.js";
+import orderRouter from "./routes/apps/manageRestaurant/order.routes.js";
 import restaurantAdmin from "./routes/apps/auth/restaurantAdmin.routes.js";
 
 // * healthcheck
@@ -98,6 +99,7 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/tables", tableRouter);
 app.use("/api/v1/menus", menuRouter);
 app.use("/api/v1/customers", customerRouter);
+app.use("/api/v1/orders", orderRouter);
 app.use("/api/v1/admin", restaurantAdmin);
 
 app.use(errorHandler);

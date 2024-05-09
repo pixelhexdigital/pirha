@@ -2,13 +2,13 @@ import { Router } from "express";
 import {
   verifyCustomer,
   verifyJWT,
-} from "../../../middlewares/auth.middlewares";
+} from "../../../middlewares/auth.middlewares.js";
 import {
   loginCustomer,
   logoutCustomer,
   registerCustomer,
   updateCustomer,
-} from "../../../controllers/apps/manageRestaurant/customer.controllers";
+} from "../../../controllers/apps/manageRestaurant/customer.controllers.js";
 
 const router = Router();
 

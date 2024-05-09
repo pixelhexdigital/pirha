@@ -72,7 +72,7 @@ const downloadTableQr = asyncHandler(async (req, res) => {
 
   // Iterate over the tables and generate QR codes
   for (const table of tables) {
-    const qrCodeText = `${baseURL}?tableId=${table._id}`;
+    const qrCodeText = `${baseURL}?tableId=${table._id}&restaurantId=${restaurant._id}`;
 
     // Create a new canvas to draw QR code
     const canvas = createCanvas(300, 300);
