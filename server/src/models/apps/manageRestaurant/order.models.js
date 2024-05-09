@@ -19,8 +19,19 @@ const orderItemSchema = new Schema({
   },
   price: {
     type: Number,
-    required: true,
+    default: 0,
   },
+});
+
+// Define a pre-save hook to calculate price based on itemPrice * quantity
+orderItemSchema.pre("save", function (next) {
+  try {
+    // Calculate the price for this orderItem
+    this.price = this.itemPrice * this.quantity;
+    next();
+  } catch (error) {
+    next(error); // Pass any error to the next middleware
+  }
 });
 
 const orderSchema = new Schema(
@@ -38,20 +49,12 @@ const orderSchema = new Schema(
     items: [orderItemSchema],
     totalAmount: {
       type: Number,
+      default: 0,
     },
     status: {
       type: String,
       enum: ["new", "ready", "served", "cancelled"],
       default: "new",
-    },
-    paymentStatus: {
-      type: String,
-      enum: ["unpaid", "paid"],
-      default: "unpaid",
-    },
-    paymentMethod: {
-      type: String,
-      default: "cash",
     },
   },
   { timestamps: true }

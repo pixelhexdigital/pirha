@@ -30,39 +30,33 @@ const createOrder = asyncHandler(async (req, res) => {
 
   // Iterate through each item in the request body
   for (const item of items) {
-    const { menuId, quantity } = item;
+    const { menuItemId, quantity } = item;
 
     // Find the menu containing the item by menuId
-    const menu = await Menu.findOne({ "categories.items._id": menuId });
+    const menu = await Menu.findOne({ "categories.items._id": menuItemId });
     if (!menu) {
-      throw new ApiError(404, `Menu with item ID ${menuId} not found`);
+      throw new ApiError(404, `Menu with item ID ${menuItemId} not found`);
     }
 
     // Find the specific item within the menu's categories
     let menuItem = null;
     for (const category of menu.categories) {
-      menuItem = category.items.find((item) => item._id.equals(menuId));
+      menuItem = category.items.find((item) => item._id.equals(menuItemId));
       if (menuItem) {
         break;
       }
     }
 
     if (!menuItem) {
-      throw new ApiError(404, `Menu item with ID ${menuId} not found`);
+      throw new ApiError(404, `Menu item with ID ${menuItemId} not found`);
     }
-
-    // Calculate item price (assuming price is a property of menuItem)
     const itemPrice = menuItem.price;
-
-    // Calculate total price for the item (quantity * itemPrice)
-    const price = itemPrice * quantity;
 
     // Construct processed item object with item details and calculated price
     const processedItem = {
-      menuItemId: menuId,
+      menuItemId,
       quantity,
       itemPrice,
-      price,
     };
 
     // Push processed item into the array
@@ -81,82 +75,6 @@ const createOrder = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(200, { order: newOrder }, "Order created successfully")
     );
-});
-
-// Controller to add items to an existing order by orderId
-const addOrder = asyncHandler(async (req, res) => {
-  const { orderId } = req.params;
-  const { items } = req.body;
-
-  const customer = await Customer.findById(req.customer._id);
-  if (!customer) {
-    throw new ApiError(401, "Customer not found");
-  }
-
-  // Find the order by orderId
-  const order = await Order.findById(orderId);
-  if (!order) {
-    throw new ApiError(404, `Order with ID ${orderId} not found`);
-  }
-
-  // Iterate through each item in the request body
-  for (const item of items) {
-    const { menuId, quantity } = item;
-
-    // Find the menu containing the item by menuId
-    const menu = await Menu.findOne({ "categories.items._id": menuId });
-    if (!menu) {
-      throw new ApiError(404, `Menu with item ID ${menuId} not found`);
-    }
-
-    // Find the specific item within the menu's categories
-    let menuItem = null;
-    for (const category of menu.categories) {
-      menuItem = category.items.find((item) => item._id.equals(menuId));
-      if (menuItem) {
-        break;
-      }
-    }
-
-    if (!menuItem) {
-      throw new ApiError(404, `Menu item with ID ${menuId} not found`);
-    }
-
-    // Check if the menuId already exists in the order items
-    const existingItem = order.items.find((orderItem) =>
-      orderItem.menuId.equals(menuId)
-    );
-
-    if (existingItem) {
-      // If the menuId already exists, update the quantity and price
-      existingItem.quantity += quantity;
-      existingItem.price += menuItem.price * quantity;
-    } else {
-      // Calculate item price
-      const itemPrice = menuItem.price;
-
-      // Calculate total price for the item (quantity * itemPrice)
-      const price = itemPrice * quantity;
-
-      // Create a new item object with item details and calculated price
-      const newItem = {
-        menuId,
-        quantity,
-        itemPrice,
-        price,
-      };
-
-      // Add the new item to the order items array
-      order.items.push(newItem);
-    }
-  }
-
-  // Save the updated order
-  await order.save();
-
-  res
-    .status(200)
-    .json(new ApiResponse(200, { order }, "Order updated successfully"));
 });
 
 // Controller to get orders for a specific customer
@@ -252,22 +170,5 @@ const getOrderByCustomer = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, orders, "Orders retrieved successfully"));
 });
 
-// Controller to generate bill for an order
-const generateBill = asyncHandler(async (req, res) => {
-  const { orderId } = req.params;
-
-  const order = await Order.findById(orderId);
-  if (!order) {
-    throw new ApiError(404, "Order not found");
-  }
-
-  // Calculate total amount for the order
-  const totalAmount = calculateTotalAmount(order.items);
-
-  res
-    .status(200)
-    .json(new ApiResponse(200, { totalAmount }, "Bill generated successfully"));
-});
-
 // Export all controllers
-export { createOrder, addOrder, generateBill, getOrderByCustomer };
+export { createOrder, getOrderByCustomer };
