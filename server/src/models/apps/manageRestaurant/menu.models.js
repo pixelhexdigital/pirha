@@ -14,6 +14,12 @@ const menuItemSchema = new Schema({
     type: Number,
     required: true,
   },
+  itemType: {
+    type: String,
+    required: true,
+    enum: ["Food", "Alcoholic Drink", "Non-Alcoholic Drink"],
+    default: "Food",
+  },
   discount: {
     type: Number,
     default: 0,
@@ -53,66 +59,6 @@ const menuSchema = new Schema(
   },
   { timestamps: true }
 );
-
-// Methods for managing categories
-menuSchema.methods.addCategory = function (newCategory) {
-  this.categories.push(newCategory);
-  return this.save();
-};
-
-menuSchema.methods.updateCategory = function (categoryId, updatedCategory) {
-  const category = this.categories.id(categoryId);
-  if (!category) {
-    throw new Error("Category not found");
-  }
-  Object.assign(category, updatedCategory);
-  return this.save();
-};
-
-menuSchema.methods.deleteCategory = function (categoryId) {
-  const category = this.categories.id(categoryId);
-  if (!category) {
-    throw new Error("Category not found");
-  }
-  category.remove();
-  return this.save();
-};
-
-// Methods for managing items within categories
-menuSchema.methods.addItemToCategory = function (categoryId, newItem) {
-  const category = this.categories.id(categoryId);
-  if (!category) {
-    throw new Error("Category not found");
-  }
-  category.items.push(newItem);
-  return this.save();
-};
-
-menuSchema.methods.updateItemInCategory = function (
-  categoryId,
-  itemId,
-  updatedItem
-) {
-  const category = this.categories.id(categoryId);
-  if (!category) {
-    throw new Error("Category not found");
-  }
-  const item = category.items.id(itemId);
-  if (!item) {
-    throw new Error("Item not found");
-  }
-  Object.assign(item, updatedItem);
-  return this.save();
-};
-
-menuSchema.methods.removeItemFromCategory = function (categoryId, itemId) {
-  const category = this.categories.id(categoryId);
-  if (!category) {
-    throw new Error("Category not found");
-  }
-  category.items.id(itemId).remove();
-  return this.save();
-};
 
 menuSchema.plugin(mongooseAggregatePaginate);
 

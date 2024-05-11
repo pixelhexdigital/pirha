@@ -7,11 +7,6 @@ import { asyncHandler } from "../../../utils/asyncHandler.js";
 import { Menu } from "../../../models/apps/manageRestaurant/menu.models.js";
 import mongoose from "mongoose";
 
-// Helper function to calculate total amount based on order items
-const calculateTotalAmount = (items) => {
-  return items.reduce((total, item) => total + item.price * item.quantity, 0);
-};
-
 // Controller to create a new order for a customer
 const createOrder = asyncHandler(async (req, res) => {
   const { restaurantId, items } = req.body;

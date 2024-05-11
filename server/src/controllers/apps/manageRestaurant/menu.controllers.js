@@ -161,7 +161,7 @@ const addMenuItem = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Restaurant does not exist");
   }
   const { categoryId } = req.params;
-  const { title, description, price, discount } = req.body;
+  const { title, description, price, discount, itemType } = req.body;
   const menu = await Menu.findOne({ restaurantId: restaurant._id });
 
   if (!menu) {
@@ -179,6 +179,7 @@ const addMenuItem = asyncHandler(async (req, res) => {
     description,
     price,
     discount,
+    itemType,
   });
   await menu.save();
 

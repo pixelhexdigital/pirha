@@ -10,6 +10,16 @@ const taxSchema = new Schema({
     type: Number,
     required: true,
   },
+  appliedTo: {
+    type: String,
+    enum: [
+      "Alcoholic Drinks",
+      "Food & Non-Alcoholic Drinks",
+      "Order Items",
+      "Order Items + Service Charge",
+    ],
+    default: "Food & Non-Alcoholic Drinks",
+  },
 });
 
 const billSchema = new Schema(
