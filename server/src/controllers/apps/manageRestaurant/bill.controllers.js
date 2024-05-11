@@ -1,7 +1,7 @@
-import { Restaurant } from "../../../models/apps/auth/restaurant.models";
-import { Customer } from "../../../models/apps/manageRestaurant/customer.models";
-import { ApiError } from "../../../utils/ApiError";
-import { asyncHandler } from "../../../utils/asyncHandler";
+import { Restaurant } from "../../../models/apps/auth/restaurant.models.js";
+import { Customer } from "../../../models/apps/manageRestaurant/customer.models.js";
+import { ApiError } from "../../../utils/ApiError.js";
+import { asyncHandler } from "../../../utils/asyncHandler.js";
 
 const generateCustomerBill = asyncHandler(async (req, res) => {
   const { restaurantId } = req.params;

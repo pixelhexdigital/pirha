@@ -1,6 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
+import { ENUMS } from "../../../controllers/apps/constants/enum.js";
 
 const orderItemSchema = new Schema({
   menuItemId: {
@@ -53,8 +54,8 @@ const orderSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["new", "ready", "served", "cancelled"],
-      default: "new",
+      enum: ENUMS.orderStatus,
+      default: ENUMS.orderStatus[0],
     },
   },
   { timestamps: true }

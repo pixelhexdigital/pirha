@@ -1,26 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
-
-const taxSchema = new Schema({
-  taxName: {
-    type: String,
-    required: true,
-  },
-  taxPercentage: {
-    type: Number,
-    required: true,
-  },
-  appliedTo: {
-    type: String,
-    enum: [
-      "Alcoholic Drinks",
-      "Food & Non-Alcoholic Drinks",
-      "Order Items",
-      "Order Items + Service Charge",
-    ],
-    default: "Food & Non-Alcoholic Drinks",
-  },
-});
+import { ENUMS } from "../../../controllers/apps/constants/enum.js";
 
 const billSchema = new Schema(
   {
@@ -41,16 +21,16 @@ const billSchema = new Schema(
         required: true,
       },
     ],
-    taxes: [taxSchema], // Array of tax objects
     paymentStatus: {
       type: String,
-      enum: ["Pending", "Paid", "Failed"],
-      default: "Pending",
+      enum: ENUMS.paymentStatus,
+      default: ENUMS.paymentStatus[0],
     },
     paymentMethod: {
       type: String,
-      enum: ["Cash", "Card", "Online"],
+      enum: ENUMS.paymentMethod,
       required: true,
+      default: ENUMS.paymentMethod[0],
     },
   },
   { timestamps: true }

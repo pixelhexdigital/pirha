@@ -74,6 +74,7 @@ app.use(passport.session()); // persistent login sessions
 // api routes
 import { errorHandler } from "./middlewares/error.middlewares.js";
 import healthcheckRouter from "./routes/healthcheck.routes.js";
+import enumRouter from "./routes/enum.routes.js";
 
 // * Public routes
 
@@ -86,11 +87,12 @@ import tableRouter from "./routes/apps/manageRestaurant/table.routes.js";
 import menuRouter from "./routes/apps/manageRestaurant/menu.routes.js";
 import customerRouter from "./routes/apps/manageRestaurant/customer.routes.js";
 import orderRouter from "./routes/apps/manageRestaurant/order.routes.js";
-import orderRouter from "./routes/apps/manageRestaurant/bill.routes.js";
+import billRouter from "./routes/apps/manageRestaurant/bill.routes.js";
 import restaurantAdmin from "./routes/apps/auth/restaurantAdmin.routes.js";
 
 // * healthcheck
 app.use("/api/v1/healthcheck", healthcheckRouter);
+app.use("/api/v1/enums", enumRouter);
 
 // * App apis
 app.use("/api/v1/users", userRouter);
