@@ -196,7 +196,7 @@ const updateMenuItem = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Restaurant does not exist");
   }
   const { categoryId, itemId } = req.params;
-  const { title, description, price, discount } = req.body;
+  const { title, description, price, discount, isAvailable } = req.body;
   const menu = await Menu.findOne({ restaurantId: restaurant._id });
 
   if (!menu) {
@@ -220,6 +220,7 @@ const updateMenuItem = asyncHandler(async (req, res) => {
     description,
     price,
     discount,
+    isAvailable,
   });
   await menu.save();
 
@@ -334,6 +335,57 @@ const updateItemImage = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, item, "Item image updated successfully"));
 });
 
+// upload image for item
+const updateCategoryImage = asyncHandler(async (req, res) => {
+  const { categoryId } = req.params;
+  const itemLocalPath = req.file?.path;
+
+  if (!itemLocalPath) {
+    throw new ApiError(400, "Item image file is missing");
+  }
+
+  const restaurant = await Restaurant.findById(req.restaurant?._id);
+
+  if (!restaurant) {
+    throw new ApiError(404, "Restaurant does not exist");
+  }
+
+  // Fetch the menu and validate its existence
+  const menu = await Menu.findOne({ restaurantId: restaurant._id });
+  if (!menu) {
+    throw new ApiError(404, "Menu not found");
+  }
+
+  // Find the category within the menu
+  const category = menu.categories.id(categoryId);
+  if (!category) {
+    throw new ApiError(404, "Category not found");
+  }
+
+  // Upload item image to Cloudinary
+  const publicId = category.image?.public_id || null;
+  const uploadedImage = await uploadOnCloudinary(itemLocalPath, publicId);
+  //   console.log(uploadedImage);
+
+  if (!uploadedImage.url) {
+    throw new ApiError(400, "Error while uploading item image");
+  }
+
+  // Update item with the new image URL and public_id
+  category.image = {
+    url: uploadedImage.url,
+    public_id: uploadedImage.public_id,
+  };
+
+  // Save the updated menu
+  await menu.save();
+
+  // Return success response with updated item
+  res
+    .status(200)
+    .json(new ApiResponse(200, item, "Category image updated successfully"));
+});
+
 export {
   fetchMenus,
   fetchMenuByRestraurnt,
@@ -345,4 +397,5 @@ export {
   updateMenuItem,
   deleteMenuItem,
   updateItemImage,
+  updateCategoryImage,
 };

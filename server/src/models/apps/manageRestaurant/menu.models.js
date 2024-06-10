@@ -35,6 +35,10 @@ const menuItemSchema = new Schema({
       public_id: null,
     },
   },
+  isAvailable: {
+    type: Boolean,
+    default: true,
+  },
   estimatedPrepTime: {
     type: Number,
     default: 0,
@@ -45,6 +49,16 @@ const menuCategorySchema = new Schema({
   name: {
     type: String,
     required: true,
+  },
+  image: {
+    type: {
+      url: String,
+      public_id: String,
+    },
+    default: {
+      url: null,
+      public_id: null,
+    },
   },
   items: [menuItemSchema],
 });
