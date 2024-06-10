@@ -33,6 +33,17 @@ const userLoginValidator = () => {
   ];
 };
 
+const usernameValidator = () => {
+  return [
+    body("username")
+      .optional()
+      .isLength({ min: 5 })
+      .withMessage("Username must be at least 5 characters long")
+      .matches(/^[a-zA-Z0-9]+$/)
+      .withMessage("Username must only contain alphanumeric characters"),
+  ];
+};
+
 const userChangeCurrentPasswordValidator = () => {
   return [
     body("oldPassword").notEmpty().withMessage("Old password is required"),
@@ -69,5 +80,6 @@ export {
   userLoginValidator,
   userRegisterValidator,
   userResetForgottenPasswordValidator,
-  userAssignRoleValidator
+  userAssignRoleValidator,
+  usernameValidator,
 };

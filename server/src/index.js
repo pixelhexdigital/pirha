@@ -13,6 +13,14 @@ dotenv.config({
 const majorNodeVersion = +process.env.NODE_VERSION?.split(".")[0] || 0;
 
 const startServer = () => {
+  // const app = express();
+
+  // const admin = new AdminJS({});
+  // admin.watch();
+
+  // const adminRouter = AdminJSExpress.buildRouter(admin);
+  // app.use(admin.options.rootPath, adminRouter);
+
   httpServer.listen(process.env.PORT || 8080, () => {
     console.info(
       `📑 Visit the documentation at: http://localhost:${
@@ -20,6 +28,9 @@ const startServer = () => {
       }`
     );
     console.log("⚙️  Server is running on port: " + process.env.PORT);
+    // console.log(
+    //   `AdminJS started on http://localhost:${process.env.PORT}${admin.options.rootPath}`
+    // );
   });
 };
 

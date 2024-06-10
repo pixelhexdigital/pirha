@@ -21,7 +21,7 @@ const createProductValidator = () => {
       .withMessage("Stock is required")
       .isNumeric()
       .withMessage("Stock must be a number"),
-    ...mongoIdRequestBodyValidator("category")
+    ...mongoIdRequestBodyValidator("category"),
   ];
 };
 
@@ -47,11 +47,8 @@ const updateProductValidator = () => {
       .withMessage("Stock is required")
       .isNumeric()
       .withMessage("Stock must be a number"),
-    ...mongoIdRequestBodyValidator("category")
+    ...mongoIdRequestBodyValidator("category"),
   ];
 };
 
-export {
-  createProductValidator,
-  updateProductValidator,
-};
+export { createProductValidator, updateProductValidator };
