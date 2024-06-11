@@ -1,5 +1,4 @@
 import { useSelector } from "react-redux";
-import { Outlet } from "react-router-dom";
 import { twMerge } from "tailwind-merge";
 import {
   AlignLeft,
@@ -42,7 +41,7 @@ const navigation = [
   },
 ];
 
-function Layout() {
+function Layout({ children }) {
   const isExpanded = useSelector(selectIsSidebarExtended);
 
   return (
@@ -76,9 +75,7 @@ function Layout() {
               <div className="flex lg:w-full md:items-end md:justify-between">
                 <p
                   className={`text-neutral-700 text-xl font-semibold hidden lg:flex`}
-                >
-                  Lorem, ipsum dolor sit amet consectetur adipisicing elit.
-                </p>
+                ></p>
                 <div className="flex gap-4 mr-4">
                   <div className="flex flex-col ">
                     <p className="text-base font-semibold text-black">Sagar</p>
@@ -93,7 +90,7 @@ function Layout() {
             isExpanded ? "pl-[17rem]" : "pl-[6rem]"
           } pr-2`}
         >
-          <Outlet />
+          {children}
         </div>
       </div>
     </main>
