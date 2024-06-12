@@ -74,7 +74,7 @@ app.use(passport.session()); // persistent login sessions
 // api routes
 import { errorHandler } from "./middlewares/error.middlewares.js";
 import healthcheckRouter from "./routes/healthcheck.routes.js";
-import enumRouter from "./routes/enum.routes.js";
+import publicRouter from "./routes/public.routes.js";
 
 // * Public routes
 
@@ -94,7 +94,7 @@ import taxRouter from "./routes/apps/manageRestaurant/tax.routes.js";
 
 // * healthcheck
 app.use("/api/v1/healthcheck", healthcheckRouter);
-app.use("/api/v1/enums", enumRouter);
+app.use("/api/v1/public", publicRouter);
 
 // * App apis
 app.use("/api/v1/users", userRouter);

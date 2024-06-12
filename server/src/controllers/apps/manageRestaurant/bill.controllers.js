@@ -128,7 +128,6 @@ const generateCustomerBill = asyncHandler(async (req, res) => {
 
   for (const order of orders) {
     for (const item of order.items) {
-      console.log("item ==>", item);
       const itemTotal = item.quantity * item.itemPrice;
       const itemType = item.itemType;
 
