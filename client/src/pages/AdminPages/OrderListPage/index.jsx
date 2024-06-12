@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "components/ui/tabs";
 import OrderListTable from "pages/AdminPages/OrderListPage/OrderListTable";
+import Layout from "components/Layout";
 
 // CONSTANTS FOR STATUS COLORS AND TEXT
 
@@ -15,8 +16,8 @@ const FILTER_BUTTONS = [
     value: "new",
   },
   {
-    label: "In Progress",
-    value: "inProgress",
+    label: "In Process",
+    value: "inProcess",
   },
   {
     label: "Completed",
@@ -123,37 +124,39 @@ const OrderListPage = () => {
   const tableData = data.filter((order) => order.status === activeFilter);
 
   return (
-    <div className="space-y-4 w-[98%] mx-auto">
-      <h2 className="h4">Orders</h2>
-      <div className="w-full p-4 space-y-4 bg-white rounded-md shadow-md ring-1 ring-black/5">
-        <Tabs defaultValue="all" className="space-y-4">
-          <TabsList className="gap-4">
+    <Layout>
+      <div className="space-y-4 w-[98%] mx-auto">
+        <h2 className="h4">Orders</h2>
+        <div className="w-full p-4 space-y-4 bg-white rounded-md shadow-md ring-1 ring-black/5">
+          <Tabs defaultValue="all" className="space-y-4">
+            <TabsList className="gap-4">
+              {FILTER_BUTTONS.map((filter) => {
+                return (
+                  <TabsTrigger
+                    key={filter.value}
+                    value={filter.value}
+                    onClick={() => setActiveFilter(filter.value)}
+                  >
+                    {filter.label}
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
             {FILTER_BUTTONS.map((filter) => {
               return (
-                <TabsTrigger
-                  key={filter.value}
-                  value={filter.value}
-                  onClick={() => setActiveFilter(filter.value)}
-                >
-                  {filter.label}
-                </TabsTrigger>
+                <TabsContent key={filter.value} value={filter.value}>
+                  <OrderListTable
+                    data={filter.value === "all" ? data : tableData}
+                  />
+                </TabsContent>
               );
             })}
-          </TabsList>
-          {FILTER_BUTTONS.map((filter) => {
-            return (
-              <TabsContent key={filter.value} value={filter.value}>
-                <OrderListTable
-                  data={filter.value === "all" ? data : tableData}
-                />
-              </TabsContent>
-            );
-          })}
-        </Tabs>
+          </Tabs>
 
-        <div className="flex items-center justify-end space-x-2"></div>
+          <div className="flex items-center justify-end space-x-2"></div>
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 

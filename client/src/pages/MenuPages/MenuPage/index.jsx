@@ -1,55 +1,14 @@
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 
 import TopNavBar from "components/TopNavBar";
 import { Circle } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { addToCart } from "store/CartSlice";
 
-const DUMMY_MENU = [
-  {
-    id: 1,
-    name: "Paneer Tikka",
-    description: "Paneer Tikka",
-    price: 200,
-    veg: true,
-    imageSrc: "https://picsum.photos/200/?random=1",
-  },
-  {
-    id: 2,
-    name: "Chicken Tikka",
-    description: "Chicken Tikka",
-    price: 300,
-    veg: false,
-    imageSrc: "https://picsum.photos/200/?random=2",
-  },
-  {
-    id: 3,
-    name: "Murg Musallam",
-    description: "Murg Musallam",
-    price: 400,
-    veg: false,
-    // imageSrc: "https://picsum.photos/200/?random=3",
-  },
-  {
-    id: 4,
-    name: "Butter Chicken",
-    description: "Butter Chicken",
-    price: 500,
-    veg: false,
-    imageSrc: "https://picsum.photos/200/?random=4",
-  },
-  {
-    id: 5,
-    name: "Veg Kadhai",
-    description: "Veg Kadhai",
-    price: 300,
-    veg: true,
-    imageSrc: "https://picsum.photos/200/?random=5",
-  },
-];
-
 const MenuPage = () => {
-  const { category } = useParams();
+  const { categoryName, tableId, restaurantId } = useParams();
+  const { state } = useLocation();
+  const { items: data } = state || {};
 
   const dispatch = useDispatch();
 
@@ -58,14 +17,15 @@ const MenuPage = () => {
       <TopNavBar />
       <div>
         <section className="flex items-center gap-4 p-2">
-          <h2>{category}</h2>
+          <h2>{categoryName}</h2>
         </section>
         <section className="grid flex-col items-center content-center justify-center w-full grid-cols-1 gap-4 px-4 py-2 mx-auto f lg:grid-cols-2">
-          {DUMMY_MENU.map((menu) => (
+          {data.map((menu) => (
             <div
-              key={menu.id}
+              key={menu._id}
               className="grid w-full grid-cols-2 p-4 border rounded-lg shadow-md sm:grid-cols-5"
             >
+              {console.log("menu", menu)}
               <div className="space-y-2 sm:col-span-3">
                 <div
                   className={`border p-[2px] w-fit ${
@@ -78,7 +38,7 @@ const MenuPage = () => {
                     fill={menu.veg ? "green" : "red"}
                   />
                 </div>
-                <h3 className="font-semibold">{menu.name}</h3>
+                <h3 className="font-semibold">{menu.title}</h3>
                 <p className="font-semibold">
                   <span>&#8377;</span>
                   {menu.price}
@@ -88,10 +48,10 @@ const MenuPage = () => {
               </div>
 
               <div className="h-56 sm:col-span-2">
-                {menu.imageSrc ? (
+                {menu.image ? (
                   <img
-                    src={menu.imageSrc}
-                    alt={menu.name}
+                    src={menu.image.url}
+                    alt={menu.title}
                     className="object-cover w-full h-48 rounded-lg"
                   />
                 ) : (

@@ -1,5 +1,7 @@
+import { useGetMenuCategoryByIdQuery } from "api/menuApi";
 import TopNavBar from "components/TopNavBar";
-import { Link } from "react-router-dom";
+import { errorToast } from "lib/helper";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { ROUTES } from "routes/RouterConfig";
 
 const DUMMY_CATEGORY = [
@@ -66,24 +68,37 @@ const DUMMY_CATEGORY = [
 ];
 
 const CategoriesPage = () => {
+  // get id from the URL which is passed as ?tableId=123?restaurantId=123
+  const { search } = useLocation();
+  const restaurantId = new URLSearchParams(search).get("restaurantId");
+  const tableId = new URLSearchParams(search).get("tableId");
+
+  console.log("restaurantId", restaurantId);
+
+  const { data, error, isLoading } = useGetMenuCategoryByIdQuery(restaurantId);
+
+  console.log("error", error);
+  if (error) {
+    console.log("inside error");
+    // errorToast({ error });
+  }
+
   return (
     <div className="container flex flex-col gap-4">
       <TopNavBar />
       <div className="w-full">
         <h1 className="mb-4 font-semibold">Categories</h1>
         <section className="grid items-center content-center justify-center grid-cols-2 gap-4 px-4 py-2 mx-auto sm:grid-cols-3">
-          {DUMMY_CATEGORY.map((category) => (
+          {data?.menu?.categories?.map(({ image, items, name }, index) => (
             <Link
-              key={category.id}
-              to={`${ROUTES.MENU}/${category.name}`}
+              key={index}
+              to={`${ROUTES.MENU}/${tableId}/${restaurantId}/${name}`}
+              state={{ items } || {}}
               className="flex flex-col items-center justify-center gap-2 p-4 rounded-lg shadow-md bg-card ring-1 ring-slate-800 ring-opacity-20"
             >
-              <img
-                src={category.imageSrc}
-                alt={category.name}
-                className="size-28"
-              />
-              <h2>{category.name}</h2>
+              {console.log("items", items)}
+              <img src={image} alt={name} className="size-28" />
+              <h2>{name}</h2>
             </Link>
           ))}
         </section>
