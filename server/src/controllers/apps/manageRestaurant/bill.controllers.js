@@ -7,7 +7,7 @@ import { ApiResponse } from "../../../utils/ApiResponse.js";
 import { asyncHandler } from "../../../utils/asyncHandler.js";
 import mongoose from "mongoose";
 import { Tax } from "../../../models/apps/manageRestaurant/tax.models.js";
-import { ENUMS } from "../constants/enum.js";
+import { ENUMS } from "../../../constants/enum.js";
 
 // Helper function to get tax rate by name
 const getTaxRateByName = (taxes, taxName) => {

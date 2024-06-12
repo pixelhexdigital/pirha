@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { ENUMS } from "../../../controllers/apps/constants/enum.js";
+import { ENUMS } from "../../../constants/enum.js";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
 const taxSchema = new Schema({

@@ -1,9 +1,10 @@
 import { Restaurant } from "../models/apps/auth/restaurant.models.js";
+import { Menu } from "../models/apps/manageRestaurant/menu.models.js";
 import { Table } from "../models/apps/manageRestaurant/table.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { ENUMS } from "./apps/constants/enum.js";
+import { ENUMS } from "../constants/enum.js";
 
 const fetchEnum = asyncHandler(async (req, res) => {
   const enums = ENUMS;
@@ -41,4 +42,24 @@ const getTableById = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, { table }, "Table details fetched succesfully"));
 });
 
-export { fetchEnum, getRestaurantById, getTableById };
+// Fetch menu by ID for a restaurant
+const getMenuByRestaurantId = asyncHandler(async (req, res) => {
+  const { restaurantId } = req.params;
+  const restaurant = await Restaurant.findById(restaurantId);
+
+  if (!restaurant) {
+    throw new ApiError(404, "Restaurant does not exist");
+  }
+
+  const menu = await Menu.findOne({ restaurantId: restaurant._id });
+
+  if (!menu) {
+    throw new ApiError(404, "Menu not found");
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, { menu }, "Menu fetched successfully"));
+});
+
+export { fetchEnum, getRestaurantById, getTableById, getMenuByRestaurantId };
