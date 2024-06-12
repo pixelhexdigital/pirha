@@ -14,23 +14,17 @@ import {
   updateSocialProfileValidator,
 } from "../../../validators/apps/social-media/profile.validators.js";
 import { validate } from "../../../validators/validate.js";
+import { getDashboard } from "../../../controllers/apps/restaurantAdmin/adminDashboard.controllers.js";
 
 const router = Router();
-
-// // public route
-// router.route("/u/:username").get(
-//   getLoggedInUserOrIgnore, // hover over the middleware to know more
-//   getProfileByUserNameValidator(),
-//   validate,
-//   getProfileByUserName
-// );
 
 router.use(verifyJWT);
 
 router
   .route("/")
-  //   .get(getMySocialProfile)
   .patch(updateSocialProfileValidator(), validate, updateSocialProfile);
+
+router.route("/dashboard").get(getDashboard);
 
 router
   .route("/cover-image")
