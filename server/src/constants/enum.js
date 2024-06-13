@@ -10,4 +10,5 @@ export const ENUMS = {
   menuItemType: ["Food", "Alcoholic Drink", "Non-Alcoholic Drink"],
   paymentStatus: ["Pending", "Paid", "Failed"],
   paymentMethod: ["Cash", "Card", "Online"],
+  foodGroup: ["Veg", "Non-veg", "Vegan", "Egg"],
 };

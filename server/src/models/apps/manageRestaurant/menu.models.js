@@ -21,6 +21,12 @@ const menuItemSchema = new Schema({
     enum: ENUMS.menuItemType,
     default: ENUMS.menuItemType[0],
   },
+  foodGroup: {
+    type: String,
+    required: true,
+    enum: ENUMS.foodGroup,
+    default: ENUMS.foodGroup[0],
+  },
   discount: {
     type: Number,
     default: 0,
