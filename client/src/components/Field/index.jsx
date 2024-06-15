@@ -1,21 +1,24 @@
+import { forwardRef } from "react";
 import { twMerge } from "tailwind-merge";
+
 import Icon from "components/Icon";
 
-const Field = ({
-  className,
-  classInput,
-  label,
-  textarea,
-  note,
-  type,
-  value,
-  onChange,
-  placeholder,
-  required,
-  icon,
-  error,
-  ...otherProps
-}) => {
+const Field = forwardRef((props, ref) => {
+  const {
+    className,
+    classInput,
+    label,
+    textarea,
+    note,
+    type,
+    value,
+    onChange,
+    placeholder,
+    required,
+    icon,
+    error,
+    ...otherProps
+  } = props;
   // const handleKeyDown = (event) => {
   //   const remainingChars = 880 - value.length;
   //   if (remainingChars <= 0 && event.key !== "Backspace") {
@@ -45,6 +48,7 @@ const Field = ({
               value={value}
               onChange={onChange}
               // onKeyDown={handleKeyDown}
+              ref={ref}
               placeholder={placeholder}
               required={required}
               {...otherProps}
@@ -57,6 +61,7 @@ const Field = ({
                 value !== "" && "bg-transparent border-n-3/50",
                 classInput
               )}
+              ref={ref}
               type={type || "text"}
               value={value}
               onChange={onChange}
@@ -77,6 +82,8 @@ const Field = ({
       </div>
     </div>
   );
-};
+});
+
+Field.displayName = "Field";
 
 export default Field;

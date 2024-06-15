@@ -11,27 +11,34 @@ import {
   SheetTrigger,
 } from "components/ui/sheet";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "components/ui/alert-dialog";
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "components/ui/dialog";
 import { HandPlatter } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
+
+import Field from "components/Field";
+import { Button } from "components/ui/button";
 import {
   addToCart,
   clearCart,
   removeFromCart,
   selectCart,
 } from "store/CartSlice";
-import Field from "components/Field";
+import { selectRestaurantDetails } from "store/MiscellaneousSlice";
+import { useCreateOrderMutation } from "api/orderApi";
+import { useRegisterCustomerMutation } from "api/customerApi";
+import { errorToast } from "lib/helper";
 
 const CLASS_INPUT =
   "border-n-7 focus:bg-transparent dark:bg-n-7 dark:border-n-7 dark:focus:bg-transparent";
+
 const FORM_SCHEMA = object().shape({
   userName: string().required("Name is required"),
   mobileNo: string()
@@ -41,8 +48,14 @@ const FORM_SCHEMA = object().shape({
 
 const Cart = () => {
   const cartData = useSelector(selectCart);
+  const restaurantDetails = useSelector(selectRestaurantDetails);
+
+  const [createOrder, { isLoading, error }] = useCreateOrderMutation();
+  const [registerCustomer, { isLoading: isCustomerLoading }] =
+    useRegisterCustomerMutation();
 
   const dispatch = useDispatch();
+
   const {
     handleSubmit,
     register,
@@ -62,21 +75,50 @@ const Cart = () => {
 
   const totalItems = cartData.reduce((acc, item) => acc + item.quantity, 0);
 
+  const handlePlaceOrder = async (data) => {
+    const customerData = {
+      firstName: data.userName,
+      lastName: "",
+      number: data.mobileNo,
+      restaurantId: restaurantDetails?._id,
+    };
+
+    const orderData = {
+      restaurantId: restaurantDetails?._id,
+      items: cartData.map((item) => ({
+        menuItemId: item._id,
+        quantity: item.quantity,
+      })),
+    };
+    console.log("customerData", customerData);
+    console.log("orderData", orderData);
+
+    try {
+      const customerResponse = await registerCustomer(customerData).unwrap();
+      const orderResponse = await createOrder(orderData).unwrap();
+      console.log("orderResponse", orderResponse);
+      console.log("customerResponse", customerResponse);
+      dispatch(clearCart());
+    } catch (error) {
+      errorToast({ error: error });
+    }
+  };
+
   return (
     <Sheet>
       {cartData.length > 0 && (
-        <div className="fixed bottom-0 flex w-full justify-between p-4 bg-[#fdb838] text-primary-background">
+        <div className="fixed bottom-0 flex justify-between w-full p-4 bg-primary text-primary-background">
           <div className="flex items-center gap-2">
             <div className="flex items-center justify-center bg-white border rounded-full size-10">
               <HandPlatter size={18} fill="black" />
             </div>
-            <p>
+            <p className="text-white">
               <span>&#8377; </span>
               {total}
             </p>
           </div>
           <div className="flex flex-col items-end gap-1">
-            <p className="caption1">
+            <p className="text-white caption1">
               {totalItems} {totalItems > 1 ? "Items" : "Item"}
             </p>
             <SheetTrigger className="px-4 py-2 text-sm font-semibold bg-white rounded-lg text-primary-background focus:outline-none focus:ring focus:ring-primary-background focus:ring-opacity-50">
@@ -91,7 +133,10 @@ const Cart = () => {
           <SheetTitle>Order Summary</SheetTitle>
         </SheetHeader>
         {cartData.map((item) => (
-          <div key={item._id} className="flex justify-between p-2 border-b">
+          <div
+            key={item._id}
+            className="flex justify-between p-2 mt-4 border-b"
+          >
             <div className="flex gap-4">
               <img
                 src={item.image?.url}
@@ -169,48 +214,48 @@ const Cart = () => {
           </p>
         </div>
         <SheetFooter>
-          <AlertDialog>
-            <AlertDialogTrigger className="px-4 py-2 text-sm font-semibold text-black rounded-lg bg-[#fdb838] focus:outline-none focus:ring focus:ring-primary-background focus:ring-opacity-50 w-full mt-10">
+          <Dialog className="">
+            <DialogTrigger className="w-full px-4 py-2 mt-10 text-sm font-semibold text-white rounded-lg bg-primary focus:outline-none focus:ring focus:ring-primary-background focus:ring-opacity-50">
               Place Order
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>
-                  Enter Your Details to Place Order
-                </AlertDialogTitle>
-              </AlertDialogHeader>
-              <Field
-                className="mb-4"
-                placeholder="Enter Your Name"
-                autoComplete="name"
-                classInput={CLASS_INPUT}
-                error={errors.userName?.message}
-                {...register("userName")}
-              />
-              <Field
-                className="mb-4"
-                placeholder="Enter Your Mobile No"
-                autoComplete="off"
-                classInput={CLASS_INPUT}
-                error={errors.mobileNo?.message}
-                {...register("mobileNo")}
-              />
-
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => {
-                    handleSubmit((data) => {
-                      console.log(data);
-                      // dispatch(clearCart());
-                    })();
-                  }}
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px] max-w-md">
+              <DialogHeader>
+                <DialogTitle>Place Order</DialogTitle>
+                <DialogDescription>
+                  Please enter your details to place the order
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <Field
+                  className="mb-4"
+                  placeholder="Enter Your Name"
+                  autoComplete="name"
+                  classInput={CLASS_INPUT}
+                  error={errors.userName?.message}
+                  {...register("userName")}
+                />
+                <Field
+                  className="mb-4"
+                  placeholder="Enter Your Mobile No"
+                  autoComplete="off"
+                  classInput={CLASS_INPUT}
+                  error={errors.mobileNo?.message}
+                  {...register("mobileNo")}
+                />
+              </div>
+              <DialogFooter className="flex flex-row justify-end gap-10">
+                <Button
+                  type="submit"
+                  onClick={handleSubmit(handlePlaceOrder)}
+                  disabled={isLoading || isCustomerLoading}
                 >
-                  Confirm Order
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+                  {/* Place Order */}
+                  {isLoading ? "Placing Order..." : "Place Order"}
+                </Button>
+                <DialogClose>Cancel</DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </SheetFooter>
       </SheetContent>
     </Sheet>
