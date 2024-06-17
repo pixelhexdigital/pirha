@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
-import { ENUMS } from "../../../controllers/apps/constants/enum.js";
+import { ENUMS } from "../../../constants/enum.js";
 
 const menuItemSchema = new Schema({
   title: {
@@ -20,6 +20,12 @@ const menuItemSchema = new Schema({
     required: true,
     enum: ENUMS.menuItemType,
     default: ENUMS.menuItemType[0],
+  },
+  foodGroup: {
+    type: String,
+    required: true,
+    enum: ENUMS.foodGroup,
+    default: ENUMS.foodGroup[0],
   },
   discount: {
     type: Number,

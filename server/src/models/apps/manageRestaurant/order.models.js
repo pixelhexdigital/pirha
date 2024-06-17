@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
-import { ENUMS } from "../../../controllers/apps/constants/enum.js";
+import { ENUMS } from "../../../constants/enum.js";
 
 const orderItemSchema = new Schema({
   menuItemId: {

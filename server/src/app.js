@@ -71,10 +71,21 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
 
+// Define __dirname for ES module scope
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, "../../", "client", "dist")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../", "client", "dist", "index.html"));
+});
+
 // api routes
 import { errorHandler } from "./middlewares/error.middlewares.js";
 import healthcheckRouter from "./routes/healthcheck.routes.js";
-import enumRouter from "./routes/enum.routes.js";
+import publicRouter from "./routes/public.routes.js";
 
 // * Public routes
 
@@ -89,10 +100,13 @@ import customerRouter from "./routes/apps/manageRestaurant/customer.routes.js";
 import orderRouter from "./routes/apps/manageRestaurant/order.routes.js";
 import billRouter from "./routes/apps/manageRestaurant/bill.routes.js";
 import restaurantAdmin from "./routes/apps/auth/restaurantAdmin.routes.js";
+import taxRouter from "./routes/apps/manageRestaurant/tax.routes.js";
+import path from "path";
+import { fileURLToPath } from "url";
 
 // * healthcheck
 app.use("/api/v1/healthcheck", healthcheckRouter);
-app.use("/api/v1/enums", enumRouter);
+app.use("/api/v1/public", publicRouter);
 
 // * App apis
 app.use("/api/v1/users", userRouter);
@@ -105,6 +119,7 @@ app.use("/api/v1/customers", customerRouter);
 app.use("/api/v1/orders", orderRouter);
 app.use("/api/v1/bills", billRouter);
 app.use("/api/v1/admin", restaurantAdmin);
+app.use("/api/v1/admin/taxes", taxRouter);
 
 app.use(errorHandler);
 

@@ -111,6 +111,7 @@ const getOrderByCustomer = asyncHandler(async (req, res) => {
               title: "$categories.items.title",
               description: "$categories.items.description",
               image: "$categories.items.image",
+              itemType: "$categories.items.itemType",
             },
           },
         ],

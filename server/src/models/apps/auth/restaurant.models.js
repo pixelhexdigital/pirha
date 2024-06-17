@@ -10,19 +10,7 @@ import {
   UserRolesEnum,
 } from "../../../constants.js";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
-import { ENUMS } from "../../../controllers/apps/constants/enum.js";
-
-const taxSchema = new Schema({
-  taxName: {
-    type: String,
-    enum: ENUMS.taxName,
-    required: true,
-  },
-  taxPercentage: {
-    type: Number,
-    required: true,
-  },
-});
+import { ENUMS } from "../../../constants/enum.js";
 
 const restaurantSchema = new Schema(
   {
@@ -115,7 +103,6 @@ const restaurantSchema = new Schema(
       type: Date,
       default: null,
     },
-    taxes: [taxSchema],
     socialLink: [
       {
         insta: { type: String },

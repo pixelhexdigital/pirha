@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
-import { ENUMS } from "../../../controllers/apps/constants/enum.js";
+import { ENUMS } from "../../../constants/enum.js";
 
 const billSchema = new Schema(
   {
@@ -21,6 +21,24 @@ const billSchema = new Schema(
         required: true,
       },
     ],
+    grossTotal: {
+      type: String,
+    },
+    serviceCharge: {
+      type: String,
+    },
+    vatAlcohol: {
+      type: String,
+    },
+    vatFood: {
+      type: String,
+    },
+    serviceTax: {
+      type: String,
+    },
+    netAmount: {
+      type: String,
+    },
     paymentStatus: {
       type: String,
       enum: ENUMS.paymentStatus,

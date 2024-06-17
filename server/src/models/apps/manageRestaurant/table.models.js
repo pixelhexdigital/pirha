@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import QRCode from "qrcode";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
-import { ENUMS } from "../../../controllers/apps/constants/enum.js";
+import { ENUMS } from "../../../constants/enum.js";
 const tableSchema = new Schema(
   {
     title: {

@@ -123,7 +123,6 @@ const updateSocialProfile = asyncHandler(async (req, res) => {
     serviceLocation,
     yearOfEstablishment,
     socialLink,
-    taxes,
   } = req.body;
 
   let profile = await Restaurant.findByIdAndUpdate(
@@ -138,7 +137,6 @@ const updateSocialProfile = asyncHandler(async (req, res) => {
         serviceLocation,
         yearOfEstablishment,
         socialLink,
-        taxes,
       },
     },
     { new: true }

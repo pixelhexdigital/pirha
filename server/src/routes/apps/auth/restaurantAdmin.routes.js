@@ -14,23 +14,30 @@ import {
   updateSocialProfileValidator,
 } from "../../../validators/apps/social-media/profile.validators.js";
 import { validate } from "../../../validators/validate.js";
+import { getDashboard } from "../../../controllers/apps/restaurantAdmin/adminDashboard.controllers.js";
+import { updateOrder } from "../../../controllers/apps/restaurantAdmin/orderAdmin.controllers.js";
+import {
+  fetchTaxes,
+  registerTax,
+  updateTaxById,
+} from "../../../controllers/apps/manageRestaurant/tax.controllers.js";
+import { generateCustomerBill } from "../../../controllers/apps/manageRestaurant/bill.controllers.js";
 
 const router = Router();
-
-// // public route
-// router.route("/u/:username").get(
-//   getLoggedInUserOrIgnore, // hover over the middleware to know more
-//   getProfileByUserNameValidator(),
-//   validate,
-//   getProfileByUserName
-// );
 
 router.use(verifyJWT);
 
 router
   .route("/")
-  //   .get(getMySocialProfile)
   .patch(updateSocialProfileValidator(), validate, updateSocialProfile);
+
+router.route("/dashboard").get(getDashboard);
+
+router.route("/taxes").get(fetchTaxes).post(registerTax).patch(updateTaxById);
+
+router.route("orders/:orderId").patch(updateOrder);
+
+router.route("bills/:customerId").patch(generateCustomerBill);
 
 router
   .route("/cover-image")
