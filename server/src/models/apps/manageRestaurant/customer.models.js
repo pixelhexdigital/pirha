@@ -9,7 +9,6 @@ const customerSchema = new Schema(
     },
     lastName: {
       type: String,
-      required: true,
     },
     number: {
       type: String,

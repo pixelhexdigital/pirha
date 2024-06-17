@@ -2,6 +2,7 @@ import { Restaurant } from "../../../models/apps/auth/restaurant.models.js";
 import { Customer } from "../../../models/apps/manageRestaurant/customer.models.js";
 import { Order } from "../../../models/apps/manageRestaurant/order.models.js";
 import { Menu } from "../../../models/apps/manageRestaurant/menu.models.js";
+import { Bill } from "../../../models/apps/manageRestaurant/bill.models.js"; // Import the Bill model
 import { ApiError } from "../../../utils/ApiError.js";
 import { ApiResponse } from "../../../utils/ApiResponse.js";
 import { asyncHandler } from "../../../utils/asyncHandler.js";
@@ -17,15 +18,35 @@ const getTaxRateByName = (taxes, taxName) => {
 
 // Controller to generate a customer bill
 const generateCustomerBill = asyncHandler(async (req, res) => {
-  const { restaurantId } = req.params;
-  const customer = await Customer.findById(req.customer?._id);
-  if (!customer) {
-    throw new ApiError(401, "Customer not found");
+  const { restaurantId, customerId } = req.params;
+  let tempCustomerId = req.customer?._id;
+  let tempRestaurantId = req.restaurant?._id;
+  let customer;
+  let restaurant;
+  if (!restaurantId && !customerId) {
+    throw new ApiError(405, "Please provied needed params");
   }
+  if (restaurantId) {
+    customer = await Customer.findById(tempCustomerId);
+    if (!customer) {
+      throw new ApiError(401, "Customer not found");
+    }
 
-  const restaurant = await Restaurant.findById(restaurantId);
-  if (!restaurant) {
-    throw new ApiError(401, "Restaurant not found");
+    restaurant = await Restaurant.findById(restaurantId);
+    if (!restaurant) {
+      throw new ApiError(401, "Restaurant not found");
+    }
+  }
+  if (customerId) {
+    customer = await Customer.findById(customerId);
+    if (!customer) {
+      throw new ApiError(401, "Customer not found");
+    }
+
+    restaurant = await Restaurant.findById(tempRestaurantId);
+    if (!restaurant) {
+      throw new ApiError(401, "Restaurant not found");
+    }
   }
 
   // Fetch taxes for the restaurant
@@ -153,7 +174,31 @@ const generateCustomerBill = asyncHandler(async (req, res) => {
   const netAmount =
     grossTotal + serviceCharge + vatAlcohol + vatFood + serviceTax;
 
-  // Construct the bill
+  // Create a new Bill entry
+  const newBill = new Bill({
+    restaurantId: restaurant._id,
+    customerId: customer._id,
+    orders: orders.map((order) => order._id),
+    grossTotal: grossTotal.toFixed(2),
+    serviceCharge: serviceCharge.toFixed(2),
+    vatAlcohol: vatAlcohol.toFixed(2),
+    vatFood: vatFood.toFixed(2),
+    serviceTax: serviceTax.toFixed(2),
+    netAmount: netAmount.toFixed(2),
+    paymentStatus: ENUMS.paymentStatus[0], // Default to the first payment status
+    paymentMethod: ENUMS.paymentMethod[0], // Default to the first payment method
+  });
+
+  await newBill.save();
+
+  // Update the status of the orders to "Billed"
+  const orderIds = orders.map((order) => order._id);
+  await Order.updateMany(
+    { _id: { $in: orderIds } },
+    { $set: { status: "Billed" } }
+  );
+
+  // Construct the bill for response
   const bill = {
     customer: customer.name,
     restaurant: restaurant.name,

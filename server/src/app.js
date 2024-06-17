@@ -89,7 +89,6 @@ import customerRouter from "./routes/apps/manageRestaurant/customer.routes.js";
 import orderRouter from "./routes/apps/manageRestaurant/order.routes.js";
 import billRouter from "./routes/apps/manageRestaurant/bill.routes.js";
 import restaurantAdmin from "./routes/apps/auth/restaurantAdmin.routes.js";
-import orderAdminRouter from "./routes/apps/restaurantAdmin/orderAdmin.routes.js";
 import taxRouter from "./routes/apps/manageRestaurant/tax.routes.js";
 
 // * healthcheck
@@ -107,7 +106,6 @@ app.use("/api/v1/customers", customerRouter);
 app.use("/api/v1/orders", orderRouter);
 app.use("/api/v1/bills", billRouter);
 app.use("/api/v1/admin", restaurantAdmin);
-app.use("/api/v1/admin/orders", orderAdminRouter);
 app.use("/api/v1/admin/taxes", taxRouter);
 
 app.use(errorHandler);

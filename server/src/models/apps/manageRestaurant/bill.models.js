@@ -21,6 +21,24 @@ const billSchema = new Schema(
         required: true,
       },
     ],
+    grossTotal: {
+      type: String,
+    },
+    serviceCharge: {
+      type: String,
+    },
+    vatAlcohol: {
+      type: String,
+    },
+    vatFood: {
+      type: String,
+    },
+    serviceTax: {
+      type: String,
+    },
+    netAmount: {
+      type: String,
+    },
     paymentStatus: {
       type: String,
       enum: ENUMS.paymentStatus,
