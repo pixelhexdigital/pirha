@@ -6,13 +6,22 @@ import { ApiResponse } from "../../../utils/ApiResponse.js";
 import { asyncHandler } from "../../../utils/asyncHandler.js";
 import { Menu } from "../../../models/apps/manageRestaurant/menu.models.js";
 import mongoose from "mongoose";
+import { emitSocketEvent } from "../../../socket/index.js";
+import { OrderEventEnum, TableEventEnum } from "../../../constants.js";
+import { Table } from "../../../models/apps/manageRestaurant/table.models.js";
+import { ENUMS } from "../../../constants/enum.js";
 
 // Controller to create a new order for a customer
 const createOrder = asyncHandler(async (req, res) => {
-  const { restaurantId, items } = req.body;
+  const { restaurantId, tableId, items } = req.body;
   const customer = await Customer.findById(req.customer._id);
   if (!customer) {
     throw new ApiError(401, "Customer not found");
+  }
+
+  const table = await Table.findById(tableId);
+  if (!table) {
+    throw new ApiError(401, "table not found");
   }
 
   const restaurant = await Restaurant.findById(restaurantId);
@@ -62,8 +71,25 @@ const createOrder = asyncHandler(async (req, res) => {
   const newOrder = await Order.create({
     restaurantId: restaurant._id,
     customerId: customer._id,
+    tableId: table._id,
     items: processedItems,
   });
+
+  // Emit the event for restaurant after creating the order
+  emitSocketEvent(
+    req,
+    restaurantId?.toString(),
+    OrderEventEnum.NEW_ORDER_EVENT,
+    newOrder
+  );
+
+  // Emit the event for table status after creating the order
+  emitSocketEvent(
+    req,
+    table._id.toString(),
+    TableEventEnum.UPDATE_TABLE_STATUS_EVENT,
+    { tableId: table._id.toString(), status: ENUMS.tableStatus[1] }
+  );
 
   res
     .status(200)
