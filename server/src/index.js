@@ -22,11 +22,6 @@ const startServer = () => {
   // app.use(admin.options.rootPath, adminRouter);
 
   httpServer.listen(process.env.PORT || 8080, () => {
-    console.info(
-      `📑 Visit the documentation at: http://localhost:${
-        process.env.PORT || 8080
-      }`
-    );
     console.log("⚙️  Server is running on port: " + process.env.PORT);
     // console.log(
     //   `AdminJS started on http://localhost:${process.env.PORT}${admin.options.rootPath}`
