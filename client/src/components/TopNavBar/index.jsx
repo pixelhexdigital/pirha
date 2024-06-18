@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import { Circle, ScrollText, Utensils } from "lucide-react";
-import LOGO from "assets/defLogo.png";
+import LOGO from "assets/pirha_logo_white.png";
 
 import {
   selectIsNonVegOnly,
@@ -30,7 +30,7 @@ const TopNavBar = () => {
         <img
           src={coverImage?.url ?? LOGO}
           alt="logo"
-          className="rounded-full size-8"
+          className="h-10 rounded-sm"
         />
         <h1>{restroName}</h1>
       </section>
