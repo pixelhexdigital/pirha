@@ -47,6 +47,11 @@ const orderSchema = new Schema(
       ref: "Customer",
       required: true,
     },
+    tableId: {
+      type: Schema.Types.ObjectId,
+      ref: "Table",
+      required: true,
+    },
     items: [orderItemSchema],
     totalAmount: {
       type: Number,

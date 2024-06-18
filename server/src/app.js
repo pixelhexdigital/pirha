@@ -103,6 +103,7 @@ import restaurantAdmin from "./routes/apps/auth/restaurantAdmin.routes.js";
 import taxRouter from "./routes/apps/manageRestaurant/tax.routes.js";
 import path from "path";
 import { fileURLToPath } from "url";
+import { initializeSocketIO } from "./socket/index.js";
 
 // * healthcheck
 app.use("/api/v1/healthcheck", healthcheckRouter);
@@ -120,6 +121,8 @@ app.use("/api/v1/orders", orderRouter);
 app.use("/api/v1/bills", billRouter);
 app.use("/api/v1/admin", restaurantAdmin);
 app.use("/api/v1/admin/taxes", taxRouter);
+
+initializeSocketIO(io);
 
 app.use(errorHandler);
 

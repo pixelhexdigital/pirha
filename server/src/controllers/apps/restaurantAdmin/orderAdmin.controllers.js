@@ -2,6 +2,8 @@ import { ApiError } from "../../../utils/ApiError.js";
 import { ApiResponse } from "../../../utils/ApiResponse.js";
 import { asyncHandler } from "../../../utils/asyncHandler.js";
 import { Order } from "../../../models/apps/manageRestaurant/order.models.js";
+import { emitSocketEvent } from "../../../socket/index.js";
+import { OrderEventEnum } from "../../../constants.js";
 
 const updateOrder = asyncHandler(async (req, res) => {
   const { orderId } = req.params;
@@ -24,6 +26,13 @@ const updateOrder = asyncHandler(async (req, res) => {
       },
     },
     { new: true }
+  );
+
+  emitSocketEvent(
+    req,
+    restaurantId.toString(),
+    OrderEventEnum.UPDATE_ORDER_STATUS_EVENT,
+    updateOrder
   );
 
   //   profile = await getUserSocialProfile(req.restaurant._id, req);

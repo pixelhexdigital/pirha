@@ -9,6 +9,7 @@ import { asyncHandler } from "../../../utils/asyncHandler.js";
 import mongoose from "mongoose";
 import { Tax } from "../../../models/apps/manageRestaurant/tax.models.js";
 import { ENUMS } from "../../../constants/enum.js";
+import { OrderEventEnum } from "../../../constants.js";
 
 // Helper function to get tax rate by name
 const getTaxRateByName = (taxes, taxName) => {
@@ -146,8 +147,11 @@ const generateCustomerBill = asyncHandler(async (req, res) => {
   // Calculate the total amount for alcoholic beverages and food & non-alcoholic beverages
   let alcoholicBeveragesTotal = 0;
   let foodAndNonAlcoholicTotal = 0;
-
+  let tableId;
   for (const order of orders) {
+    if (!tableId) {
+      tableId = order.tableId;
+    }
     for (const item of order.items) {
       const itemTotal = item.quantity * item.itemPrice;
       const itemType = item.itemType;
@@ -195,7 +199,30 @@ const generateCustomerBill = asyncHandler(async (req, res) => {
   const orderIds = orders.map((order) => order._id);
   await Order.updateMany(
     { _id: { $in: orderIds } },
-    { $set: { status: "Billed" } }
+    { $set: { status: ENUMS.orderStatus[4] } }
+  );
+
+  // Emit socket event for each order ID
+  orderIds.forEach((orderId) => {
+    emitSocketEvent(
+      req,
+      orderId.toString(),
+      OrderEventEnum.UPDATE_ORDER_STATUS_EVENT,
+      {
+        orderId: orderId.toString(),
+        status: ENUMS.orderStatus[4],
+      }
+    );
+  });
+
+  emitSocketEvent(
+    req,
+    tableId.toString(),
+    OrderEventEnum.UPDATE_ORDER_STATUS_EVENT,
+    {
+      tableId: tableId.toString(),
+      status: ENUMS.tableStatus[0],
+    }
   );
 
   // Construct the bill for response
