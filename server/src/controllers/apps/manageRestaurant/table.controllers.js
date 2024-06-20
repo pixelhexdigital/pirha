@@ -7,7 +7,9 @@ import QRCode from "qrcode";
 import JSZip from "jszip";
 import fs from "fs";
 import { promisify } from "util";
-import { createCanvas, loadImage } from "canvas";
+import { Image, createCanvas, loadImage } from "canvas";
+import path from "path";
+import { fileURLToPath } from "url";
 
 // Get list of tables for a restaurant
 const fetchTables = asyncHandler(async (req, res) => {
@@ -24,6 +26,10 @@ const fetchTables = asyncHandler(async (req, res) => {
     new ApiResponse(200, { tables }, "List of tables fetched from the database")
   );
 });
+
+// Determine the directory of the current module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const downloadTableQr = asyncHandler(async (req, res) => {
   const { startTable, endTable } = req.body;
@@ -69,17 +75,49 @@ const downloadTableQr = asyncHandler(async (req, res) => {
   }
 
   const zip = new JSZip();
+  const templatePath = path.join(
+    __dirname,
+    "../../../assets/qr_code_template.png"
+  );
+  console.log("Template Path: ", templatePath); // Debugging line to verify path
+
+  let templateImage;
+  try {
+    templateImage = await loadImage(templatePath);
+  } catch (error) {
+    throw new ApiError(500, `Failed to load template image: ${error.message}`);
+  }
 
   // Iterate over the tables and generate QR codes
   for (const table of tables) {
     const qrCodeText = `${baseURL}?tableId=${table._id}&restaurantId=${restaurant._id}`;
 
     // Create a new canvas to draw QR code
-    const canvas = createCanvas(300, 300);
+    const canvas = createCanvas(512, 728);
     const ctx = canvas.getContext("2d");
 
-    // Generate QR code and draw on canvas
-    await QRCode.toCanvas(canvas, qrCodeText);
+    // Draw the template image onto the canvas
+    ctx.drawImage(templateImage, 0, 0, 512, 728);
+
+    // Generate QR code on a separate canvas and draw it onto the main canvas
+    const qrCanvas = createCanvas(200, 200);
+    await QRCode.toCanvas(qrCanvas, qrCodeText, {
+      width: 180,
+      margin: 5,
+      errorCorrectionLevel: "H",
+      scale: 10,
+    });
+
+    ctx.drawImage(qrCanvas, 106, 156, 300, 300); // Adjust positions as needed
+
+    // Add table title
+    ctx.font = "bold 30px Arial";
+    ctx.fillStyle = "#fff";
+    ctx.textAlign = "center";
+    ctx.fillText(table.title, 256, 500); // Adjust positions as needed
+
+    // Add restaurant name
+    ctx.fillText(restaurant.restroName, 256, 550); // Adjust positions as needed
 
     // Convert canvas to buffer (PNG image)
     const buffer = canvas.toBuffer("image/png");
@@ -96,7 +134,6 @@ const downloadTableQr = asyncHandler(async (req, res) => {
   res.set("Content-Disposition", "attachment; filename=table_qr_codes.zip");
   res.send(zipData);
 });
-
 // Register tables for a restaurant
 
 const registerTables = asyncHandler(async (req, res) => {

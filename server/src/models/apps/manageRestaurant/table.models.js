@@ -1,5 +1,4 @@
 import mongoose, { Schema } from "mongoose";
-import QRCode from "qrcode";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 import { ENUMS } from "../../../constants/enum.js";
 const tableSchema = new Schema(
@@ -21,26 +20,6 @@ const tableSchema = new Schema(
       type: String,
       enum: ENUMS.tableStatus,
       default: ENUMS.tableStatus[0],
-    },
-    orders: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Order",
-      },
-    ],
-    billAmount: {
-      type: Number,
-      default: 0,
-    },
-    currentOrderId: {
-      type: Schema.Types.ObjectId,
-      ref: "Order",
-      default: null,
-    },
-    currentCustomerId: {
-      type: Schema.Types.ObjectId,
-      ref: "Customer",
-      default: null,
     },
   },
   { timestamps: true }
