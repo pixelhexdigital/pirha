@@ -6,25 +6,26 @@ import localStorage from "redux-persist/es/storage";
 
 import CartSlice from "store/CartSlice";
 import MiscellaneousSlice from "store/MiscellaneousSlice";
+import AuthSlice from "store/AuthSlice";
 import { menuApi } from "api/menuApi";
 import { miscApi } from "api/miscApi";
 import { customerApi } from "api/customerApi";
 import { ordersApi } from "api/orderApi";
+import { authApi } from "api/authApi";
 
 const reducers = combineReducers({
   cart: CartSlice,
   Misc: MiscellaneousSlice,
-  [menuApi.reducerPath]: menuApi.reducer,
-  [miscApi.reducerPath]: miscApi.reducer,
-  [customerApi.reducerPath]: customerApi.reducer,
-  [ordersApi.reducerPath]: ordersApi.reducer,
+  Auth: AuthSlice,
+  // [menuApi.reducerPath]: menuApi.reducer,
+  [authApi.reducerPath]: authApi.reducer,
 });
 
 const rootPersistConfig = {
   key: "root",
   storage: localStorage,
   version: 1,
-  whitelist: ["Misc"],
+  whitelist: ["Misc", "Auth"],
 };
 
 const cartPersistConfig = {
@@ -44,10 +45,7 @@ export const store = configureStore({
   reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false }).concat(
-      menuApi.middleware,
-      miscApi.middleware,
-      customerApi.middleware,
-      ordersApi.middleware
+      authApi.middleware
     ),
   // devTools: import.meta.env.DEV,
   composeEnhancers,

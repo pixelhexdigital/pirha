@@ -154,6 +154,9 @@ export default {
         ".shadow-ring": {
           "@apply shadow ring  ring-black/5 ring-opacity-20": {},
         },
+        ".ring-loader": {
+          "@apply border-t-2 border-b-2 rounded-full size-7 animate-spin": {},
+        },
       });
       addUtilities({
         ".tap-highlight-color": {

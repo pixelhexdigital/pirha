@@ -3,7 +3,7 @@ import { toast } from "react-hot-toast";
 
 // import { logout } from "store/AuthSlice";
 
-export const successToast = (data, message) => {
+export const successToast = ({ data, message }) => {
   toast.success(data?.message || message);
 };
 
