@@ -4,12 +4,13 @@ export const miscApi = createApi({
   reducerPath: "miscApi",
   baseQuery: fetchBaseQuery({
     baseUrl: `http://localhost:8080/api/v1/public`,
+    credentials: "include",
+    jsonContentType: "application/json",
     prepareHeaders: (headers, { getState }) => {
       const token = getState().auth?.token;
       if (token) {
         headers.set("authorization", `Token ${token}`);
       }
-      headers.set("Content-Type", "application/json");
       return headers;
     },
   }),
