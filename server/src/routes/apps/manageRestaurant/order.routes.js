@@ -1,5 +1,8 @@
 import { Router } from "express";
-import { verifyCustomer } from "../../../middlewares/auth.middlewares.js";
+import {
+  verifyCustomer,
+  verifySubscription,
+} from "../../../middlewares/auth.middlewares.js";
 import {
   createOrder,
   getOrderByCustomer,
@@ -11,5 +14,9 @@ router
   .route("/")
   .get(verifyCustomer, getOrderByCustomer) // get list of orders of a customer
   .post(verifyCustomer, createOrder); // create new order for a customer
+
+router
+  .route("/:restaurantId")
+  .post(verifySubscription, verifyCustomer, createOrder); // create new order for a customer
 
 export default router;

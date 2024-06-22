@@ -1,5 +1,7 @@
 import { AvailableUserRoles } from "../constants.js";
 import { Restaurant } from "../models/apps/auth/restaurant.models.js";
+import { Visitor } from "../models/apps/manageRestaurant/visitor.models.js";
+import { Subscription } from "../models/apps/manageRestaurant/subscription.models.js";
 import { Customer } from "../models/apps/manageRestaurant/customer.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -31,6 +33,85 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
     // Then they will get a new access token which will allow them to refresh the access token without logging out the restaurant
     throw new ApiError(401, error?.message || "Invalid access token");
   }
+});
+
+export const verifySubscription = asyncHandler(async (req, res, next) => {
+  const token =
+    req.cookies?.accessToken ||
+    req.header("Authorization")?.replace("Bearer ", "");
+  const ip = req.ip;
+
+  console.log("ip ===> ", ip);
+
+  let restaurantId;
+
+  if (token) {
+    try {
+      const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+      const restaurant = await Restaurant.findById(decodedToken?._id).select(
+        "-password -refreshToken -emailVerificationToken -emailVerificationExpiry"
+      );
+      if (restaurant) {
+        req.restaurant = restaurant;
+        restaurantId = restaurant._id;
+      }
+    } catch (error) {
+      // If token verification fails, log the error but don't throw an ApiError
+      console.log("Invalid access token:", error.message);
+    }
+  }
+
+  if (!restaurantId || restaurantId.toString() !== req.params.restaurantId) {
+    // If the restaurant is not authenticated, assume it's a visitor
+    restaurantId = req.params.restaurantId;
+
+    if (!restaurantId) {
+      throw new ApiError(400, "Restaurant ID is required");
+    }
+
+    // Fetch the subscription details
+    const subscription = await Subscription.findOne({ restaurantId });
+
+    if (!subscription) {
+      throw new ApiError(403, "No subscription found for this restaurant");
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let visitorRecord = await Visitor.findOne({
+      restaurantId,
+      visitDate: today,
+    });
+
+    // Check the subscription limits
+    const dailyLimit = subscription.plan.dailyCustomerLimit;
+
+    if (!visitorRecord) {
+      visitorRecord = new Visitor({
+        restaurantId,
+        visitDate: today,
+        ips: [{ ip }],
+      });
+    } else {
+      if (visitorRecord.ips.length > dailyLimit) {
+        throw new ApiError(
+          403,
+          "Daily customer limit exceeded for this restaurant"
+        );
+      }
+
+      // Check if the IP is already recorded
+      if (!visitorRecord.ips.some((visitor) => visitor.ip === ip)) {
+        visitorRecord.ips.push({ ip });
+      }
+    }
+
+    await visitorRecord.save();
+  }
+
+  // Proceed if the restaurant is authenticated or the visitor's IP is valid
+  next();
 });
 
 export const verifyAdmin = asyncHandler(async (req, res, next) => {

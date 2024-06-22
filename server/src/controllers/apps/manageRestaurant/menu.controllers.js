@@ -1,5 +1,6 @@
 import { Restaurant } from "../../../models/apps/auth/restaurant.models.js";
 import { Menu } from "../../../models/apps/manageRestaurant/menu.models.js";
+import { Subscription } from "../../../models/apps/manageRestaurant/subscription.models.js";
 import { ApiError } from "../../../utils/ApiError.js";
 import { ApiResponse } from "../../../utils/ApiResponse.js";
 import { asyncHandler } from "../../../utils/asyncHandler.js";
@@ -59,21 +60,37 @@ const addCategory = asyncHandler(async (req, res) => {
   if (!restaurant) {
     throw new ApiError(404, "Restaurant does not exist");
   }
-  const menu = await Menu.findOne({ restaurantId: restaurant._id });
+
+  // Fetch the restaurant's subscription
+  const subscription = await Subscription.findOne({
+    restaurantId: restaurant._id,
+    active: true,
+  });
+
+  if (!subscription) {
+    throw new ApiError(403, "No active subscription found");
+  }
+
+  let menu = await Menu.findOne({ restaurantId: restaurant._id });
 
   if (!menu) {
     menu = await Menu.create({
       restaurantId: restaurant._id,
-      categories: [
-        { name: "Starter", items: [] },
-        { name: "Main Course", items: [] },
-        { name: "Dessert", items: [] },
-      ],
+      categories: [{ name }],
     });
-  }
+  } else {
+    // Check if the number of categories exceeds the limit
+    const categoryLimit = subscription.plan.menuCategoryLimit;
+    if (menu.categories.length >= categoryLimit) {
+      throw new ApiError(
+        403,
+        `Category limit of ${categoryLimit} exceeded, Please upgrade your plan`
+      );
+    }
 
-  menu.categories.push({ name, items: [] });
-  await menu.save();
+    menu.categories.push({ name, items: [] });
+    await menu.save();
+  }
 
   res.status(201).json(new ApiResponse(201, {}, "Category added successfully"));
 });
@@ -172,6 +189,27 @@ const addMenuItem = asyncHandler(async (req, res) => {
 
   if (!category) {
     throw new ApiError(404, "Category not found");
+  }
+
+  // Fetch the restaurant's subscription
+  const subscription = await Subscription.findOne({
+    restaurantId: restaurant._id,
+    active: true,
+  });
+
+  if (!subscription) {
+    throw new ApiError(403, "No active subscription found");
+  }
+
+  // Check if the number of menu items exceeds the limit
+  const itemLimit = subscription.plan.menuItemLimit;
+  const totalItems = menu.categories.reduce(
+    (acc, cat) => acc + cat.items.length,
+    0
+  );
+
+  if (totalItems >= itemLimit) {
+    throw new ApiError(403, `Menu item limit of ${itemLimit} exceeded`);
   }
 
   category.items.push({

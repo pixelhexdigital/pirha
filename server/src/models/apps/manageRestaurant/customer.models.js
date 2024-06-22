@@ -15,14 +15,6 @@ const customerSchema = new Schema(
       required: true,
       unique: true,
     },
-    lastVisit: {
-      type: Date,
-      default: null,
-    },
-    visitCount: {
-      type: Number,
-      default: 0,
-    },
     restaurants: [
       {
         type: Schema.Types.ObjectId,

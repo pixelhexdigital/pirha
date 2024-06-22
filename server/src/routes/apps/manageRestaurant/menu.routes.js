@@ -1,5 +1,8 @@
 import { Router } from "express";
-import { verifyJWT } from "../../../middlewares/auth.middlewares.js";
+import {
+  verifyJWT,
+  verifySubscription,
+} from "../../../middlewares/auth.middlewares.js";
 import {
   fetchMenus,
   fetchMenuByRestraurnt,
@@ -17,11 +20,11 @@ import { upload } from "../../../middlewares/multer.middlewares.js";
 
 const router = Router();
 
-// Get list of tables for a restaurant
+// Get list of menus for a restaurant
 router.route("/").get(verifyJWT, fetchMenus);
 
 //Get menu by the restaurant
-router.route("/:restaurantId").get(fetchMenuByRestraurnt);
+router.route("/:restaurantId").get(verifySubscription, fetchMenuByRestraurnt);
 
 // Delete all menu of restaurant
 router.route("/:id").delete(verifyJWT, deleteMenuById);
