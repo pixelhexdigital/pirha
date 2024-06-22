@@ -40,8 +40,18 @@ export const verifySubscription = asyncHandler(async (req, res, next) => {
     req.cookies?.accessToken ||
     req.header("Authorization")?.replace("Bearer ", "");
   const ip = req.ip;
+  const uniqueVisitorId = req.cookies?.visitorId || uuidv4(); // Generate a unique ID if not present
 
   console.log("ip ===> ", ip);
+  console.log("visitorId ===> ", uniqueVisitorId);
+
+  // Set the visitorId cookie if it's not already set
+  if (!req.cookies?.visitorId) {
+    res.cookie("visitorId", uniqueVisitorId, {
+      maxAge: 24 * 60 * 60 * 1000,
+      httpOnly: true,
+    }); // 1 day expiry
+  }
 
   let restaurantId;
 
@@ -56,20 +66,17 @@ export const verifySubscription = asyncHandler(async (req, res, next) => {
         restaurantId = restaurant._id;
       }
     } catch (error) {
-      // If token verification fails, log the error but don't throw an ApiError
       console.log("Invalid access token:", error.message);
     }
   }
 
   if (!restaurantId || restaurantId.toString() !== req.params.restaurantId) {
-    // If the restaurant is not authenticated, assume it's a visitor
     restaurantId = req.params.restaurantId;
 
     if (!restaurantId) {
       throw new ApiError(400, "Restaurant ID is required");
     }
 
-    // Fetch the subscription details
     const subscription = await Subscription.findOne({ restaurantId });
 
     if (!subscription) {
@@ -78,39 +85,59 @@ export const verifySubscription = asyncHandler(async (req, res, next) => {
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    const dailyLimit = subscription.plan.dailyCustomerLimit;
+    const monthlyLimit = subscription.plan.monthlyCustomerLimit;
+
+    const monthlyVisitorRecords = await Visitor.find({
+      restaurantId,
+      visitDate: { $gte: firstDayOfMonth },
+    });
+
+    const totalMonthlyVisitors = monthlyVisitorRecords.reduce(
+      (acc, record) => acc + record.ips.length,
+      0
+    );
+
+    if (totalMonthlyVisitors >= monthlyLimit) {
+      throw new ApiError(
+        403,
+        "Monthly customer limit exceeded for this restaurant"
+      );
+    }
 
     let visitorRecord = await Visitor.findOne({
       restaurantId,
       visitDate: today,
     });
 
-    // Check the subscription limits
-    const dailyLimit = subscription.plan.dailyCustomerLimit;
-
     if (!visitorRecord) {
       visitorRecord = new Visitor({
         restaurantId,
         visitDate: today,
-        ips: [{ ip }],
+        ips: [{ ip, visitorId: uniqueVisitorId }],
       });
     } else {
-      if (visitorRecord.ips.length > dailyLimit) {
+      if (visitorRecord.ips.length >= dailyLimit) {
         throw new ApiError(
           403,
           "Daily customer limit exceeded for this restaurant"
         );
       }
 
-      // Check if the IP is already recorded
-      if (!visitorRecord.ips.some((visitor) => visitor.ip === ip)) {
-        visitorRecord.ips.push({ ip });
+      if (
+        !visitorRecord.ips.some(
+          (visitor) => visitor.visitorId === uniqueVisitorId
+        )
+      ) {
+        visitorRecord.ips.push({ ip, visitorId: uniqueVisitorId });
       }
     }
 
     await visitorRecord.save();
   }
 
-  // Proceed if the restaurant is authenticated or the visitor's IP is valid
   next();
 });
 

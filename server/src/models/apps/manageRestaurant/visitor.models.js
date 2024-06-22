@@ -17,6 +17,7 @@ const visitorSchema = new Schema({
         type: Date,
         default: Date.now,
       },
+      visitorId: String,
     },
   ],
 });
