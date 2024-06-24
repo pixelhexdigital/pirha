@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { errorToast } from "lib/helper";
 
 export const menuApi = createApi({
-  reducerPath: "authApi",
+  reducerPath: "menuApi",
   baseQuery: fetchBaseQuery({
     baseUrl: `http://localhost:8080/api/v1/menus`,
     credentials: "include",
