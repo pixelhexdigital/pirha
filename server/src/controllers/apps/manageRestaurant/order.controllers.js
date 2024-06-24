@@ -13,7 +13,8 @@ import { ENUMS } from "../../../constants/enum.js";
 
 // Controller to create a new order for a customer
 const createOrder = asyncHandler(async (req, res) => {
-  const { restaurantId, tableId, items } = req.body;
+  const { tableId, items } = req.body;
+  const { restaurantId } = req.params;
   const customer = await Customer.findById(req.customer._id);
   if (!customer) {
     throw new ApiError(401, "Customer not found");

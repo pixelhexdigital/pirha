@@ -10,7 +10,6 @@ import {
   UserRolesEnum,
 } from "../../../constants.js";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
-import { ENUMS } from "../../../constants/enum.js";
 
 const restaurantSchema = new Schema(
   {
@@ -132,6 +131,7 @@ const restaurantSchema = new Schema(
         public_id: null,
       },
     },
+    subscription: { type: Schema.Types.ObjectId, ref: "Subscription" },
 
     refreshToken: {
       type: String,

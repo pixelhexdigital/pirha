@@ -1,73 +1,117 @@
-import React, { useState } from "react";
+import { useEffect } from "react";
 import { object, string } from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
-import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 import Field from "components/Field";
-// import { loginAction } from "store/AuthSlice";
 import { ROUTES } from "routes/RouterConfig";
 import { Button } from "components/ui/button";
+import { useLoginMutation } from "api/authApi";
+import { errorToast, successToast } from "lib/helper";
 
-// const CLASS_INPUT = "bg-n-7 border-n-7 focus:bg-transparent";
+// Input class styles
 const CLASS_INPUT =
   "border-n-7 focus:bg-transparent dark:bg-n-7 dark:border-n-7 dark:focus:bg-transparent";
+
+// Password validation regex
+const PASSWORD_REGEX =
+  /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+])(?=.*[a-zA-Z]).{8,}$/;
+
+// Default form values
+const DEFAULT_VALUES = {
+  username: "",
+  password: "",
+};
+
+// Button labels
+const BUTTON_LABELS = {
+  FORGOT_PASSWORD: "Forgot password?",
+  SIGN_IN: "Sign In",
+};
+
+// Error messages
+const ERROR_MESSAGES = {
+  USERNAME_REQUIRED: "Username is required",
+  USERNAME_MIN_LENGTH: "Username must be at least 5 characters",
+  PASSWORD_REQUIRED: "Password is required",
+  PASSWORD_WEAK:
+    "Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special case character",
+};
+// Yup schema for form validation
 const LOGIN_FORM_SCHEMA = object().shape({
-  email: string().email("Email is invalid").required("Email is required"),
-  password: string().required("Password is required"),
+  username: string()
+    // .required("Username is required")
+    .required(ERROR_MESSAGES.USERNAME_REQUIRED)
+    .min(5, ERROR_MESSAGES.USERNAME_MIN_LENGTH),
+  password: string()
+    .required(ERROR_MESSAGES.PASSWORD_REQUIRED)
+    .test({
+      name: "password",
+      message: ERROR_MESSAGES.PASSWORD_WEAK,
+      test: (value) => PASSWORD_REGEX.test(value),
+    }),
 });
 
 const SignInTab = ({ onClick }) => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
 
-  const [isLoading, setIsLoading] = useState(false);
+  // Hook to manage login mutation
+  const [login, { isLoading: isLoginLoading }] = useLoginMutation();
 
+  // Function to navigate to the dashboard after successful login
   const navigateToDashboard = () => {
     navigate(ROUTES.VIDEO_MAKER);
   };
 
-  const form = useForm({
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-    resolver: yupResolver(LOGIN_FORM_SCHEMA),
-  });
-
+  // useForm hook for managing form state and validation
   const {
     handleSubmit,
     register,
     formState: { errors },
-  } = form;
+    watch,
+    setValue,
+  } = useForm({
+    defaultValues: DEFAULT_VALUES,
+    resolver: yupResolver(LOGIN_FORM_SCHEMA),
+  });
 
-  const onSubmit = (data) => {
+  // Watching the username field to convert it to lowercase
+  const watchedUserName = watch("username");
+
+  useEffect(() => {
+    setValue("username", watchedUserName.toLowerCase());
+  }, [watchedUserName, setValue]);
+
+  // Handle form submission for signing in
+  const handleSignIn = async (data) => {
     const payload = {
-      email: data.email,
+      username: data.username,
       password: data.password,
     };
-    // dispatch(
-    //   loginAction({
-    //     payload,
-    //     setIsLoading,
-    //     onSuccess: navigateToDashboard,
-    //   })
-    // );
+
+    try {
+      const response = await login(payload).unwrap();
+      console.log("response", response);
+      // navigateToDashboard();
+      successToast({ data: response, message: "Logged in successfully" });
+    } catch (error) {
+      console.error("error", error);
+      errorToast({ error });
+    }
   };
 
   return (
     <>
-      <form action="" onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(handleSignIn)}>
         <Field
-          className="mb-4"
-          type="email"
-          placeholder="Email"
-          icon="email"
-          autoComplete="email"
+          placeholder="Username"
+          className="w-full mb-4"
+          icon="profile"
+          autoComplete="off"
+          error={errors.username?.message}
           classInput={CLASS_INPUT}
-          error={errors.email?.message}
-          {...register("email")}
+          {...register("username")}
         />
         <Field
           className="mb-4"
@@ -87,12 +131,16 @@ const SignInTab = ({ onClick }) => {
             onClick={onClick}
             className="text-black hover:text-primary/90"
           >
-            Forgot password?
+            {BUTTON_LABELS.FORGOT_PASSWORD}
           </Button>
         </div>
 
         <Button size="lg" type="submit" className="w-full mb-4">
-          Sign In
+          {isLoginLoading ? (
+            <div className="ring-loader" />
+          ) : (
+            BUTTON_LABELS.SIGN_IN
+          )}
         </Button>
       </form>
     </>

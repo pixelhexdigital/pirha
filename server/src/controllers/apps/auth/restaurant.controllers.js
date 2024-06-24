@@ -12,6 +12,9 @@ import {
   sendEmail,
 } from "../../../utils/mail.js";
 import { Menu } from "../../../models/apps/manageRestaurant/menu.models.js";
+import { Subscription } from "../../../models/apps/manageRestaurant/subscription.models.js";
+import { ENUMS } from "../../../constants/enum.js";
+import { subscriptionPlans } from "../../../constants/subscriptionConfigs.js";
 
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
@@ -34,7 +37,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { username, email, password, role } = req.body;
+  const { username, email, password } = req.body;
 
   const existedUser = await Restaurant.findOne({
     $or: [{ username }, { email }],
@@ -53,20 +56,38 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
     username,
     isEmailVerified: false,
-    role: role || UserRolesEnum.USER,
+    role: UserRolesEnum.USER,
   });
 
-  const menu = await Menu.findOne({ restaurantId: restaurant._id });
-  if (!menu) {
-    menu = await Menu.create({
-      restaurantId: restaurant._id,
-      categories: [
-        { name: "Starter", items: [] },
-        { name: "Main Course", items: [] },
-        { name: "Dessert", items: [] },
-      ],
-    });
-  }
+  // let menu = await Menu.findOne({ restaurantId: restaurant._id });
+  // if (!menu) {
+  //   menu = await Menu.create({
+  //     restaurantId: restaurant._id,
+  //     categories: [
+  //       { name: "Starter", items: [{ title: "item1", price: "0" }] },
+  //       { name: "Main Course", items: [{ title: "item1", price: "0" }] },
+  //     ],
+  //   });
+  // }
+
+  // Get the default subscription plan from the config
+  const defaultSubscriptionPlan = subscriptionPlans.find(
+    (plan) => plan.name === "Free"
+  );
+
+  // Create the subscription for the new user
+  const subscription = await Subscription.create({
+    restaurantId: restaurant._id,
+    plan: defaultSubscriptionPlan,
+    startDate: new Date(),
+    endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days from now
+    isTrial: true, // Assuming a trial subscription
+    trialEndDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days from now
+    active: true,
+  });
+
+  restaurant.subscription = subscription._id;
+  await restaurant.save({ validateBeforeSave: false });
 
   /**
    * unHashedToken: unHashed token is something we will send to the restaurant's mail

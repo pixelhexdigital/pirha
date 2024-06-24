@@ -11,4 +11,5 @@ export const ENUMS = {
   paymentStatus: ["Pending", "Paid", "Failed"],
   paymentMethod: ["Cash", "Card", "Online"],
   foodGroup: ["Veg", "Non-veg", "Vegan", "Egg"],
+  subscriptionPlan: ["Free", "Bronze", "Silver", "Gold", "Diamond"],
 };

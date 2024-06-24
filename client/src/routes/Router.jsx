@@ -30,7 +30,7 @@ const AuthenticatedRoutes = [
 
 const UnauthenticatedRoutes = [
   { path: ROUTES.AUTH, element: <AuthPage /> },
-  { path: ROUTES.CATEGORIES, element: <CategoriesPage /> },
+  { path: ROUTES.HOME, element: <CategoriesPage /> },
   // { path: `${ROUTES.MENU}/:category`, element: <MenuPage /> },
   // pathname: `${ROUTES.MENU}/${tableId}/${restaurantId}/${name}`,
   {
@@ -41,7 +41,7 @@ const UnauthenticatedRoutes = [
 
 const MyRoutes = () => {
   // const isAuthenticated = useSelector(selectIsLoggedIn);
-  const isAuthenticated = true;
+  const isAuthenticated = false;
 
   const router = createBrowserRouter(
     createRoutesFromElements(
@@ -49,7 +49,7 @@ const MyRoutes = () => {
         <Route
           path="*"
           element={
-            <Navigate to={isAuthenticated ? ROUTES.CATEGORIES : ROUTES.AUTH} />
+            <Navigate to={isAuthenticated ? ROUTES.HOME : ROUTES.AUTH} />
           }
         />
         {AuthenticatedRoutes.map((route, index) => (

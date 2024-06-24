@@ -54,7 +54,7 @@ const TopNavBar = () => {
               dispatch(toggleVegOnly());
             }}
             className={`flex items-center gap-1 px-3 py-1 text-sm bg-white border-2 rounded-3xl ${
-              isVegOnly ? "shadow" : "shadow-sm"
+              isVegOnly ? "shadow" : "shadow-inner"
             }`}
           >
             <Circle
@@ -70,7 +70,7 @@ const TopNavBar = () => {
               dispatch(toggleNonVegOnly());
             }}
             className={`flex items-center gap-1 px-3 py-1 text-sm bg-white border-2 rounded-3xl ${
-              isNonVegOnly ? "shadow" : "shadow-sm"
+              isNonVegOnly ? "shadow" : "shadow-inner"
             }`}
           >
             <Circle

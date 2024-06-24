@@ -70,6 +70,7 @@ app.use(
 ); // session secret
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
+app.set("trust proxy", true);
 
 // Define __dirname for ES module scope
 const __filename = fileURLToPath(import.meta.url);
