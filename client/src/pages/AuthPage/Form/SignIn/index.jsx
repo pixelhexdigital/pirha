@@ -60,8 +60,11 @@ const SignInTab = ({ onClick }) => {
   const [login, { isLoading: isLoginLoading }] = useLoginMutation();
 
   // Function to navigate to the dashboard after successful login
-  const navigateToDashboard = () => {
-    navigate(ROUTES.VIDEO_MAKER);
+  const navigateToDashboard = (response) => {
+    if (!response.restaurant.ownerFullName || !response.restaurant.restroName) {
+      return navigate(ROUTES.ONBOARDING);
+    }
+    return navigate(ROUTES.ONBOARDING);
   };
 
   // useForm hook for managing form state and validation
@@ -93,7 +96,7 @@ const SignInTab = ({ onClick }) => {
     try {
       const response = await login(payload).unwrap();
       console.log("response", response);
-      // navigateToDashboard();
+      navigateToDashboard(response);
       successToast({ data: response, message: "Logged in successfully" });
     } catch (error) {
       console.error("error", error);

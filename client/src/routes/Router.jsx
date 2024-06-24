@@ -15,22 +15,26 @@ import OrderListPage from "pages/AdminPages/OrderListPage";
 import OrderDetailsPage from "pages/AdminPages/OrderDetailsPage";
 import ProtectedRoute from "components/ProtectedRoute";
 import AuthPage from "pages/AuthPage";
+import OnboardingPage from "pages/OnboardingPage/index.jsx";
 
 const Routes = [
   { path: ROUTES.CATEGORIES, element: <CategoriesPage /> },
   { path: ROUTES.ORDER_LIST, element: <OrderListPage /> },
   { path: ROUTES.ORDER_DETAILS, element: <OrderDetailsPage /> },
+  { path: ROUTES.ONBOARDING, element: <OnboardingPage /> },
   { path: `${ROUTES.MENU}/:category`, element: <MenuPage /> },
 ];
 
 const AuthenticatedRoutes = [
   { path: ROUTES.ORDER_LIST, element: <OrderListPage /> },
   { path: ROUTES.ORDER_DETAILS, element: <OrderDetailsPage /> },
+  { path: ROUTES.ONBOARDING, element: <OnboardingPage /> },
 ];
 
 const UnauthenticatedRoutes = [
   { path: ROUTES.AUTH, element: <AuthPage /> },
   { path: ROUTES.HOME, element: <CategoriesPage /> },
+
   // { path: `${ROUTES.MENU}/:category`, element: <MenuPage /> },
   // pathname: `${ROUTES.MENU}/${tableId}/${restaurantId}/${name}`,
   {
@@ -41,7 +45,7 @@ const UnauthenticatedRoutes = [
 
 const MyRoutes = () => {
   // const isAuthenticated = useSelector(selectIsLoggedIn);
-  const isAuthenticated = false;
+  const isAuthenticated = true;
 
   const router = createBrowserRouter(
     createRoutesFromElements(

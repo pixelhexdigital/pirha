@@ -73,7 +73,7 @@ export const verifySubscription = asyncHandler(async (req, res, next) => {
   if (!restaurantId || restaurantId.toString() !== req.params.restaurantId) {
     restaurantId = req.params.restaurantId;
 
-    if (!restaurantId) {
+    if (!restaurantId || restaurantId === "null") {
       throw new ApiError(400, "Restaurant ID is required");
     }
 
