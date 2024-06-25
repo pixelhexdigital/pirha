@@ -1,4 +1,4 @@
-import { AvailableUserRoles } from "../constants.js";
+import { AvailableUserRoles, UserRolesEnum } from "../constants.js";
 import { Restaurant } from "../models/apps/auth/restaurant.models.js";
 import { Visitor } from "../models/apps/manageRestaurant/visitor.models.js";
 import { Subscription } from "../models/apps/manageRestaurant/subscription.models.js";
@@ -39,7 +39,7 @@ export const verifySubscription = asyncHandler(async (req, res, next) => {
   const token =
     req.cookies?.accessToken ||
     req.header("Authorization")?.replace("Bearer ", "");
-  const ip = req.ip;
+  const ip = req.clientIp;
   const uniqueVisitorId = req.cookies?.visitorId || uuidv4(); // Generate a unique ID if not present
 
   console.log("ip ===> ", ip);
@@ -160,7 +160,7 @@ export const verifyAdmin = asyncHandler(async (req, res, next) => {
       // Then they will get a new access token which will allow them to refresh the access token without logging out the restaurant
       throw new ApiError(401, "Invalid access token");
     }
-    if (restaurant.role !== "admin") {
+    if (restaurant.role !== UserRolesEnum.ADMIN) {
       throw new ApiError(401, "Invalid role");
     }
     req.restaurant = restaurant;

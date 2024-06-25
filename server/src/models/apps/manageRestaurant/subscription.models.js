@@ -102,3 +102,7 @@ subscriptionSchema.methods.resetMonthlyCustomerCount = function () {
 
 // Create and export the Subscription model
 export const Subscription = mongoose.model("Subscription", subscriptionSchema);
+export const SubscriptionPlan = mongoose.model(
+  "SubscriptionPlan",
+  subscriptionPlanSchema
+);

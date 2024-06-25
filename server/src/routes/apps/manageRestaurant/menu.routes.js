@@ -15,6 +15,8 @@ import {
   deleteMenuItem,
   updateItemImage,
   updateCategoryImage,
+  activateMenuItem,
+  deactivateMenuItem,
 } from "../../../controllers/apps/manageRestaurant/menu.controllers.js";
 import { upload } from "../../../middlewares/multer.middlewares.js";
 
@@ -47,6 +49,14 @@ router
   .route("/categories/:categoryId/items/:itemId")
   .patch(verifyJWT, updateMenuItem) // update menu item for a category in menu
   .delete(verifyJWT, deleteMenuItem); // delete menu item for a category in menu
+
+router
+  .route("/categories/:categoryId/items/:itemId/activate")
+  .patch(verifyJWT, activateMenuItem);
+
+router
+  .route("/categories/:categoryId/items/:itemId/deactivate")
+  .patch(verifyJWT, deactivateMenuItem);
 
 router
   .route("/categories/:categoryId/items/:itemId/image")
