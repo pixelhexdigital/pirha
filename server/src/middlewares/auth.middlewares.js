@@ -126,6 +126,17 @@ export const verifySubscription = asyncHandler(async (req, res, next) => {
       });
     } else {
       if (visitorRecord.ips.length >= dailyLimit) {
+        if (
+          !visitorRecord.rejectedVisitors.some(
+            (visitor) => visitor.visitorId === uniqueVisitorId
+          )
+        ) {
+          visitorRecord.rejectedVisitors.push({
+            ip,
+            visitorId: uniqueVisitorId,
+          });
+        }
+        await visitorRecord.save();
         throw new ApiError(
           403,
           "Daily customer limit exceeded for this restaurant"
