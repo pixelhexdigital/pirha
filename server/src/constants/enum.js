@@ -12,4 +12,5 @@ export const ENUMS = {
   paymentMethod: ["Cash", "Card", "Online"],
   foodGroup: ["Veg", "Non-veg", "Vegan", "Egg"],
   subscriptionPlan: ["Free", "Bronze", "Silver", "Gold", "Diamond"],
+  restroType: ["Casual dining", "Fine dine", "Cafe", "Restro and bar", "bar"],
 };
