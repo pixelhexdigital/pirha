@@ -6,6 +6,7 @@ import { Customer } from "../models/apps/manageRestaurant/customer.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
+import { uuid } from "uuidv4";
 
 export const verifyJWT = asyncHandler(async (req, res, next) => {
   const token =
@@ -40,7 +41,7 @@ export const verifySubscription = asyncHandler(async (req, res, next) => {
     req.cookies?.accessToken ||
     req.header("Authorization")?.replace("Bearer ", "");
   const ip = req.clientIp;
-  const uniqueVisitorId = req.cookies?.visitorId || uuidv4(); // Generate a unique ID if not present
+  const uniqueVisitorId = req.cookies?.visitorId || uuid(); // Generate a unique ID if not present
 
   console.log("ip ===> ", ip);
   console.log("visitorId ===> ", uniqueVisitorId);
@@ -75,6 +76,11 @@ export const verifySubscription = asyncHandler(async (req, res, next) => {
 
     if (!restaurantId || restaurantId === "null") {
       throw new ApiError(400, "Restaurant ID is required");
+    }
+
+    const newRestro = await Restaurant.findById(restaurantId);
+    if (!newRestro) {
+      throw new ApiError(404, "No restaurant found for given restaurantId");
     }
 
     const subscription = await Subscription.findOne({ restaurantId });

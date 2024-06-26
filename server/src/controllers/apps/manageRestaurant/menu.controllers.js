@@ -1,9 +1,6 @@
 import { Restaurant } from "../../../models/apps/auth/restaurant.models.js";
 import { Menu } from "../../../models/apps/manageRestaurant/menu.models.js";
-import {
-  Subscription,
-  SubscriptionPlan,
-} from "../../../models/apps/manageRestaurant/subscription.models.js";
+import { Subscription } from "../../../models/apps/manageRestaurant/subscription.models.js";
 import { ApiError } from "../../../utils/ApiError.js";
 import { ApiResponse } from "../../../utils/ApiResponse.js";
 import { asyncHandler } from "../../../utils/asyncHandler.js";
@@ -351,7 +348,7 @@ const activateMenuItem = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Subscription not found");
   }
 
-  const planDetails = await SubscriptionPlan.findById(subscription.plan._id);
+  const planDetails = subscription.plan;
   if (!planDetails) {
     throw new ApiError(404, "Subscription plan details not found");
   }
@@ -367,7 +364,7 @@ const activateMenuItem = asyncHandler(async (req, res) => {
   }
 
   // Check if the number of active items in the category exceeds the limit
-  const activeItems = activeCategories.items.filter((item) => item.isActive);
+  const activeItems = category.items.filter((item) => item.isActive);
   if (activeItems.length >= menuItemLimit) {
     throw new ApiError(403, "Menu item limit exceeded for this category");
   }
@@ -380,6 +377,89 @@ const activateMenuItem = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, menu, "Menu item activated successfully"));
 });
+
+const deactivateMenuCategory = asyncHandler(async (req, res) => {
+  const restaurant = await Restaurant.findById(req.restaurant?._id);
+
+  if (!restaurant) {
+    throw new ApiError(404, "Restaurant does not exist");
+  }
+
+  const { categoryId } = req.params;
+
+  const menu = await Menu.findOne({ restaurantId: restaurant._id });
+
+  if (!menu) {
+    throw new ApiError(404, "Menu not found");
+  }
+
+  const category = menu.categories.id(categoryId);
+
+  if (!category) {
+    throw new ApiError(404, "Category not found");
+  }
+
+  // Deactivate the category
+  category.isActive = false;
+  await menu.save();
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, menu, "Menu category deactivated successfully"));
+});
+
+const activateMenuCategory = asyncHandler(async (req, res) => {
+  const restaurant = await Restaurant.findById(req.restaurant?._id);
+
+  if (!restaurant) {
+    throw new ApiError(404, "Restaurant does not exist");
+  }
+
+  const { categoryId } = req.params;
+
+  const menu = await Menu.findOne({ restaurantId: restaurant._id });
+
+  if (!menu) {
+    throw new ApiError(404, "Menu not found");
+  }
+
+  const category = menu.categories.id(categoryId);
+
+  if (!category) {
+    throw new ApiError(404, "Category not found");
+  }
+
+  const subscription = await Subscription.findOne({
+    restaurantId: restaurant._id,
+  }).populate("plan");
+  if (!subscription) {
+    throw new ApiError(404, "Subscription not found");
+  }
+
+  const planDetails = subscription.plan;
+  if (!planDetails) {
+    throw new ApiError(404, "Subscription plan details not found");
+  }
+
+  const { menuCategoryLimit } = planDetails;
+
+  // Check if the number of active categories exceeds the limit
+  const activeCategories = menu.categories.filter(
+    (category) => category.isActive
+  );
+  if (activeCategories.length >= menuCategoryLimit) {
+    throw new ApiError(403, "Menu category limit exceeded");
+  }
+
+  // Activate the category
+  category.isActive = true;
+  await menu.save();
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, menu, "Menu category activated successfully"));
+});
+
 // Delete a menu item from a category in a menu
 const deleteMenuItem = asyncHandler(async (req, res) => {
   const { categoryId, itemId } = req.params;
@@ -551,4 +631,6 @@ export {
   updateCategoryImage,
   deactivateMenuItem,
   activateMenuItem,
+  deactivateMenuCategory,
+  activateMenuCategory,
 };

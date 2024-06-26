@@ -1,9 +1,6 @@
 import { ENUMS } from "../../constants/enum.js";
 import { Restaurant } from "../../models/apps/auth/restaurant.models.js";
-import {
-  Subscription,
-  SubscriptionPlan,
-} from "../../models/apps/manageRestaurant/subscription.models.js";
+import { Subscription } from "../../models/apps/manageRestaurant/subscription.models.js";
 import { Menu } from "../../models/apps/manageRestaurant/menu.models.js"; // Import the Menu model
 import { ApiError } from "../../utils/ApiError.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
@@ -33,28 +30,25 @@ const changePlan = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Please select a valid plan");
   }
 
-  let subscription = await Subscription.findOne({ restaurantId: restaurantId });
+  let subscription = await Subscription.findOne({
+    restaurantId: restaurantId,
+  }).populate("plan");
   const planDetails = subscriptionPlans.find((e) => e.name === plan);
 
   if (!planDetails) {
     throw new ApiError(401, "Subscription plan details not found");
   }
 
-  let subscriptionPlan = await SubscriptionPlan.findOne({ name: plan });
-  if (!subscriptionPlan) {
-    subscriptionPlan = await SubscriptionPlan.create(planDetails);
-  }
-
   if (subscription) {
     // Update the existing subscription
-    subscription.plan = subscriptionPlan._id;
+    subscription.plan = planDetails;
     subscription.endDate = endDate;
     await subscription.save();
   } else {
     // Create a new subscription
     subscription = await Subscription.create({
       restaurantId: restaurant._id,
-      plan: subscriptionPlan._id,
+      plan: planDetails,
       endDate: endDate,
     });
   }
