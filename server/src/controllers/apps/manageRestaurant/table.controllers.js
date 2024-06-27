@@ -31,6 +31,81 @@ const fetchTables = asyncHandler(async (req, res) => {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const generateQRCode = async (tables, restaurant, baseURL) => {
+  const zip = new JSZip();
+  const templatePath = path.join(
+    __dirname,
+    "../../../assets/qr_generator_template.png"
+  );
+  console.log("Template Path: ", templatePath); // Debugging line to verify path
+
+  let templateImage;
+  try {
+    templateImage = await loadImage(templatePath);
+  } catch (error) {
+    throw new ApiError(500, `Failed to load template image: ${error.message}`);
+  }
+
+  // Load the restaurant's avatar image
+  let avatarImage;
+  if (restaurant.avatar.url) {
+    try {
+      avatarImage = await loadImage(restaurant.avatar.url);
+    } catch (error) {
+      console.error(`Failed to load avatar image: ${error.message}`);
+    }
+  }
+
+  for (const table of tables) {
+    const qrCodeText = `${baseURL}?tableId=${table._id}&restaurantId=${restaurant._id}`;
+
+    // Create a new canvas to draw QR code
+    const canvas = createCanvas(512, 728);
+    const ctx = canvas.getContext("2d");
+
+    // Draw the template image onto the canvas
+    ctx.drawImage(templateImage, 0, 0, 512, 728);
+
+    // Generate QR code on a separate canvas and draw it onto the main canvas
+    const qrCanvas = createCanvas(200, 200);
+    await QRCode.toCanvas(qrCanvas, qrCodeText, {
+      color: {
+        dark: "#080b53", // dark blue color for QR code lines
+      },
+      width: 180,
+      margin: 5,
+      errorCorrectionLevel: "H",
+      scale: 10,
+    });
+
+    ctx.drawImage(qrCanvas, 106, 150, 300, 300); // Adjust positions as needed
+
+    // Add table title
+    ctx.font = "bold 32px Arial";
+    ctx.fillStyle = "#fff";
+    ctx.textAlign = "center";
+    ctx.fillText(table.title.toUpperCase(), 256, 494); // Adjust positions as needed
+
+    // Add restaurant name
+    ctx.fillText(restaurant.restroName, 240, 590); // Adjust positions as needed
+
+    // Add restaurant avatar
+    if (avatarImage) {
+      ctx.drawImage(avatarImage, 50, 550, 80, 80); // Adjust positions as needed
+    }
+
+    // Convert canvas to buffer (PNG image)
+    const buffer = canvas.toBuffer("image/png");
+
+    // Add QR code image to ZIP file with table title as filename
+    zip.file(`${table.title}.png`, buffer);
+  }
+
+  // Generate ZIP file containing all QR code images
+  const zipData = await zip.generateAsync({ type: "nodebuffer" });
+  return zipData;
+};
+
 const downloadTableQr = asyncHandler(async (req, res) => {
   const { startTable, endTable } = req.body;
 
@@ -74,87 +149,13 @@ const downloadTableQr = asyncHandler(async (req, res) => {
     throw new ApiError(404, "No tables found within the specified range");
   }
 
-  const zip = new JSZip();
-  const templatePath = path.join(
-    __dirname,
-    "../../../assets/qr_generator_template.png"
-  );
-  console.log("Template Path: ", templatePath); // Debugging line to verify path
-
-  let templateImage;
-  try {
-    templateImage = await loadImage(templatePath);
-  } catch (error) {
-    throw new ApiError(500, `Failed to load template image: ${error.message}`);
-  }
-
-  // Load the restaurant's avatar image
-  let avatarImage;
-  if (restaurant.avatar.url) {
-    try {
-      avatarImage = await loadImage(restaurant.avatar.url);
-    } catch (error) {
-      // throw new ApiError(500, `Failed to load avatar image: ${error.message}`);
-      console.error(`Failed to load avatar image: ${error.message}`);
-    }
-  }
-
-  // Iterate over the tables and generate QR codes
-  for (const table of tables) {
-    const qrCodeText = `${baseURL}?tableId=${table._id}&restaurantId=${restaurant._id}`;
-
-    // Create a new canvas to draw QR code
-    const canvas = createCanvas(512, 728);
-    const ctx = canvas.getContext("2d");
-
-    // Draw the template image onto the canvas
-    ctx.drawImage(templateImage, 0, 0, 512, 728);
-
-    // Generate QR code on a separate canvas and draw it onto the main canvas
-    const qrCanvas = createCanvas(200, 200);
-    await QRCode.toCanvas(qrCanvas, qrCodeText, {
-      color: {
-        dark: "#080b53", // dark blue color for QR code lines
-        // light: "#0000", // Transparent background
-      },
-      width: 180,
-      margin: 5,
-      errorCorrectionLevel: "H",
-      scale: 10,
-    });
-
-    ctx.drawImage(qrCanvas, 106, 150, 300, 300); // Adjust positions as needed
-
-    // Add table title
-    ctx.font = "bold 32px Arial";
-    ctx.fillStyle = "#fff";
-    ctx.textAlign = "center";
-    ctx.fillText(table.title.toUpperCase(), 256, 494); // Adjust positions as needed
-
-    // Add restaurant name
-    ctx.fillText(restaurant.restroName, 240, 590); // Adjust positions as needed
-
-    // Add restaurant avatar
-    if (avatarImage) {
-      ctx.drawImage(avatarImage, 50, 550, 80, 80); // Adjust positions as needed
-    }
-
-    // Convert canvas to buffer (PNG image)
-    const buffer = canvas.toBuffer("image/png");
-
-    // Add QR code image to ZIP file with table title as filename
-    zip.file(`${table.title}.png`, buffer);
-  }
-
-  // Generate ZIP file containing all QR code images
-  const zipData = await zip.generateAsync({ type: "nodebuffer" });
+  const zipData = await generateQRCode(tables, restaurant, baseURL);
 
   // Set response headers and send the ZIP file as a response
   res.set("Content-Type", "application/zip");
   res.set("Content-Disposition", "attachment; filename=table_qr_codes.zip");
   res.send(zipData);
 });
-// Register tables for a restaurant
 
 const registerTables = asyncHandler(async (req, res) => {
   const { letter, tables } = req.body;
@@ -191,6 +192,8 @@ const registerTables = asyncHandler(async (req, res) => {
 
   const bulkOperations = [];
 
+  const newTables = [];
+
   for (let i = 1; i <= tables; i++) {
     const nextTableNumber = `${letter}-${highestNumber + i}`;
 
@@ -205,11 +208,24 @@ const registerTables = asyncHandler(async (req, res) => {
     };
 
     bulkOperations.push(newTableDocument);
+    newTables.push(newTableDocument.insertOne.document);
   }
 
   await Table.bulkWrite(bulkOperations);
 
-  res.json(new ApiResponse(201, {}, "Tables created successfully"));
+  const zipData = await generateQRCode(
+    newTables,
+    restaurant,
+    restaurant.baseURL
+  );
+
+  // Set response headers and send the ZIP file as a response
+  res.set("Content-Type", "application/zip");
+  res.set(
+    "Content-Disposition",
+    "attachment; filename=registered_table_qr_codes.zip"
+  );
+  res.send(zipData);
 });
 
 // Delete a specific table by ID
