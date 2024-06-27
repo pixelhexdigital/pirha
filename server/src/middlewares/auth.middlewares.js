@@ -6,7 +6,7 @@ import { Customer } from "../models/apps/manageRestaurant/customer.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
-import { uuid } from "uuidv4";
+import { v4 as uuid } from "uuid";
 
 export const verifyJWT = asyncHandler(async (req, res, next) => {
   const token =
