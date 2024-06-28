@@ -1,8 +1,11 @@
 import { useForm } from "react-hook-form";
-import { Button } from "components/ui/button";
-import Field from "components/Field";
-import { yupResolver } from "@hookform/resolvers/yup";
 import { object, string } from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useNavigate } from "react-router-dom";
+
+import Field from "components/Field";
+import { Button } from "components/ui/button";
+import { ROUTES } from "routes/RouterConfig";
 
 // Validation schema
 const ADD_MENU_SCHEMA = object().shape({
@@ -11,6 +14,8 @@ const ADD_MENU_SCHEMA = object().shape({
 });
 
 const AddMenuPage = ({ onNext }) => {
+  const navigate = useNavigate();
+
   const {
     handleSubmit,
     register,
@@ -19,17 +24,21 @@ const AddMenuPage = ({ onNext }) => {
     resolver: yupResolver(ADD_MENU_SCHEMA),
   });
 
+  const navigateToDashboard = () => {
+    navigate(ROUTES.DASHBOARD);
+  };
+
   const onSubmit = (data) => {
     // Handle menu item addition logic here
-    onNext();
+    console.log(data);
+    navigateToDashboard();
   };
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="w-full max-w-[31.5rem] mx-auto"
+      className="w-full max-w-xl px-4 mx-auto"
     >
-      <h2 className="text-2xl font-bold mb-4">Add Menu Items</h2>
       <div className="mb-4">
         <Field
           type="text"

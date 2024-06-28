@@ -31,7 +31,7 @@ const navigation = [
 
   {
     name: "Menu Items",
-    url: ROUTES.ORDER,
+    url: ROUTES.MENU_MANAGEMENT,
     icon: <ChefHat size={20} />,
   },
   {

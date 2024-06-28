@@ -6,16 +6,18 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import { ROUTES } from "routes/RouterConfig";
-// import { useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
-import CategoriesPage from "pages/MenuPages/CategoriesPage";
+import AuthPage from "pages/AuthPage";
 import MenuPage from "pages/MenuPages/MenuPage";
-
+import CategoriesPage from "pages/MenuPages/CategoriesPage";
 import OrderListPage from "pages/AdminPages/OrderListPage";
 import OrderDetailsPage from "pages/AdminPages/OrderDetailsPage";
-import ProtectedRoute from "components/ProtectedRoute";
-import AuthPage from "pages/AuthPage";
 import OnboardingPage from "pages/OnboardingPage/index.jsx";
+import ProtectedRoute from "components/ProtectedRoute";
+import { selectIsAuthenticated } from "store/AuthSlice";
+import DashboardPage from "pages/AdminPages/DashboardPage";
+import MenuManagementPage from "pages/AdminPages/MenuManagementPage";
 
 const Routes = [
   { path: ROUTES.CATEGORIES, element: <CategoriesPage /> },
@@ -26,17 +28,16 @@ const Routes = [
 ];
 
 const AuthenticatedRoutes = [
+  { path: ROUTES.DASHBOARD, element: <DashboardPage /> },
   { path: ROUTES.ORDER_LIST, element: <OrderListPage /> },
   { path: ROUTES.ORDER_DETAILS, element: <OrderDetailsPage /> },
   { path: ROUTES.ONBOARDING, element: <OnboardingPage /> },
+  { path: ROUTES.MENU_MANAGEMENT, element: <MenuManagementPage /> },
 ];
 
 const UnauthenticatedRoutes = [
   { path: ROUTES.AUTH, element: <AuthPage /> },
   { path: ROUTES.HOME, element: <CategoriesPage /> },
-
-  // { path: `${ROUTES.MENU}/:category`, element: <MenuPage /> },
-  // pathname: `${ROUTES.MENU}/${tableId}/${restaurantId}/${name}`,
   {
     path: `${ROUTES.MENU}/:tableId/:restaurantId/:categoryName`,
     element: <MenuPage />,
@@ -44,8 +45,7 @@ const UnauthenticatedRoutes = [
 ];
 
 const MyRoutes = () => {
-  // const isAuthenticated = useSelector(selectIsLoggedIn);
-  const isAuthenticated = true;
+  const isAuthenticated = useSelector(selectIsAuthenticated);
 
   const router = createBrowserRouter(
     createRoutesFromElements(
@@ -53,7 +53,7 @@ const MyRoutes = () => {
         <Route
           path="*"
           element={
-            <Navigate to={isAuthenticated ? ROUTES.HOME : ROUTES.AUTH} />
+            <Navigate to={isAuthenticated ? ROUTES.DASHBOARD : ROUTES.HOME} />
           }
         />
         {AuthenticatedRoutes.map((route, index) => (

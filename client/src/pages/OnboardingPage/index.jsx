@@ -1,40 +1,70 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import pirhaLogo from "assets/pirha_logo_white.png";
+
+import AddMenuPage from "./AddMenuPage";
+import CreateTablePage from "./CreateTablePage";
 import UpdateProfilePage from "./UpdateProfilePage";
 // import UpdateAvatarPage from "./UpdateAvatarPage";
-import CreateTablePage from "./CreateTablePage";
-import AddMenuPage from "./AddMenuPage";
+import { Progress } from "components/ui/progress";
 
-import { Button } from "components/ui/button";
-
-import pirhaLogo from "assets/pirha_logo_white.png";
+const NO_OF_STEPS = 3;
 
 const OnboardingPage = () => {
   const [step, setStep] = useState(1);
 
   const nextStep = () => setStep((prevStep) => prevStep + 1);
-  const prevStep = () => setStep((prevStep) => prevStep - 1);
+  // const prevStep = () => setStep((prevStep) => prevStep - 1);
+
+  const progressValue = ((step - 1) / NO_OF_STEPS) * 100;
+
+  const onboardingSteps = [
+    {
+      title: "",
+      content: <UpdateProfilePage nextStep={nextStep} />,
+    },
+    // {
+    //   title: "Update Avatar",
+    //   content: <UpdateAvatarPage />,
+    // },
+    {
+      title: "Create Tables",
+      content: <CreateTablePage onNext={nextStep} />,
+    },
+    {
+      title: "Add Menu Items",
+      content: <AddMenuPage onNext={nextStep} />,
+    },
+  ];
 
   return (
-    <div>
-      <Header></Header>
-      <div className="container flex justify-center align-middle w-full max-w-[31.5rem] mx-auto">
-        {step === 1 && <UpdateProfilePage nextStep={nextStep} />}
-        {/* {step === 2 && <UpdateAvatarPage nextStep={nextStep} />} */}
-        {step === 2 && <CreateTablePage nextStep={nextStep} />}
-        {step === 3 && <AddMenuPage nextStep={nextStep} />}
+    <>
+      <Header />
+      <Progress value={progressValue} className="w-full mb-6" />
+      <div className="container flex justify-center w-full max-w-[31.5rem] mx-auto">
+        {onboardingSteps.map(({ content, title }, index) => {
+          if (index + 1 === step) {
+            return (
+              <div key={index} className="w-full">
+                <h2 className="pl-4 mb-4 text-2xl font-bold">{title}</h2>
+                {content}
+              </div>
+            );
+          }
+          return null;
+        })}
       </div>
-    </div>
+      <button onClick={nextStep} className="btn btn-primary">
+        Next
+      </button>
+    </>
   );
 };
 
 const Header = () => {
   return (
-    <div className="bg-white flex-col shadow-md p-4 mb-6 flex items-center justify-between">
-      <img src={pirhaLogo} alt="Pirha Logo" className="h-12 w-auto" />
+    <div className="flex flex-col items-center justify-between p-4 bg-white shadow-md">
+      <img src={pirhaLogo} alt="Pirha Logo" className="w-auto h-12" />
       <h1 className="text-xl font-semibold text-gray-800">Welcome!</h1>
-      {/* <p>
-        Please complete these steps to set up your restaurant and get started.
-      </p> */}
     </div>
   );
 };

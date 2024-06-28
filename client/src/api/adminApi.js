@@ -44,7 +44,7 @@ export const adminApi = createApi({
 });
 
 export const {
+  useUpdateLogoMutation,
   useUpdateProfileMutation,
   useUpdateCoverImageMutation,
-  useUpdateLogoMutation,
 } = adminApi;

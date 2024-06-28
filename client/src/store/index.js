@@ -13,6 +13,7 @@ import { customerApi } from "api/customerApi";
 import { ordersApi } from "api/orderApi";
 import { authApi } from "api/authApi";
 import { adminApi } from "api/adminApi";
+import { tableApi } from "api/tableApi";
 
 // Combine all reducers including the API reducers
 const reducers = combineReducers({
@@ -25,6 +26,7 @@ const reducers = combineReducers({
   [ordersApi.reducerPath]: ordersApi.reducer,
   [authApi.reducerPath]: authApi.reducer,
   [adminApi.reducerPath]: adminApi.reducer,
+  [tableApi.reducerPath]: tableApi.reducer,
 });
 
 // Persist configurations
@@ -60,7 +62,8 @@ export const store = configureStore({
       miscApi.middleware,
       customerApi.middleware,
       ordersApi.middleware,
-      adminApi.middleware
+      adminApi.middleware,
+      tableApi.middleware
     ),
   composeEnhancers,
 });

@@ -6,6 +6,7 @@ export const ROUTES = {
   HOME: "/home",
   CATEGORIES: "/categories",
   MENU: "/menu",
+  MENU_MANAGEMENT: "/menu-management",
   MENU_ITEM: "/menu-item",
   CART: "/cart",
   CHECKOUT: "/checkout",

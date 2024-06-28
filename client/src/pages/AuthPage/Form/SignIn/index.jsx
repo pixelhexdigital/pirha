@@ -20,8 +20,8 @@ const PASSWORD_REGEX =
 
 // Default form values
 const DEFAULT_VALUES = {
-  username: "",
-  password: "",
+  username: "sagar",
+  password: "Sagar@123",
 };
 
 // Button labels
@@ -38,10 +38,10 @@ const ERROR_MESSAGES = {
   PASSWORD_WEAK:
     "Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special case character",
 };
+
 // Yup schema for form validation
 const LOGIN_FORM_SCHEMA = object().shape({
   username: string()
-    // .required("Username is required")
     .required(ERROR_MESSAGES.USERNAME_REQUIRED)
     .min(5, ERROR_MESSAGES.USERNAME_MIN_LENGTH),
   password: string()
@@ -57,15 +57,19 @@ const SignInTab = ({ onClick }) => {
   const navigate = useNavigate();
 
   // Hook to manage login mutation
-  const [login, { isLoading: isLoginLoading }] = useLoginMutation();
+  const [login, { isLoading: isLoginLoading, isSuccess, data }] =
+    useLoginMutation();
 
-  // Function to navigate to the dashboard after successful login
-  const navigateToDashboard = (response) => {
-    if (!response.restaurant.ownerFullName || !response.restaurant.restroName) {
-      return navigate(ROUTES.ONBOARDING);
+  // Navigate to onboarding or dashboard based on the response
+  useEffect(() => {
+    if (!isSuccess) return;
+    const { ownerFullName, restroName } = data.restaurant;
+    if (ownerFullName || restroName) {
+      navigate(ROUTES.ONBOARDING, { replace: true });
+    } else {
+      navigate(ROUTES.DASHBOARD, { replace: true });
     }
-    return navigate(ROUTES.ONBOARDING);
-  };
+  }, [data, isSuccess, navigate]);
 
   // useForm hook for managing form state and validation
   const {
@@ -95,8 +99,6 @@ const SignInTab = ({ onClick }) => {
 
     try {
       const response = await login(payload).unwrap();
-      console.log("response", response);
-      navigateToDashboard(response);
       successToast({ data: response, message: "Logged in successfully" });
     } catch (error) {
       console.error("error", error);

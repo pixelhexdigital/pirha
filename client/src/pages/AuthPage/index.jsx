@@ -1,9 +1,4 @@
-import { Link } from "react-router-dom";
-import LOGO from "assets/pirha_logo_white.png";
-
 import Form from "./Form";
-import Icon from "components/Icon";
-import { ROUTES } from "routes/RouterConfig";
 
 const AuthPage = () => {
   // const isAuthenticated = useSelector(selectIsLoggedIn);
