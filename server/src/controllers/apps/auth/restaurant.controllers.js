@@ -56,6 +56,7 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
     username,
     isEmailVerified: false,
+    baseURL: process.env.BASE_URL,
     role: UserRolesEnum.USER,
   });
 
