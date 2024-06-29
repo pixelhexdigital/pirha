@@ -8,7 +8,6 @@
       "@/pages/": ["./pages/"],
       "@/store/": ["./store/"],
       "@/lib/": ["./lib/"],
-      "cmdk": ["node_modules/cmdk"],
       "@/routes/": ["./routes/"]
     }
   },
