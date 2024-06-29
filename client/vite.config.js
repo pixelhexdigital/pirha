@@ -17,12 +17,11 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      external: ["@radix-ui/react-progress", "@radix-ui/react-popover", "cmdk"],
+      external: ["@radix-ui/react-progress", "@radix-ui/react-popover"],
       output: {
         globals: {
           "@radix-ui/react-progress": "RadixProgress",
           "@radix-ui/react-popover": "RadixPopover",
-          cmdk: "cmdk",
         },
       },
     },
