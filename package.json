@@ -8,6 +8,6 @@
   ],
   "scripts": {
     "build": "npm install --prefix client vite && npm run build --workspace=client",
-    "start": "npm run build --workspace=server"
+    "start": "npm install --prefix server nodemon && npm run start --workspace=server"
   }
 }
