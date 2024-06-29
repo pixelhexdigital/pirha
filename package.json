@@ -7,7 +7,10 @@
     "server"
   ],
   "scripts": {
-    "build": "npm run build --workspace=client",
-    "start": "npm run start --workspace=server"
+    "bootstrap": "yarn workspaces run install",
+    "bootstrap:client": "cd client && yarn",
+    "bootstrap:server": "cd server && yarn",
+    "build": "yarn build --workspace=client",
+    "start": "yarn start --workspace=server"
   }
 }
