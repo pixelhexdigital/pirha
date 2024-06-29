@@ -1,28 +1,14 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { BASE_URL } from "lib/constants";
 
 export const customerApi = createApi({
   reducerPath: "customerApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: `http://localhost:8080/api/v1/customers`,
+    baseUrl: `${BASE_URL}/api/v1/customers`,
     credentials: "include",
     jsonContentType: "application/json",
-    prepareHeaders: (headers, { getState }) => {
-      const token = getState().auth?.token;
-      if (token) {
-        headers.set("authorization", `Token ${token}`);
-      }
-      return headers;
-    },
   }),
   endpoints: (builder) => ({
-    registerCustomer: builder.mutation({
-      query: (data) => ({
-        url: "/",
-        method: "POST",
-        body: data,
-      }),
-      transformResponse: (response) => response.data,
-    }),
     loginCustomer: builder.mutation({
       query: (data) => ({
         url: "/login",
@@ -34,5 +20,4 @@ export const customerApi = createApi({
   }),
 });
 
-export const { useLoginCustomerMutation, useRegisterCustomerMutation } =
-  customerApi;
+export const { useLoginCustomerMutation } = customerApi;

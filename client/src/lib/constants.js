@@ -1,14 +1,12 @@
+export const BASE_URL = `${window.location.protocol}//${window.location.hostname}${
+  import.meta.env.DEV ? `:${window.location.port}` : ""
+}`;
+
 // Path to the icons used in the app
 const ICONS = {};
 
 const IMAGES = {
-  AUTH_BACKGROUND: require("../assets/images/authBackground.png"),
-  ERROR_FALLBACK: require("../assets/images/errorFallback.png"),
-  LEFT_MUSIC_WAVE: require("../assets/images/leftMusicWave.png"),
-  RIGHT_MUSIC_WAVE: require("../assets/images/rightMusicWave.png"),
-  DEFAULT_MUSIC_WAVE: require("../assets/images/defaultMusicWave.png"),
-  ORIENTATION: require("../assets/images/orientation.png"),
-  VIDEO_LOADER_THUMBNAIL: require("../assets/images/videoLoaderThumbnail.png"),
+  AUTH_BACKGROUND: import("../assets/images/authBackground.png"),
 };
 
 // HTTP methods
