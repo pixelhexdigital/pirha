@@ -8,7 +8,7 @@ const initialState = {
 };
 
 const CartSlice = createSlice({
-  name: "Cart",
+  name: "cart",
   initialState,
   reducers: {
     addToCart: (state, action) => {
@@ -26,14 +26,16 @@ const CartSlice = createSlice({
     removeFromCart: (state, action) => {
       const { item } = action.payload;
       const existingItem = state.cart.find((i) => i._id === item._id);
-      if (existingItem.quantity === 1) {
-        state.cart = state.cart.filter((i) => i._id !== item._id);
-      } else {
-        existingItem.quantity -= 1;
+      if (existingItem) {
+        if (existingItem.quantity === 1) {
+          state.cart = state.cart.filter((i) => i._id !== item._id);
+        } else {
+          existingItem.quantity -= 1;
+        }
+        state.totalItems -= 1;
+        state.totalUniqueItems = state.cart.length;
+        state.total -= item.price;
       }
-      state.totalItems -= 1;
-      state.totalUniqueItems = state.cart.length;
-      state.total -= item.price;
     },
     clearCart: (state) => {
       state.cart = [];
@@ -44,20 +46,24 @@ const CartSlice = createSlice({
     increaseQuantity: (state, action) => {
       const { item } = action.payload;
       const existingItem = state.cart.find((i) => i._id === item._id);
-      existingItem.quantity += 1;
-      state.totalItems += 1;
-      state.total += item.price;
+      if (existingItem) {
+        existingItem.quantity += 1;
+        state.totalItems += 1;
+        state.total += item.price;
+      }
     },
     decreaseQuantity: (state, action) => {
       const { item } = action.payload;
       const existingItem = state.cart.find((i) => i._id === item._id);
-      if (existingItem.quantity === 1) {
-        state.cart = state.cart.filter((i) => i._id !== item._id);
-      } else {
-        existingItem.quantity -= 1;
+      if (existingItem) {
+        if (existingItem.quantity === 1) {
+          state.cart = state.cart.filter((i) => i._id !== item._id);
+        } else {
+          existingItem.quantity -= 1;
+        }
+        state.totalItems -= 1;
+        state.total -= item.price;
       }
-      state.totalItems -= 1;
-      state.total -= item.price;
     },
   },
 });
