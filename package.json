@@ -7,7 +7,7 @@
     "server"
   ],
   "scripts": {
-    "build": "npm run build --workspace=client",
+    "build": "npm install --prefix client vite && npm run build --workspace=client",
     "start": "npm run start --workspace=server"
   }
 }
