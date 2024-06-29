@@ -17,22 +17,16 @@ const TopNavBar = () => {
   const isVegOnly = useSelector(selectIsVegOnly);
   const isNonVegOnly = useSelector(selectIsNonVegOnly);
 
-  console.log("restaurantDetails:", restaurantDetails);
-
   const dispatch = useDispatch();
 
-  const { coverImage, restroName } = restaurantDetails;
+  const { avatar, restroName } = restaurantDetails;
   const { title: tableTitle } = tableDetailsById;
 
   return (
     <nav className="sticky top-0 z-10 bg-background ">
       <section className="flex items-center gap-4 p-2">
-        <img
-          src={coverImage?.url ?? LOGO}
-          alt="logo"
-          className="h-10 rounded-sm"
-        />
-        <h1>{restroName}</h1>
+        <img src={avatar?.url ?? LOGO} alt="logo" className="h-8 rounded-sm" />
+        <h1 className="text-xl font-semibold">{restroName}</h1>
       </section>
       <section className="flex gap-4 p-2 bg-[#f8f8f8] items-center justify-between shadow-md">
         <div className="flex items-center gap-4">

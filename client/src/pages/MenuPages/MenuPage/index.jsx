@@ -1,32 +1,34 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { Circle } from "lucide-react";
+
+import TopNavBar from "components/TopNavBar";
 import { addToCart } from "store/CartSlice";
 import { selectIsNonVegOnly, selectIsVegOnly } from "store/MiscellaneousSlice";
-import TopNavBar from "components/TopNavBar";
-import { Circle } from "lucide-react";
 
 const MenuPage = () => {
   // Redux selectors for filtering options
+  const dispatch = useDispatch();
   const isVegOnly = useSelector(selectIsVegOnly);
   const isNonVegOnly = useSelector(selectIsNonVegOnly);
 
   // React Router hooks for route parameters and state
-  const { categoryName, tableId, restaurantId } = useParams();
+  const { categoryName } = useParams();
   const { state } = useLocation();
   const { items: data } = state || {};
 
   // Memoized filtered data based on user's veg/non-veg preference
   const filteredData = useMemo(() => {
     if (!data) return [];
-    if (isVegOnly)
+    if (isVegOnly) {
       return data.filter((item) => item.foodGroup.toLowerCase() === "veg");
-    if (isNonVegOnly)
+    }
+    if (isNonVegOnly) {
       return data.filter((item) => item.foodGroup.toLowerCase() === "non-veg");
+    }
     return data;
   }, [data, isVegOnly, isNonVegOnly]);
-
-  const dispatch = useDispatch();
 
   const handleAddToCart = (menu) => {
     dispatch(addToCart({ item: menu }));
@@ -40,12 +42,12 @@ const MenuPage = () => {
           <h2 className="h5">{categoryName}</h2>
         </section>
         <section className="grid flex-col items-center content-center justify-center w-full grid-cols-1 gap-4 px-4 py-2 mx-auto pb-28 lg:grid-cols-2">
-          {filteredData.length ? (
+          {filteredData?.length ? (
             filteredData.map((menu) => {
               const isVeg = menu.foodGroup.toLowerCase() === "veg";
 
               return (
-                <div
+                <article
                   key={menu._id}
                   className="grid w-full grid-cols-2 p-4 border rounded-lg shadow-md sm:grid-cols-5"
                 >
@@ -87,11 +89,13 @@ const MenuPage = () => {
                       </button>
                     </div>
                   </div>
-                </div>
+                </article>
               );
             })
           ) : (
-            <p>No items available in this category.</p>
+            <section className="flex items-center justify-center w-full h-32 text-center text-gray-500 ">
+              No items available in this category.
+            </section>
           )}
         </section>
       </div>

@@ -26,22 +26,22 @@ const MiscellaneousSlice = createSlice({
       state.isVegOnly = false;
     },
   },
-  // extraReducers: (builder) => {
-  //   builder.addMatcher(
-  //     miscApi.endpoints.getRestaurantDetailsById.matchFulfilled,
-  //     (state, action) => {
-  //       state.restaurantDetails = action.payload;
-  //       localStorage.setItem("restaurantDetails", action.payload);
-  //     }
-  //   );
-  //   builder.addMatcher(
-  //     miscApi.endpoints.getTableDetailsById.matchFulfilled,
-  //     (state, action) => {
-  //       state.tableDetailById = action.payload;
-  //       localStorage.setItem("tableDetailById", action.payload);
-  //     }
-  //   );
-  // },
+  extraReducers: (builder) => {
+    builder.addMatcher(
+      miscApi.endpoints.getRestaurantDetailsById.matchFulfilled,
+      (state, action) => {
+        state.restaurantDetails = action.payload;
+        localStorage.setItem("restaurantDetails", action.payload);
+      }
+    );
+    builder.addMatcher(
+      miscApi.endpoints.getTableDetailsById.matchFulfilled,
+      (state, action) => {
+        state.tableDetailById = action.payload;
+        localStorage.setItem("tableDetailById", action.payload);
+      }
+    );
+  },
 });
 
 export const selectIsSidebarExtended = (state) => state.Misc.isSidebarExpanded;
