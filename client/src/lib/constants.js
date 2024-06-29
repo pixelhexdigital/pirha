@@ -6,7 +6,7 @@ export const BASE_URL = `${window.location.protocol}//${window.location.hostname
 const ICONS = {};
 
 const IMAGES = {
-  AUTH_BACKGROUND: import("../assets/images/authBackground.png"),
+  // AUTH_BACKGROUND: import("../assets/images/authBackground.png"),
 };
 
 // HTTP methods
