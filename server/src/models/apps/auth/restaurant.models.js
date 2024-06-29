@@ -10,6 +10,7 @@ import {
   UserRolesEnum,
 } from "../../../constants.js";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
+import { ENUMS } from "../../../constants/enum.js";
 
 const restaurantSchema = new Schema(
   {
@@ -96,7 +97,8 @@ const restaurantSchema = new Schema(
     },
     restroType: {
       type: String,
-      default: "Casual dining",
+      enum: ENUMS.restroType,
+      default: ENUMS.restroType[0],
     },
     yearOfEstablishment: {
       type: Date,

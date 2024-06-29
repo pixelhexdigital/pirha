@@ -1,4 +1,4 @@
-import { AvailableUserRoles } from "../constants.js";
+import { AvailableUserRoles, UserRolesEnum } from "../constants.js";
 import { Restaurant } from "../models/apps/auth/restaurant.models.js";
 import { Visitor } from "../models/apps/manageRestaurant/visitor.models.js";
 import { Subscription } from "../models/apps/manageRestaurant/subscription.models.js";
@@ -6,6 +6,7 @@ import { Customer } from "../models/apps/manageRestaurant/customer.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
+import { v4 as uuid } from "uuid";
 
 export const verifyJWT = asyncHandler(async (req, res, next) => {
   const token =
@@ -39,8 +40,8 @@ export const verifySubscription = asyncHandler(async (req, res, next) => {
   const token =
     req.cookies?.accessToken ||
     req.header("Authorization")?.replace("Bearer ", "");
-  const ip = req.ip;
-  const uniqueVisitorId = req.cookies?.visitorId || uuidv4(); // Generate a unique ID if not present
+  const ip = req.clientIp;
+  const uniqueVisitorId = req.cookies?.visitorId || uuid(); // Generate a unique ID if not present
 
   console.log("ip ===> ", ip);
   console.log("visitorId ===> ", uniqueVisitorId);
@@ -73,8 +74,13 @@ export const verifySubscription = asyncHandler(async (req, res, next) => {
   if (!restaurantId || restaurantId.toString() !== req.params.restaurantId) {
     restaurantId = req.params.restaurantId;
 
-    if (!restaurantId) {
+    if (!restaurantId || restaurantId === "null") {
       throw new ApiError(400, "Restaurant ID is required");
+    }
+
+    const newRestro = await Restaurant.findById(restaurantId);
+    if (!newRestro) {
+      throw new ApiError(404, "No restaurant found for given restaurantId");
     }
 
     const subscription = await Subscription.findOne({ restaurantId });
@@ -120,6 +126,17 @@ export const verifySubscription = asyncHandler(async (req, res, next) => {
       });
     } else {
       if (visitorRecord.ips.length >= dailyLimit) {
+        if (
+          !visitorRecord.rejectedVisitors.some(
+            (visitor) => visitor.visitorId === uniqueVisitorId
+          )
+        ) {
+          visitorRecord.rejectedVisitors.push({
+            ip,
+            visitorId: uniqueVisitorId,
+          });
+        }
+        await visitorRecord.save();
         throw new ApiError(
           403,
           "Daily customer limit exceeded for this restaurant"
@@ -160,7 +177,7 @@ export const verifyAdmin = asyncHandler(async (req, res, next) => {
       // Then they will get a new access token which will allow them to refresh the access token without logging out the restaurant
       throw new ApiError(401, "Invalid access token");
     }
-    if (restaurant.role !== "admin") {
+    if (restaurant.role !== UserRolesEnum.ADMIN) {
       throw new ApiError(401, "Invalid role");
     }
     req.restaurant = restaurant;

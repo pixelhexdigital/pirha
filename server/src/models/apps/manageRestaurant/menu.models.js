@@ -30,6 +30,10 @@ const menuItemSchema = new Schema({
     type: Number,
     default: 0,
   },
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
   image: {
     type: {
       url: String,
@@ -64,6 +68,10 @@ const menuCategorySchema = new Schema({
       url: null,
       public_id: null,
     },
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
   },
   items: [menuItemSchema],
 });

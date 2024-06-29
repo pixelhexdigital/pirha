@@ -1,4 +1,5 @@
-import { Link, useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useGetMenuCategoryByIdQuery } from "api/menuApi";
 import {
   useGetRestaurantDetailsByIdQuery,
@@ -9,16 +10,23 @@ import TopNavBar from "components/TopNavBar";
 import { ROUTES } from "routes/RouterConfig";
 
 const CategoriesPage = () => {
-  // get id from the URL which is passed as ?tableId=123?restaurantId=123
+  const navigate = useNavigate();
   const { search } = useLocation();
   const restaurantId = new URLSearchParams(search).get("restaurantId");
   const tableId = new URLSearchParams(search).get("tableId");
 
-  const { data, error, isLoading } = useGetMenuCategoryByIdQuery(restaurantId);
-  useGetRestaurantDetailsByIdQuery(restaurantId);
-  useGetTableDetailsByIdQuery(tableId);
+  // Redirect to Dashboard page if restaurantId or tableId is not present in the URL
+  useEffect(() => {
+    if (!restaurantId || !tableId) {
+      navigate(ROUTES.DASHBOARD);
+    }
+  }, [restaurantId, tableId, navigate]);
 
-  console.log("data", data);
+  const { data, error, isLoading } = useGetMenuCategoryByIdQuery(restaurantId, {
+    skip: !restaurantId,
+  });
+  useGetRestaurantDetailsByIdQuery(restaurantId, { skip: !restaurantId });
+  useGetTableDetailsByIdQuery(tableId, { skip: !tableId });
 
   return (
     <div className="container flex flex-col gap-4">

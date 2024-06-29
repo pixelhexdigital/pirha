@@ -20,6 +20,16 @@ const visitorSchema = new Schema({
       visitorId: String,
     },
   ],
+  rejectedVisitors: [
+    {
+      ip: String,
+      timestamp: {
+        type: Date,
+        default: Date.now,
+      },
+      visitorId: String,
+    },
+  ],
 });
 
 export const Visitor = mongoose.model("Visitor", visitorSchema);

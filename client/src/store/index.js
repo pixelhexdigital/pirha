@@ -12,15 +12,24 @@ import { miscApi } from "api/miscApi";
 import { customerApi } from "api/customerApi";
 import { ordersApi } from "api/orderApi";
 import { authApi } from "api/authApi";
+import { adminApi } from "api/adminApi";
+import { tableApi } from "api/tableApi";
 
+// Combine all reducers including the API reducers
 const reducers = combineReducers({
   cart: CartSlice,
   Misc: MiscellaneousSlice,
   Auth: AuthSlice,
-  // [menuApi.reducerPath]: menuApi.reducer,
+  [menuApi.reducerPath]: menuApi.reducer,
+  [miscApi.reducerPath]: miscApi.reducer,
+  [customerApi.reducerPath]: customerApi.reducer,
+  [ordersApi.reducerPath]: ordersApi.reducer,
   [authApi.reducerPath]: authApi.reducer,
+  [adminApi.reducerPath]: adminApi.reducer,
+  [tableApi.reducerPath]: tableApi.reducer,
 });
 
+// Persist configurations
 const rootPersistConfig = {
   key: "root",
   storage: localStorage,
@@ -35,19 +44,27 @@ const cartPersistConfig = {
   whitelist: ["cart"],
 };
 
+// Create persisted reducer
 const persistedReducer = persistReducer(
   rootPersistConfig,
   persistReducer(cartPersistConfig, reducers)
 );
+
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
+// Configure store
 export const store = configureStore({
   reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false }).concat(
-      authApi.middleware
+      authApi.middleware,
+      menuApi.middleware,
+      miscApi.middleware,
+      customerApi.middleware,
+      ordersApi.middleware,
+      adminApi.middleware,
+      tableApi.middleware
     ),
-  // devTools: import.meta.env.DEV,
   composeEnhancers,
 });
 
