@@ -7,7 +7,7 @@
     "server"
   ],
   "scripts": {
-    "build": "yarn build --workspace=client",
-    "start": "yarn start --workspace=server"
+    "build": "npm run build --workspace=client",
+    "start": "npm run start --workspace=server"
   }
 }
