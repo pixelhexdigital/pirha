@@ -88,6 +88,10 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../../", "client", "dist", "index.html"));
 });
 
+app.get("/home", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../", "client", "dist", "index.html"));
+});
+
 // api routes
 import { errorHandler } from "./middlewares/error.middlewares.js";
 import healthcheckRouter from "./routes/healthcheck.routes.js";
