@@ -1,10 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { combineReducers, compose } from "redux";
-import { persistReducer } from "redux-persist";
+import { combineReducers } from "redux";
+import { persistReducer, persistStore } from "redux-persist";
+import storage from "redux-persist/lib/storage"; // defaults to localStorage for web
 import sessionStorage from "redux-persist/es/storage/session";
-import localStorage from "redux-persist/es/storage";
 
-import CartSlice from "store/CartSlice";
+import cartReducer from "store/CartSlice";
 import MiscellaneousSlice from "store/MiscellaneousSlice";
 import AuthSlice from "store/AuthSlice";
 import { menuApi } from "api/menuApi";
@@ -15,9 +15,27 @@ import { authApi } from "api/authApi";
 import { adminApi } from "api/adminApi";
 import { tableApi } from "api/tableApi";
 
+// Persist configurations
+const rootPersistConfig = {
+  key: "root",
+  storage,
+  version: 1,
+  whitelist: ["Misc", "Auth"],
+};
+
+const cartPersistConfig = {
+  key: "cart",
+  storage: sessionStorage,
+  version: 2,
+  whitelist: ["cart", "total", "totalItems", "totalUniqueItems"],
+};
+
+// Apply persistReducer to the cart slice
+const persistedCartReducer = persistReducer(cartPersistConfig, cartReducer);
+
 // Combine all reducers including the API reducers
-const reducers = combineReducers({
-  cart: CartSlice,
+const rootReducer = combineReducers({
+  cart: persistedCartReducer,
   Misc: MiscellaneousSlice,
   Auth: AuthSlice,
   [menuApi.reducerPath]: menuApi.reducer,
@@ -29,28 +47,8 @@ const reducers = combineReducers({
   [tableApi.reducerPath]: tableApi.reducer,
 });
 
-// Persist configurations
-const rootPersistConfig = {
-  key: "root",
-  storage: localStorage,
-  version: 1,
-  whitelist: ["Misc", "Auth"],
-};
-
-const cartPersistConfig = {
-  key: "cart",
-  storage: sessionStorage,
-  version: 1,
-  whitelist: ["cart"],
-};
-
 // Create persisted reducer
-const persistedReducer = persistReducer(
-  rootPersistConfig,
-  persistReducer(cartPersistConfig, reducers)
-);
-
-const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+const persistedReducer = persistReducer(rootPersistConfig, rootReducer);
 
 // Configure store
 export const store = configureStore({
@@ -65,7 +63,8 @@ export const store = configureStore({
       adminApi.middleware,
       tableApi.middleware
     ),
-  composeEnhancers,
 });
+
+export const persistor = persistStore(store);
 
 export default store;
