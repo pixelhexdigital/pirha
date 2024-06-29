@@ -116,7 +116,6 @@ import { uploadOnCloudinary } from "../../../utils/cloudinary.js";
 const updateSocialProfile = asyncHandler(async (req, res) => {
   const {
     restroName,
-    baseURL,
     ownerFullName,
     location,
     restroType,

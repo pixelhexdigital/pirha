@@ -1,9 +1,10 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { BASE_URL } from "lib/constants";
 
 export const miscApi = createApi({
   reducerPath: "miscApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: `http://localhost:8080/api/v1/public`,
+    baseUrl: `${BASE_URL}/api/v1/public`,
     credentials: "include",
     jsonContentType: "application/json",
     prepareHeaders: (headers, { getState }) => {

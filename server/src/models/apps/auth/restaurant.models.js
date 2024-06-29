@@ -70,7 +70,7 @@ const restaurantSchema = new Schema(
     },
     baseURL: {
       type: String,
-      default: null,
+      default: process.env.BASE_URL || "https://pirha.in/home",
     },
     customers: [
       {

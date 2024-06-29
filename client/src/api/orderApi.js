@@ -1,23 +1,17 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { BASE_URL } from "lib/constants";
 
 export const ordersApi = createApi({
   reducerPath: "ordersApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: `http://localhost:8080/api/v1/orders`,
+    baseUrl: `${BASE_URL}/api/v1/orders`,
     credentials: "include",
     jsonContentType: "application/json",
-    prepareHeaders: (headers, { getState }) => {
-      const token = getState().auth?.token;
-      if (token) {
-        headers.set("authorization", `Token ${token}`);
-      }
-      return headers;
-    },
   }),
   endpoints: (builder) => ({
     createOrder: builder.mutation({
-      query: (data) => ({
-        url: "/",
+      query: ({ data, restaurantId }) => ({
+        url: `/${restaurantId}`,
         method: "POST",
         body: data,
       }),

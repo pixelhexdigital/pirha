@@ -1,9 +1,15 @@
+import { useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { object, string } from "yup";
+import { useDispatch, useSelector } from "react-redux";
+import { HandPlatter } from "lucide-react";
+
+import { useCreateOrderMutation } from "api/orderApi";
+import { useLoginCustomerMutation } from "api/customerApi";
+
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetFooter,
   SheetHeader,
@@ -20,9 +26,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "components/ui/dialog";
-import { HandPlatter } from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
-
 import Field from "components/Field";
 import { Button } from "components/ui/button";
 import {
@@ -31,10 +34,11 @@ import {
   removeFromCart,
   selectCart,
 } from "store/CartSlice";
-import { selectRestaurantDetails } from "store/MiscellaneousSlice";
-import { useCreateOrderMutation } from "api/orderApi";
-import { useRegisterCustomerMutation } from "api/customerApi";
-import { errorToast } from "lib/helper";
+import {
+  selectRestaurantDetails,
+  selectTableDetailById,
+} from "store/MiscellaneousSlice";
+import { errorToast, successToast } from "lib/helper";
 
 const CLASS_INPUT =
   "border-n-7 focus:bg-transparent dark:bg-n-7 dark:border-n-7 dark:focus:bg-transparent";
@@ -47,14 +51,17 @@ const FORM_SCHEMA = object().shape({
 });
 
 const Cart = () => {
-  const cartData = useSelector(selectCart);
-  const restaurantDetails = useSelector(selectRestaurantDetails);
-
-  const [createOrder, { isLoading, error }] = useCreateOrderMutation();
-  const [registerCustomer, { isLoading: isCustomerLoading }] =
-    useRegisterCustomerMutation();
-
   const dispatch = useDispatch();
+  const cartData = useSelector(selectCart);
+
+  const restaurantDetails = useSelector(selectRestaurantDetails);
+  const tableDetails = useSelector(selectTableDetailById);
+
+  const [createOrder, { isLoading }] = useCreateOrderMutation();
+  const [loginCustomer, { isLoading: loginLoadingStatus }] =
+    useLoginCustomerMutation();
+
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const {
     handleSubmit,
@@ -68,12 +75,13 @@ const Cart = () => {
     resolver: yupResolver(FORM_SCHEMA),
   });
 
-  const total = cartData.reduce(
+  const totalItems = cartData?.reduce((acc, item) => acc + item.quantity, 0);
+  const total = cartData?.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0
   );
 
-  const totalItems = cartData.reduce((acc, item) => acc + item.quantity, 0);
+  const onOpenChange = (isOpen) => setSheetOpen(isOpen);
 
   const handlePlaceOrder = async (data) => {
     const customerData = {
@@ -84,30 +92,31 @@ const Cart = () => {
     };
 
     const orderData = {
-      restaurantId: restaurantDetails?._id,
+      tableId: tableDetails?._id,
       items: cartData.map((item) => ({
         menuItemId: item._id,
         quantity: item.quantity,
       })),
     };
-    console.log("customerData", customerData);
-    console.log("orderData", orderData);
 
     try {
-      const customerResponse = await registerCustomer(customerData).unwrap();
-      const orderResponse = await createOrder(orderData).unwrap();
-      console.log("orderResponse", orderResponse);
-      console.log("customerResponse", customerResponse);
+      await loginCustomer(customerData).unwrap();
+      await createOrder({
+        data: orderData,
+        restaurantId: restaurantDetails?._id,
+      }).unwrap();
+      successToast({ message: "Order Placed Successfully" });
       dispatch(clearCart());
+      setSheetOpen(false);
     } catch (error) {
       errorToast({ error: error });
     }
   };
 
   return (
-    <Sheet>
-      {cartData.length > 0 && (
-        <div className="fixed bottom-0 flex justify-between w-full p-4 bg-primary text-primary-background">
+    <Sheet open={sheetOpen} onOpenChange={onOpenChange}>
+      {cartData?.length > 0 && (
+        <section className="fixed bottom-0 flex justify-between w-full p-4 bg-primary text-primary-background">
           <div className="flex items-center gap-2">
             <div className="flex items-center justify-center bg-white border rounded-full size-10">
               <HandPlatter size={18} fill="black" />
@@ -125,15 +134,15 @@ const Cart = () => {
               View Order
             </SheetTrigger>
           </div>
-        </div>
+        </section>
       )}
 
       <SheetContent className="w-full">
         <SheetHeader>
           <SheetTitle>Order Summary</SheetTitle>
         </SheetHeader>
-        {cartData.map((item) => (
-          <div
+        {cartData?.map((item) => (
+          <article
             key={item._id}
             className="flex justify-between p-2 mt-4 border-b"
           >
@@ -181,40 +190,17 @@ const Cart = () => {
                 </p>
               ) : null}
             </div>
-          </div>
+          </article>
         ))}
-        <div className="flex justify-between p-2 border-t">
-          <p className="font-semibold">Total</p>
-          <p className="font-semibold">
+        <section className="flex justify-between p-2 font-bold border-t">
+          <p>Grand Total</p>
+          <p>
             <span>&#8377; </span>
             {total}
           </p>
-        </div>
-
-        <div className="flex justify-between p-2 border-t">
-          <p className="font-semibold">Taxes</p>
-          <p className="font-semibold">
-            <span>&#8377; </span>
-            50
-          </p>
-        </div>
-
-        <div className="flex justify-between p-2 border-t">
-          <p className="font-semibold">Discount</p>
-          <p className="font-semibold">
-            <span>&#8377; </span>0
-          </p>
-        </div>
-
-        <div className="flex justify-between p-2 border-t">
-          <p className="font-bold">Grand Total</p>
-          <p className="font-bold">
-            <span>&#8377; </span>
-            {total + 50}
-          </p>
-        </div>
+        </section>
         <SheetFooter>
-          <Dialog className="">
+          <Dialog className="" area-label="Place Order">
             <DialogTrigger className="w-full px-4 py-2 mt-10 text-sm font-semibold text-white rounded-lg bg-primary focus:outline-none focus:ring focus:ring-primary-background focus:ring-opacity-50">
               Place Order
             </DialogTrigger>
@@ -247,10 +233,11 @@ const Cart = () => {
                 <Button
                   type="submit"
                   onClick={handleSubmit(handlePlaceOrder)}
-                  disabled={isLoading || isCustomerLoading}
+                  disabled={isLoading || loginLoadingStatus}
                 >
-                  {/* Place Order */}
-                  {isLoading ? "Placing Order..." : "Place Order"}
+                  {isLoading || loginLoadingStatus
+                    ? "Placing Order..."
+                    : "Place Order"}
                 </Button>
                 <DialogClose>Cancel</DialogClose>
               </DialogFooter>
