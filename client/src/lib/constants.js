@@ -1,6 +1,7 @@
-export const BASE_URL = `${window.location.protocol}//${window.location.hostname}${
-  import.meta.env.DEV ? `:${window.location.port}` : ""
-}`;
+// Base URL for the API
+export const BASE_URL = import.meta.env.DEV
+  ? "http://localhost:8080"
+  : `${window.location.protocol}//${window.location.hostname}`;
 
 // Path to the icons used in the app
 const ICONS = {};
