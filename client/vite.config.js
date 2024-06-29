@@ -16,8 +16,6 @@ export default defineConfig({
     },
   },
   build: {
-    rollupOptions: {
-      external: ["@radix-ui/react-progress", "@radix-ui/react-popover"],
-    },
+    rollupOptions: {},
   },
 });
