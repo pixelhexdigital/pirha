@@ -132,6 +132,11 @@ app.use("/api/v1/admin/taxes", taxRouter);
 
 initializeSocketIO(io);
 
+// Catch-all route to serve index.html for client-side routing
+app.get("*", (req, res) => {
+  res.sendFile(path.join(staticPath, "index.html"));
+});
+
 app.use(errorHandler);
 
 export { httpServer };
