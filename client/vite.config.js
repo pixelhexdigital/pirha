@@ -16,6 +16,13 @@ export default defineConfig({
     },
   },
   build: {
-    rollupOptions: {},
+    rollupOptions: {
+      output: {
+        // This places all the assets directly in the `dist` folder
+        assetFileNames: "[name][extname]",
+        chunkFileNames: "[name].[hash].js",
+        entryFileNames: "[name].[hash].js",
+      },
+    },
   },
 });
