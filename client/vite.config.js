@@ -15,14 +15,4 @@ export default defineConfig({
       "@": path.resolve(__dirname, "src"),
     },
   },
-  build: {
-    rollupOptions: {
-      output: {
-        // This places all the assets directly in the `dist` folder
-        assetFileNames: "[name][extname]",
-        chunkFileNames: "[name].[hash].js",
-        entryFileNames: "[name].[hash].js",
-      },
-    },
-  },
 });
