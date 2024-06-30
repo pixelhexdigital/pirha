@@ -13,28 +13,23 @@ const app = express();
 
 const httpServer = createServer(app);
 
-const allowedOrigins = process.env.CORS_ORIGIN.split(",");
-
-const corsOptions = {
-  origin: (origin, callback) => {
-    if (allowedOrigins.includes(origin) || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true,
-};
-
 const io = new Server(httpServer, {
   pingTimeout: 60000,
-  cors: corsOptions,
+  cors: {
+    origin: process.env.CORS_ORIGIN,
+    credentials: true,
+  },
 });
 
 app.set("io", io); // using set method to mount the `io` instance on the app to avoid usage of `global`
 
 // global middlewares
-app.use(cors(corsOptions));
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN,
+    credentials: true,
+  })
+);
 
 app.use(requestIp.mw());
 
