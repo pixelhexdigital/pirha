@@ -64,7 +64,8 @@ const SignInTab = ({ onClick }) => {
   useEffect(() => {
     if (!isSuccess) return;
     const { ownerFullName, restroName } = data.restaurant;
-    if (ownerFullName || restroName) {
+
+    if (!ownerFullName || !restroName) {
       navigate(ROUTES.ONBOARDING, { replace: true });
     } else {
       navigate(ROUTES.DASHBOARD, { replace: true });
