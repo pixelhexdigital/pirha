@@ -4,6 +4,8 @@ import { asyncHandler } from "../../../utils/asyncHandler.js";
 import { Order } from "../../../models/apps/manageRestaurant/order.models.js";
 import { emitSocketEvent } from "../../../socket/index.js";
 import { OrderEventEnum } from "../../../constants.js";
+import { Restaurant } from "../../../models/apps/auth/restaurant.models.js";
+import mongoose from "mongoose";
 
 const updateOrder = asyncHandler(async (req, res) => {
   const { orderId } = req.params;
@@ -44,4 +46,97 @@ const updateOrder = asyncHandler(async (req, res) => {
     );
 });
 
-export { updateOrder };
+const getOrders = asyncHandler(async (req, res) => {
+  const restaurantId = req.restaurant?._id;
+  const restaurant = await Restaurant.findById(restaurantId);
+  if (!restaurant) {
+    throw new ApiError(404, "Restaurant not found");
+  }
+
+  // Define the aggregation pipeline stages
+  const pipeline = [
+    {
+      $match: {
+        restaurantId: new mongoose.Types.ObjectId(req.restaurant._id),
+      },
+    },
+    {
+      $lookup: {
+        from: "menus", // Assuming "menus" is the name of your menus collection
+        let: { items: "$items.menuItemId" },
+        pipeline: [
+          {
+            $unwind: "$categories",
+          },
+          {
+            $unwind: "$categories.items",
+          },
+          {
+            $match: {
+              $expr: {
+                $in: ["$categories.items._id", "$$items"],
+              },
+            },
+          },
+          {
+            $project: {
+              _id: "$categories.items._id",
+              title: "$categories.items.title",
+              description: "$categories.items.description",
+              image: "$categories.items.image",
+              itemType: "$categories.items.itemType",
+            },
+          },
+        ],
+        as: "menuItems",
+      },
+    },
+    {
+      $addFields: {
+        items: {
+          $map: {
+            input: "$items",
+            as: "origItem",
+            in: {
+              $mergeObjects: [
+                {
+                  $arrayElemAt: [
+                    {
+                      $filter: {
+                        input: "$menuItems",
+                        cond: { $eq: ["$$origItem.menuItemId", "$$this._id"] },
+                      },
+                    },
+                    0,
+                  ],
+                },
+                "$$origItem",
+              ],
+            },
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        menuItems: 0, // Remove the temporary field 'menuItems' after merging
+      },
+    },
+  ];
+
+  const orders = await Order.aggregate(pipeline);
+
+  // If no orders found, return a 404 response
+  if (!orders || orders.totalOrders === 0) {
+    return res
+      .status(404)
+      .json(new ApiResponse(404, {}, "No orders found for this customer"));
+  }
+
+  // Return the paginated orders as a successful response
+  res
+    .status(200)
+    .json(new ApiResponse(200, orders, "Orders retrieved successfully"));
+});
+
+export { getOrders, updateOrder };
