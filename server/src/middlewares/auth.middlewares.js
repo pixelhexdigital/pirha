@@ -89,6 +89,20 @@ export const verifySubscription = asyncHandler(async (req, res, next) => {
       throw new ApiError(403, "No subscription found for this restaurant");
     }
 
+    if (subscription.endDate < today && subscription.plan.name !== "Free") {
+      await changePlan(
+        {
+          body: {
+            restaurantId: restaurantId,
+            plan: "free",
+            days: 90,
+          },
+        },
+        res,
+        next
+      );
+    }
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
