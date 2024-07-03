@@ -2,15 +2,14 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useMediaQuery } from "react-responsive";
 import { twMerge } from "tailwind-merge";
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { ChevronLast, ChevronFirst } from "lucide-react";
-// import LOGO from "assets/images/logo.png";
 
 import {
   selectIsSidebarExtended,
   setSidebarExtended,
 } from "store/MiscellaneousSlice";
-// import { IMAGES } from "lib/constants";
+import { IMAGES } from "lib/constants";
 
 export default function LeftSidebar({ children }) {
   const isExpanded = useSelector(selectIsSidebarExtended);
@@ -31,8 +30,14 @@ export default function LeftSidebar({ children }) {
 
   return (
     <aside className="fixed top-0 left-0 z-20 h-screen overflow-x-hidden overflow-y-auto bg-white border-r shadow-sm drop-shadow-2xl bg-background scrollbar-none">
-      <nav className="inline-flex flex-col h-full ">
-        <div className="flex items-center justify-between p-4 pb-8">
+      <nav className="inline-flex flex-col h-full px-2">
+        <div className="flex items-center justify-between h-20 p-2 ">
+          {isExpanded && (
+            <Link to="/" className="flex items-center">
+              <img src={IMAGES.LOGO_WHITE} alt="logo" className="h-8" />
+              <span className="ml-2 text-lg font-semibold text-primary"></span>
+            </Link>
+          )}
           <button
             onClick={() => setExpanded(!isExpanded)}
             className="p-1.5 rounded-lg bg-gray-50 hover:bg-gray-100"

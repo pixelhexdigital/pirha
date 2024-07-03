@@ -7,7 +7,7 @@ export const BASE_URL = import.meta.env.DEV
 const ICONS = {};
 
 const IMAGES = {
-  // AUTH_BACKGROUND: import("../assets/images/authBackground.png"),
+  LOGO_WHITE: new URL("../assets/pirha_logo_white.png", import.meta.url).href,
 };
 
 // HTTP methods
