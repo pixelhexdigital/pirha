@@ -205,6 +205,7 @@ const UpdateProfilePage = ({ nextStep }) => {
             data={RESTRO_TYPES}
             value={field.value}
             setValue={(value) => field.onChange(value)}
+            showSearchInput={true}
             error={errors.restroType?.message}
             label={PLACEHOLDERS.RESTRO_TYPE}
             placeholder={PLACEHOLDERS.RESTRO_TYPE}
