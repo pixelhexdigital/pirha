@@ -91,7 +91,7 @@ const changePlan = (isFromMiddleware = false) =>
     await menu.save();
 
     if (isFromMiddleware) {
-      return next();
+      return;
     }
 
     return res
