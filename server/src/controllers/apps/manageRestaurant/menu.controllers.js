@@ -15,6 +15,25 @@ const fetchMenus = asyncHandler(async (req, res) => {
 });
 
 // Fetch menu by ID for a restaurant
+const fetchMyMenu = asyncHandler(async (req, res) => {
+  const restaurantId = req.restaurant?._id;
+  const restaurant = await Restaurant.findById(restaurantId);
+
+  if (!restaurant) {
+    throw new ApiError(404, "Restaurant does not exist");
+  }
+
+  const menu = await Menu.findOne({ restaurantId: restaurant._id });
+
+  if (!menu) {
+    throw new ApiError(404, "Menu not found");
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, { menu }, "Menu fetched successfully"));
+});
+// Fetch menu by ID for a restaurant
 const fetchMenuByRestraurnt = asyncHandler(async (req, res) => {
   const { restaurantId } = req.params;
   const restaurant = await Restaurant.findById(restaurantId);
@@ -619,6 +638,7 @@ const updateCategoryImage = asyncHandler(async (req, res) => {
 
 export {
   fetchMenus,
+  fetchMyMenu,
   fetchMenuByRestraurnt,
   deleteMenuById,
   addCategory,

@@ -28,6 +28,16 @@ export const menuApi = createApi({
       },
     }),
 
+    getMyMenu: builder.query({
+      query: () => ``,
+      providesTags: ["Menu"],
+      transformResponse: (response) => response.data,
+      transformErrorResponse: (response) => {
+        errorToast({ error: response });
+        return response;
+      },
+    }),
+
     addItemToCategory: builder.mutation({
       query: ({ categoryId, item }) => ({
         url: `/categories/${categoryId}/items`,
@@ -78,4 +88,5 @@ export const menuApi = createApi({
 export const {
   useAddItemToCategoryMutation,
   useGetMenuCategoryByRestaurantIdQuery,
+  useGetMyMenuQuery,
 } = menuApi;

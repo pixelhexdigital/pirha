@@ -19,14 +19,17 @@ import {
   deactivateMenuItem,
   activateMenuCategory,
   deactivateMenuCategory,
+  fetchMyMenu,
 } from "../../../controllers/apps/manageRestaurant/menu.controllers.js";
 import { upload } from "../../../middlewares/multer.middlewares.js";
 
 const router = Router();
 
 // Get list of menus for a restaurant
-router.route("/").get(verifyJWT, fetchMenus);
+// router.route("/").get(verifyJWT, fetchMenus);
 
+//Get menu by the restaurant
+router.route("/").get(verifyJWT, fetchMyMenu);
 //Get menu by the restaurant
 router.route("/:restaurantId").get(verifySubscription, fetchMenuByRestraurnt);
 
