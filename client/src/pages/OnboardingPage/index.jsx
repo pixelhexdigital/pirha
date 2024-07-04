@@ -53,6 +53,7 @@ const OnboardingPage = () => {
           return null;
         })}
       </div>
+
       <button onClick={nextStep} className="btn btn-primary">
         Next
       </button>

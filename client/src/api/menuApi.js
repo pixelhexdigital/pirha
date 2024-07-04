@@ -89,4 +89,5 @@ export const {
   useAddItemToCategoryMutation,
   useGetMenuCategoryByRestaurantIdQuery,
   useGetMyMenuQuery,
+  useCreateMenuCategoryMutation,
 } = menuApi;

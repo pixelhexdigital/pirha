@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { BASE_URL } from "lib/constants";
+import { errorToast } from "lib/helper";
 
 export const tableApi = createApi({
   reducerPath: "tableApi",
@@ -9,6 +10,14 @@ export const tableApi = createApi({
     jsonContentType: "application/json",
   }),
   endpoints: (builder) => ({
+    getMyTables: builder.query({
+      query: () => ``,
+      providesTags: ["Table"],
+      transformErrorResponse: (response) => {
+        errorToast({ error: response });
+        return response;
+      },
+    }),
     generateTableQr: builder.mutation({
       query: (data) => {
         return {
@@ -30,4 +39,8 @@ export const tableApi = createApi({
   }),
 });
 
-export const { useGenerateTableQrMutation, useDownloadQrMutation } = tableApi;
+export const {
+  useGenerateTableQrMutation,
+  useDownloadQrMutation,
+  useGetMyTablesQuery,
+} = tableApi;

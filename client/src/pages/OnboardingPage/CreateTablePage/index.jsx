@@ -5,6 +5,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import {
   useDownloadQrMutation,
   useGenerateTableQrMutation,
+  useGetMyTablesQuery,
 } from "api/tableApi";
 
 import Field from "components/Field";
@@ -50,6 +51,8 @@ const CreateTablePage = ({ onNext }) => {
     useGenerateTableQrMutation();
   const [downloadQr, { data: qrDownloadData, isLoading: downloadingQr }] =
     useDownloadQrMutation();
+
+  const { data: tableData, isLoading } = useGetMyTablesQuery();
 
   const qrDataSuccess = qrData?.success;
 
@@ -106,6 +109,33 @@ const CreateTablePage = ({ onNext }) => {
       });
     }
   };
+
+  if (tableData?.success && tableData.data?.tables?.length) {
+    return (
+      <div>
+        <div className="flex flex-row flex-wrap max-h-svh">
+          {tableData.data.tables.map((table) => {
+            return (
+              <div
+                className="flex flex-auto bg-secondary min-w-min p-4 m-2 text-secondary-foreground "
+                key={table._id.toString()}
+              >
+                {table.title}
+              </div>
+            );
+          })}
+        </div>
+        <div className="flex flex-row ">
+          <Button type="submit" size="lg" className="w-full">
+            Download QR
+          </Button>
+          <Button type="" size="lg" className="w-full" onClick={onNext}>
+            Next
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form

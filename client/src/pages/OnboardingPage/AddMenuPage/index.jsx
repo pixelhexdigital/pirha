@@ -9,7 +9,11 @@ import Field from "components/Field";
 import { Button } from "components/ui/button";
 import { ROUTES } from "routes/RouterConfig";
 import MenuItemAddDialog from "./MenuItemAddDialog";
-import { useAddItemToCategoryMutation, useGetMyMenuQuery } from "api/menuApi";
+import {
+  useAddItemToCategoryMutation,
+  useCreateMenuCategoryMutation,
+  useGetMyMenuQuery,
+} from "api/menuApi";
 import { selectRestaurantId } from "store/AuthSlice";
 
 // Validation schema for category
@@ -20,15 +24,19 @@ const ADD_CATEGORY_SCHEMA = object().shape({
 const predefinedCategories = ["Starter", "Main Course", "Dessert"];
 
 const AddMenuPage = () => {
-  const restaurantId = useSelector(selectRestaurantId);
-  const { data: menuData, isLoading } = useGetMyMenuQuery(restaurantId);
+  const { data: menuData, isLoading } = useGetMyMenuQuery();
   const [addItemToCategory] = useAddItemToCategoryMutation();
 
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
+  const [showAddCategory, setShowAddCategory] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [currentCategory, setCurrentCategory] = useState("");
+  const [
+    createCategory,
+    { data: categoryResponse, isLoading: creatingCategory },
+  ] = useCreateMenuCategoryMutation();
 
   const {
     handleSubmit: handleCategorySubmit,
@@ -56,9 +64,8 @@ const AddMenuPage = () => {
 
   const onCategorySubmit = (data) => {
     const newCategory = data.categoryName;
-    if (!categories.some((cat) => cat.name === newCategory)) {
-      setCategories([...categories, { name: newCategory, items: [] }]);
-    }
+
+    setShowAddCategory(false);
     setSelectedCategory(newCategory);
     setValue("categoryName", ""); // Clear the input field
   };
@@ -102,8 +109,16 @@ const AddMenuPage = () => {
         <div>Loading...</div>
       ) : (
         categories.map((category, index) => (
-          <div key={index} className="mb-4">
+          <div key={index} className="mb-4 bg-slate-200 rounded-md pl-4 pr-4">
             <h3 className="mb-2 font-semibold text-lg">{category.name}</h3>
+
+            <ul>
+              {category.items.map((item, itemIndex) => (
+                <li key={itemIndex} className="mb-1">
+                  {item.title} - {item.price}
+                </li>
+              ))}
+            </ul>
             <Button
               onClick={() => openModal(category)}
               size="sm"
@@ -111,52 +126,60 @@ const AddMenuPage = () => {
             >
               Add Menu Item
             </Button>
-            <ul>
-              {category.items.map((item, itemIndex) => (
-                <li key={itemIndex} className="mb-1">
-                  {item.itemName} - {item.itemPrice}
-                </li>
-              ))}
-            </ul>
           </div>
         ))
       )}
-      <form onSubmit={handleCategorySubmit(onCategorySubmit)} className="mb-4">
-        <div className="flex flex-wrap mb-4 space-x-2">
-          {predefinedCategories.map((category, index) => (
-            <button
-              key={index}
-              type="button"
-              className={`px-4 py-2 rounded-full border ${
-                selectedCategory === category
-                  ? "bg-secondary text-white"
-                  : "bg-gray-200 text-gray-800"
-              }`}
-              onClick={() => handleCategoryClick(category)}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
-        <div className="mb-4">
-          <Field
-            type="text"
-            placeholder="Or enter new category name"
-            className="w-full"
-            error={categoryErrors.categoryName?.message}
-            {...registerCategory("categoryName")}
-          />
-        </div>
-        <Button type="submit" size="lg" className="w-full">
-          {categories.length === 0 ? "Add Category" : "Add More Category"}
-        </Button>
-      </form>
-
+      {categories.length === 0 || showAddCategory ? (
+        <form
+          onSubmit={handleCategorySubmit(onCategorySubmit)}
+          className="mb-4"
+        >
+          <div className="flex flex-wrap mb-4 space-x-2">
+            {predefinedCategories.map((category, index) => (
+              <button
+                key={index}
+                type="button"
+                className={`px-4 py-2 rounded-full border ${
+                  selectedCategory === category
+                    ? "bg-secondary text-white"
+                    : "bg-gray-200 text-gray-800"
+                }`}
+                onClick={() => handleCategoryClick(category)}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+          <div className="mb-4">
+            <Field
+              type="text"
+              placeholder="Or enter new category name"
+              className="w-full"
+              error={categoryErrors.categoryName?.message}
+              {...registerCategory("categoryName")}
+            />
+          </div>
+          <Button type="submit" size="lg" className="w-full">
+            {categories.length === 0 ? "Add Category" : "Add More Category"}
+          </Button>
+        </form>
+      ) : (
+        <div />
+      )}
+      <Button
+        onClick={() => setShowAddCategory(!showAddCategory)}
+        size="lg"
+        variant="secondary"
+        className="rounded-2xl text-3xl max-w-fit text-center"
+      >
+        {showAddCategory ? "-" : "+"}
+      </Button>
       <MenuItemAddDialog
         open={showModal}
         onClose={closeModal}
         onAddItem={addMenuItemToCategory}
       />
+
       <Button onClick={navigateToDashboard} size="lg" className="w-full mt-4">
         Next
       </Button>
