@@ -31,7 +31,7 @@ const OnboardingPage = () => {
       content: <CreateTablePage onNext={nextStep} />,
     },
     {
-      title: "Add Menu Items",
+      title: "Create Menus",
       content: <AddMenuPage onNext={nextStep} />,
     },
   ];
