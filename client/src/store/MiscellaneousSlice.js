@@ -8,6 +8,9 @@ const initialState = {
   tableDetailById: {},
   isVegOnly: false,
   isNonVegOnly: false,
+  foodGroups: [],
+  restroTypes: [],
+  menuItemTypes: [],
 };
 
 const MiscellaneousSlice = createSlice({
@@ -41,6 +44,27 @@ const MiscellaneousSlice = createSlice({
         localStorage.setItem("tableDetailById", action.payload);
       }
     );
+    builder.addMatcher(
+      miscApi.endpoints.getEnumValues.matchFulfilled,
+      (state, action) => {
+        console.log("action.payload: ", action.payload);
+        // state.foodGroups = action.payload.foodGroup?.map((group) => ({
+        //   label: group,
+        //   value: group,
+        // }));
+        // state.restroTypes = action.payload.restroType?.map((type) => ({
+        //   label: type,
+        //   value: type,
+        // }));
+        // state.menuItemTypes = action.payload.menuItemType?.map((type) => ({
+        //   label: type,
+        //   value: type,
+        // }));
+        state.foodGroups = action.payload.foodGroup;
+        state.restroTypes = action.payload.restroType;
+        state.menuItemTypes = action.payload.menuItemType;
+      }
+    );
   },
 });
 
@@ -49,6 +73,9 @@ export const selectRestaurantDetails = (state) => state.Misc.restaurantDetails;
 export const selectTableDetailById = (state) => state.Misc.tableDetailById;
 export const selectIsVegOnly = (state) => state.Misc.isVegOnly;
 export const selectIsNonVegOnly = (state) => state.Misc.isNonVegOnly;
+export const selectFoodGroups = (state) => state.Misc.foodGroups;
+export const selectRestroTypes = (state) => state.Misc.restroTypes;
+export const selectMenuItemTypes = (state) => state.Misc.menuItemTypes;
 
 export const {
   setSidebarExtended,

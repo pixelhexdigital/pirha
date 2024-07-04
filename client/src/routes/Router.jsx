@@ -18,6 +18,7 @@ import ProtectedRoute from "components/ProtectedRoute";
 import { selectIsAuthenticated } from "store/AuthSlice";
 import DashboardPage from "pages/AdminPages/DashboardPage";
 import MenuManagementPage from "pages/AdminPages/MenuManagementPage";
+import CategoriesManagementPage from "pages/AdminPages/MenuManagementPage/CategoriesManagement";
 
 const Routes = [
   { path: ROUTES.CATEGORIES, element: <CategoriesPage /> },
@@ -33,6 +34,7 @@ const AuthenticatedRoutes = [
   { path: ROUTES.ORDER_DETAILS, element: <OrderDetailsPage /> },
   { path: ROUTES.ONBOARDING, element: <OnboardingPage /> },
   { path: ROUTES.MENU_MANAGEMENT, element: <MenuManagementPage /> },
+  { path: ROUTES.CATEGORIES_MANAGEMENT, element: <CategoriesManagementPage /> },
 ];
 
 const UnauthenticatedRoutes = [

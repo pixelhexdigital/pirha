@@ -25,8 +25,15 @@ export const miscApi = createApi({
       query: (tableId) => `tables/${tableId}`,
       transformResponse: (response) => response.data?.table,
     }),
+    getEnumValues: builder.query({
+      query: () => "/enums",
+      transformResponse: (response) => response.data?.enums,
+    }),
   }),
 });
 
-export const { useGetRestaurantDetailsByIdQuery, useGetTableDetailsByIdQuery } =
-  miscApi;
+export const {
+  useGetEnumValuesQuery,
+  useGetTableDetailsByIdQuery,
+  useGetRestaurantDetailsByIdQuery,
+} = miscApi;

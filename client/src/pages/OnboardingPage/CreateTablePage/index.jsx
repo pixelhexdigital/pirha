@@ -120,6 +120,7 @@ const CreateTablePage = ({ onNext }) => {
             data={alphabetOptions}
             value={field.value}
             setValue={field.onChange}
+            showSearchInput={true}
             error={errors.prefixOfTables?.message}
             label={PLACEHOLDERS.PREFIX_OF_TABLES}
             placeholder={PLACEHOLDERS.PREFIX_OF_TABLES}

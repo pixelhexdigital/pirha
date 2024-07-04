@@ -18,15 +18,64 @@ export const menuApi = createApi({
   }),
 
   endpoints: (builder) => ({
-    getMenuCategoryById: builder.query({
+    getMenuCategoryByRestaurantId: builder.query({
       query: (id) => `/${id}`,
+      providesTags: ["Menu"],
       transformResponse: (response) => response.data,
       transformErrorResponse: (response) => {
         errorToast({ error: response });
         return response;
       },
     }),
+
+    addItemToCategory: builder.mutation({
+      query: ({ categoryId, item }) => ({
+        url: `/categories/${categoryId}/items`,
+        method: "POST",
+        body: item,
+      }),
+      invalidatesTags: ["Menu"],
+    }),
+
+    updateItemInCategory: builder.mutation({
+      query: ({ categoryId, itemId, item }) => ({
+        url: `/${categoryId}/items/${itemId}`,
+        method: "PUT",
+        body: item,
+      }),
+    }),
+
+    deleteItemFromCategory: builder.mutation({
+      query: ({ categoryId, itemId }) => ({
+        url: `/${categoryId}/items/${itemId}`,
+        method: "DELETE",
+      }),
+    }),
+
+    createMenuCategory: builder.mutation({
+      query: (category) => ({
+        url: "/categories",
+        method: "POST",
+        body: category,
+      }),
+    }),
+    updateMenuCategory: builder.mutation({
+      query: ({ categoryId, category }) => ({
+        url: `/categories/${categoryId}`,
+        method: "PUT",
+        body: category,
+      }),
+    }),
+    deleteMenuCategory: builder.mutation({
+      query: (categoryId) => ({
+        url: `/categories/${categoryId}`,
+        method: "DELETE",
+      }),
+    }),
   }),
 });
 
-export const { useGetMenuCategoryByIdQuery } = menuApi;
+export const {
+  useAddItemToCategoryMutation,
+  useGetMenuCategoryByRestaurantIdQuery,
+} = menuApi;

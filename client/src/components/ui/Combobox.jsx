@@ -22,6 +22,7 @@ export function Combobox({
   setValue,
   placeholder = "Select...",
   searchInputPlaceholder = "Search...",
+  showSearchInput = false,
   buttonClassName,
 }) {
   const [open, setOpen] = useState(false);
@@ -40,19 +41,25 @@ export function Combobox({
           role="combobox"
           aria-expanded={open}
           className={twMerge(
-            "w-full justify-between h-13 px-3.5 py-3 bg-n-8 border-2 border-n-2 rounded-xl base2  text-n-7 outline-none transition-colors placeholder:text-n-4/50 focus:bg-transparent dark:bg-n-6 dark:border-n-6 dark:text-n-3 dark:focus:bg-transparent",
+            "w-full justify-between h-13 px-3.5 py-3 bg-n-8 border-2 border-n-2 rounded-xl base2 text-n-7 outline-none transition-colors placeholder:text-n-4/50 focus:bg-transparent dark:bg-n-6 dark:border-n-6 dark:text-n-3 dark:focus:bg-transparent",
             buttonClassName
           )}
         >
-          {value
-            ? data?.find((items) => items?.value === value)?.label
-            : placeholder}
+          {value ? (
+            <p className="text-n-7">
+              {data?.find((items) => items?.value === value)?.label}
+            </p>
+          ) : (
+            <p className="text-n-4/50">{placeholder}</p>
+          )}
           <ChevronsUpDown className="w-4 h-4 ml-2 opacity-50 shrink-0" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+      <PopoverContent className="p-0">
         <Command>
-          <CommandInput placeholder={searchInputPlaceholder} />
+          {showSearchInput && (
+            <CommandInput placeholder={searchInputPlaceholder} />
+          )}
           <CommandList>
             <CommandEmpty>No data found.</CommandEmpty>
             <CommandGroup>
@@ -60,7 +67,7 @@ export function Combobox({
                 <CommandItem
                   key={itemValue}
                   value={itemValue}
-                  onSelect={onSelect}
+                  onSelect={() => onSelect(itemValue)}
                 >
                   <Check
                     className={cn(
