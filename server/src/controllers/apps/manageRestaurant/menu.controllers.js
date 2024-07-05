@@ -107,11 +107,25 @@ const addCategory = asyncHandler(async (req, res) => {
       );
     }
 
+    // Check if the category name already exists
+    const existingCategory = menu.categories.find(
+      (category) => category.name === name
+    );
+    if (existingCategory) {
+      throw new ApiError(400, "Category with this name already exists");
+    }
+
     menu.categories.push({ name, items: [] });
-    await menu.save();
+    const updatedMenu = await menu.save();
+
+    const newCategory = updatedMenu.categories.find(
+      (category) => category.name === name
+    );
   }
 
-  res.status(201).json(new ApiResponse(201, {}, "Category added successfully"));
+  res
+    .status(201)
+    .json(new ApiResponse(201, newCategory, "Category added successfully"));
 });
 
 // Update a category in a menu
@@ -239,11 +253,22 @@ const addMenuItem = asyncHandler(async (req, res) => {
     itemType,
     foodGroup,
   });
-  await menu.save();
+  const savedMenu = await menu.save();
 
+  const addedItem = savedMenu.categories
+    .id(categoryId)
+    .items.find(
+      (item) =>
+        item.title === newItem.title &&
+        item.description === newItem.description &&
+        item.price === newItem.price &&
+        item.discount === newItem.discount &&
+        item.itemType === newItem.itemType &&
+        item.foodGroup === newItem.foodGroup
+    );
   res
     .status(201)
-    .json(new ApiResponse(201, {}, "Menu item added successfully"));
+    .json(new ApiResponse(201, addedItem, "Menu item added successfully"));
 });
 
 // Update a menu item in a category in a menu
