@@ -13,18 +13,45 @@ import { fileURLToPath } from "url";
 
 // Get list of tables for a restaurant
 const fetchTables = asyncHandler(async (req, res) => {
+  const { page = 1, limit = 10 } = req.query;
+
   const restaurant = await Restaurant.findById(req.restaurant?._id);
 
   if (!restaurant) {
     throw new ApiError(404, "Restaurant does not exist");
   }
 
-  // Retrieve tables belonging to the current restaurant
-  const tables = await Table.find({ restaurantId: restaurant._id });
+  // Define the aggregation pipeline stages
+  const pipeline = [
+    {
+      $match: {
+        restaurantId: new mongoose.Types.ObjectId(req.restaurant._id),
+      },
+    },
+  ];
 
-  res.json(
-    new ApiResponse(200, { tables }, "List of tables fetched from the database")
-  );
+  const tableAggregation = Table.aggregate(pipeline);
+
+  const tables = await Table.aggregatePaginate(tableAggregation, {
+    page,
+    limit,
+    customLabels: {
+      totalDocs: "totalTables",
+      docs: "tables",
+    },
+  });
+
+  // If no tables found, return a 404 response
+  if (!tables || tables.totalTables === 0) {
+    return res
+      .status(404)
+      .json(new ApiResponse(404, {}, "No tables found for this restaurant"));
+  }
+
+  // Return the paginated tables as a successful response
+  res
+    .status(200)
+    .json(new ApiResponse(200, tables, "Tables retrieved successfully"));
 });
 
 // Determine the directory of the current module

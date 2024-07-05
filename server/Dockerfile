@@ -1,18 +1,22 @@
-FROM node
+FROM node:current-alpine3.19
 
-RUN mkdir -p /usr/src/server && chown -R node:node /usr/src/server
+WORKDIR /app
 
-WORKDIR /usr/src/server
+RUN apk add --update --no-cache \
+    make \
+    g++ \
+    jpeg-dev \
+    cairo-dev \
+    giflib-dev \
+    pango-dev \
+    libtool \
+    autoconf \
+    automake
 
-# Copy package json and yarn lock only to optimise the image building
-COPY package.json yarn.lock ./
+COPY package.json ./
 
-USER node
+RUN npm install
 
-RUN yarn install --pure-lockfile
+COPY . .
 
-COPY --chown=node:node . .
-
-EXPOSE 8080
-
-CMD [ "npm", "start" ]
+CMD npm run build

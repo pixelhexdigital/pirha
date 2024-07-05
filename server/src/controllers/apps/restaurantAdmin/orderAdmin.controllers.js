@@ -47,6 +47,7 @@ const updateOrder = asyncHandler(async (req, res) => {
 });
 
 const getOrders = asyncHandler(async (req, res) => {
+  const { page = 1, limit = 10 } = req.query;
   const restaurantId = req.restaurant?._id;
   const restaurant = await Restaurant.findById(restaurantId);
   if (!restaurant) {
@@ -124,13 +125,22 @@ const getOrders = asyncHandler(async (req, res) => {
     },
   ];
 
-  const orders = await Order.aggregate(pipeline);
+  const orderAggregation = Order.aggregate(pipeline);
+
+  const orders = await Order.aggregatePaginate(orderAggregation, {
+    page,
+    limit,
+    customLabels: {
+      totalDocs: "totalOrders",
+      docs: "orders",
+    },
+  });
 
   // If no orders found, return a 404 response
   if (!orders || orders.totalOrders === 0) {
     return res
       .status(404)
-      .json(new ApiResponse(404, {}, "No orders found for this customer"));
+      .json(new ApiResponse(404, {}, "No orders found for this restaurant"));
   }
 
   // Return the paginated orders as a successful response

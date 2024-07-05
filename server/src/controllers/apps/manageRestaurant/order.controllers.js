@@ -178,7 +178,16 @@ const getOrderByCustomer = asyncHandler(async (req, res) => {
     },
   ];
 
-  const orders = await Order.aggregate(pipeline);
+  const orderAggregation = Order.aggregate(pipeline);
+
+  const orders = await Order.aggregatePaginate(orderAggregation, {
+    page,
+    limit,
+    customLabels: {
+      totalDocs: "totalOrders",
+      docs: "orders",
+    },
+  });
 
   // If no orders found, return a 404 response
   if (!orders || orders.totalOrders === 0) {
