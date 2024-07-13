@@ -259,12 +259,11 @@ const addMenuItem = asyncHandler(async (req, res) => {
     .id(categoryId)
     .items.find(
       (item) =>
-        item.title === newItem.title &&
-        item.description === newItem.description &&
-        item.price === newItem.price &&
-        item.discount === newItem.discount &&
-        item.itemType === newItem.itemType &&
-        item.foodGroup === newItem.foodGroup
+        item.title === title &&
+        item.description === description &&
+        item.price == price &&
+        item.itemType === itemType &&
+        item.foodGroup === foodGroup
     );
   res
     .status(201)
