@@ -91,7 +91,7 @@ const addCategory = asyncHandler(async (req, res) => {
   }
 
   let menu = await Menu.findOne({ restaurantId: restaurant._id });
-
+  const newCategory = {};
   if (!menu) {
     menu = await Menu.create({
       restaurantId: restaurant._id,
@@ -118,7 +118,7 @@ const addCategory = asyncHandler(async (req, res) => {
     menu.categories.push({ name, items: [] });
     const updatedMenu = await menu.save();
 
-    const newCategory = updatedMenu.categories.find(
+    newCategory = updatedMenu.categories.find(
       (category) => category.name === name
     );
   }
