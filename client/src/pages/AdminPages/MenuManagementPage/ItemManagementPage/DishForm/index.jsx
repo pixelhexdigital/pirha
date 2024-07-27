@@ -1,13 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { object, string, number } from "yup";
-import { Upload } from "lucide-react";
+import { Upload, Pencil } from "lucide-react";
+
 import { Button } from "components/ui/button";
 import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -22,15 +24,18 @@ import {
 import Field from "components/Field";
 
 const CLASS_INPUT =
-  "border-n-7 focus:bg-transparent dark:bg-n-7 dark:border-n-7 dark:focus:bg-transparent";
+  "border-n-7 focus:bg-transparent dark:bg-n-7 dark:border-n-7 dark:focus:bg-transparent ";
 
 const DEFAULT_VALUES = {
   title: "",
   description: "",
-  price: "",
-  discount: "",
+  price: 0,
+  discount: 0,
   itemType: "",
   foodGroup: "",
+  imageUrl: "",
+  imageFile: null,
+  isImageChanged: false,
 };
 
 const ERROR_MESSAGES = {
@@ -39,14 +44,17 @@ const ERROR_MESSAGES = {
   PRICE_REQUIRED: "Price is required",
   DISCOUNT_REQUIRED: "Discount is required",
   ITEM_TYPE_REQUIRED: "Item type is required",
+  MUST_BE_NUMBER: "Must be a number",
   FOOD_GROUP_REQUIRED: "Food group is required",
 };
 
 const FORM_SCHEMA = object().shape({
   title: string().required(ERROR_MESSAGES.TITLE_REQUIRED),
-  description: string().required(ERROR_MESSAGES.DESCRIPTION_REQUIRED),
-  price: number().required(ERROR_MESSAGES.PRICE_REQUIRED),
-  discount: number().required(ERROR_MESSAGES.DISCOUNT_REQUIRED),
+  description: string(),
+  price: number()
+    .required(ERROR_MESSAGES.PRICE_REQUIRED)
+    .typeError(ERROR_MESSAGES.MUST_BE_NUMBER),
+  // discount: number().typeError(ERROR_MESSAGES.MUST_BE_NUMBER),
   itemType: string().required(ERROR_MESSAGES.ITEM_TYPE_REQUIRED),
   foodGroup: string().required(ERROR_MESSAGES.FOOD_GROUP_REQUIRED),
 });
@@ -60,92 +68,100 @@ const DishForm = ({
   loader = false,
   defaultValues = DEFAULT_VALUES,
 }) => {
-  const [image, setImage] = useState(null);
+  const imageRef = useRef(null);
+  const title = defaultValues?.title ? "Edit Dish" : "Add New Dish";
 
   const {
     handleSubmit,
     register,
-    formState: { errors },
     control,
     setValue,
+    watch,
+    clearErrors,
     reset,
+    formState: { errors },
   } = useForm({
     defaultValues,
     resolver: yupResolver(FORM_SCHEMA),
   });
-  //   {
-  //     "title": "Rasogulla",
-  //     "description": "thela lal hai",
-  //     "price": 20,
-  //     "itemType": "Food",
-  //     "foodGroup": "Veg",
-  //     "discount": 0,
-  //     "isActive": true,
-  //     "image": {
-  //         "url": null,
-  //         "public_id": null,
-  //         "_id": "668598765ee50741b290b73e"
-  //     },
-  //     "isAvailable": true,
-  //     "estimatedPrepTime": 0,
-  //     "_id": "668598765ee50741b290b73f"
-  // }
+
+  const { imageUrl } = watch();
 
   useEffect(() => {
-    if (!defaultValues) return;
-    const { title, description, price, discount, itemType, foodGroup } =
-      defaultValues;
+    const { title, description, price, discount, itemType, foodGroup, image } =
+      defaultValues || {};
     setValue("title", title);
     setValue("description", description);
     setValue("price", price);
     setValue("discount", discount);
     setValue("itemType", itemType);
     setValue("foodGroup", foodGroup);
-    setImage(defaultValues?.image?.url);
+    setValue("imageUrl", image?.url);
+    setValue("isImageChanged", false);
   }, [defaultValues, setValue]);
+
+  useEffect(() => {
+    clearErrors();
+    if (!isOpen) {
+      reset();
+    }
+  }, [isOpen, clearErrors, reset]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file) setImage(URL.createObjectURL(file));
+    if (!file) return;
+
+    setValue("imageFile", file);
+    setValue("imageUrl", URL.createObjectURL(file));
+    setValue("isImageChanged", true);
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={(isOpen) => {
-        onClose();
-        if (!isOpen) reset();
-      }}
-    >
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>
-            {defaultValues.title ? "Edit Dish" : "Add New Dish"}
+            <p className="text-2xl font-semibold">{title}</p>
           </DialogTitle>
+          <DialogDescription className="mb-4">
+            {defaultValues?.title
+              ? "Edit the details of the dish"
+              : "Fill in the details of the new dish"}
+          </DialogDescription>
         </DialogHeader>
+
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="mb-4 text-center">
-            <label htmlFor="avatar" className="inline-block cursor-pointer">
-              {image ? (
-                <img
-                  src={image}
-                  alt="Avatar"
-                  className="border border-gray-300 size-[12.5rem] rounded-xl "
-                />
-              ) : (
-                <div className="flex flex-col items-center justify-center gap-2 bg-gray-200 border border-gray-300 rounded-xl size-[12.5rem]">
-                  <Upload className="w-8 h-8 text-gray-500" />
-                  <span className="text-gray-500">Upload Image</span>
-                </div>
-              )}
-            </label>
+          <div className="relative mx-auto mb-4 text-center size-52">
+            {imageUrl ? (
+              <img
+                src={imageUrl || ""}
+                alt="Avatar"
+                className="border border-gray-300 size-[12.5rem] rounded-xl object-cover cursor-default shadow-md"
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center gap-2 bg-gray-200 border border-gray-300 rounded-xl size-[12.5rem] shadow-md">
+                <span className="text-gray-500">Upload Image</span>
+              </div>
+            )}
             <input
               id="avatar"
+              ref={imageRef}
               type="file"
               accept="image/*"
               className="hidden"
               onChange={handleImageChange}
             />
+            <button
+              type="button"
+              onClick={() => imageRef.current.click()}
+              className="absolute flex items-center justify-center transition-all duration-300 ease-in-out transform right-[0.60rem] bottom-2 size-10 bg-primary hover:scale-105 hover:bg-primary/90 hover:text-white rounded-br-lg rounded-tl-lg shadow-md"
+            >
+              {imageUrl ? (
+                <Pencil size={22} color="white" />
+              ) : (
+                <Upload size={22} color="white" />
+              )}
+            </button>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <Field
@@ -204,6 +220,11 @@ const DishForm = ({
                       ))}
                     </SelectContent>
                   </Select>
+                  {errors.itemType?.message && (
+                    <div className="mt-2 text-red-600 caption1">
+                      {errors.itemType?.message}
+                    </div>
+                  )}
                 </div>
               )}
             />
@@ -229,6 +250,11 @@ const DishForm = ({
                       ))}
                     </SelectContent>
                   </Select>
+                  {errors.foodGroup?.message && (
+                    <div className="mt-2 text-red-600 caption1">
+                      {errors.foodGroup?.message}
+                    </div>
+                  )}
                 </div>
               )}
             />
@@ -236,13 +262,7 @@ const DishForm = ({
 
           <DialogFooter className="flex flex-row justify-end gap-10 mt-5">
             <Button type="submit" className="items-center min-w-24">
-              {loader ? (
-                <div className="ring-loader size-6" />
-              ) : defaultValues?.title ? (
-                "Edit Dish"
-              ) : (
-                "Add Dish"
-              )}
+              {loader ? <div className="ring-loader size-6" /> : title}
             </Button>
             <DialogClose>Cancel</DialogClose>
           </DialogFooter>
