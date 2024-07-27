@@ -47,7 +47,7 @@ const updateOrder = asyncHandler(async (req, res) => {
 });
 
 const getOrders = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 10 } = req.query;
+  const { page = 1, limit = 10, status } = req.query;
   const restaurantId = req.restaurant?._id;
   const restaurant = await Restaurant.findById(restaurantId);
   if (!restaurant) {
@@ -59,6 +59,7 @@ const getOrders = asyncHandler(async (req, res) => {
     {
       $match: {
         restaurantId: new mongoose.Types.ObjectId(req.restaurant._id),
+        ...(status && { status }), // Add the status filter if provided
       },
     },
     {
@@ -93,6 +94,28 @@ const getOrders = asyncHandler(async (req, res) => {
       },
     },
     {
+      $lookup: {
+        from: "customers",
+        localField: "customerId",
+        foreignField: "_id",
+        as: "customer",
+      },
+    },
+    {
+      $unwind: "$customer", // Unwind the customer array to include customer details directly in the document
+    },
+    {
+      $lookup: {
+        from: "tables",
+        localField: "tableId",
+        foreignField: "_id",
+        as: "table",
+      },
+    },
+    {
+      $unwind: "$table", // Unwind the table array to include table details directly in the document
+    },
+    {
       $addFields: {
         items: {
           $map: {
@@ -120,11 +143,23 @@ const getOrders = asyncHandler(async (req, res) => {
     },
     {
       $project: {
-        menuItems: 0, // Remove the temporary field 'menuItems' after merging
+        customer: {
+          firstName: "$customer.firstName",
+          lastName: "$customer.lastName",
+          number: "$customer.number",
+        },
+        table: "$table.title",
+        restaurantId: 1,
+        customerId: 1,
+        tableId: 1,
+        items: 1,
+        totalAmount: 1,
+        status: 1,
+        createdAt: 1,
+        updatedAt: 1,
       },
     },
   ];
-
   const orderAggregation = Order.aggregate(pipeline);
 
   const orders = await Order.aggregatePaginate(orderAggregation, {
