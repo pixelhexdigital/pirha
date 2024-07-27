@@ -22,5 +22,3 @@ const MenuSlice = createSlice({
 export const {} = MenuSlice.actions;
 
 export default MenuSlice.reducer;
-
-export const selectMenuData = (state) => state.Table.table;

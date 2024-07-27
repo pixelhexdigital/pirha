@@ -1,13 +1,11 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
+
 import { BASE_URL } from "lib/constants";
+import { baseQueryWithReAuth } from "lib/baseQueryWithReAuth";
 
 export const adminApi = createApi({
   reducerPath: "adminApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: `${BASE_URL}/api/v1/admin`,
-    credentials: "include",
-    jsonContentType: "application/json",
-  }),
+  baseQuery: baseQueryWithReAuth(`${BASE_URL}/api/v1/admin`),
   endpoints: (builder) => ({
     updateProfile: builder.mutation({
       query: (data) => ({
@@ -41,11 +39,21 @@ export const adminApi = createApi({
       },
       transformResponse: (response) => response,
     }),
+    getDashBoardData: builder.query({
+      query: () => "/dashboard",
+      transformResponse: (response) => response.data,
+    }),
+    getOrdersData: builder.query({
+      query: ({ page = 1, status }) => `/orders?page=${page}&status=${status}`,
+      transformResponse: (response) => response.data,
+    }),
   }),
 });
 
 export const {
   useUpdateLogoMutation,
   useUpdateProfileMutation,
+  useGetDashBoardDataQuery,
   useUpdateCoverImageMutation,
+  useGetOrdersDataQuery,
 } = adminApi;
