@@ -31,7 +31,7 @@ const OnboardingPage = () => {
       content: <CreateTablePage onNext={nextStep} />,
     },
     {
-      title: "Add Menu Items",
+      title: "Create Menus",
       content: <AddMenuPage onNext={nextStep} />,
     },
   ];
@@ -53,6 +53,7 @@ const OnboardingPage = () => {
           return null;
         })}
       </div>
+
       <button onClick={nextStep} className="btn btn-primary">
         Next
       </button>

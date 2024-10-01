@@ -9,9 +9,16 @@ const billSchema = new Schema(
       ref: "Restaurant",
       required: true,
     },
-    customerId: {
+    customers: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Customer",
+        required: true,
+      },
+    ],
+    tableId: {
       type: Schema.Types.ObjectId,
-      ref: "Customer",
+      ref: "Table",
       required: true,
     },
     orders: [

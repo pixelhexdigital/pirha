@@ -15,6 +15,25 @@ const fetchMenus = asyncHandler(async (req, res) => {
 });
 
 // Fetch menu by ID for a restaurant
+const fetchMyMenu = asyncHandler(async (req, res) => {
+  const restaurantId = req.restaurant?._id;
+  const restaurant = await Restaurant.findById(restaurantId);
+
+  if (!restaurant) {
+    throw new ApiError(404, "Restaurant does not exist");
+  }
+
+  const menu = await Menu.findOne({ restaurantId: restaurant._id });
+
+  if (!menu) {
+    throw new ApiError(404, "Menu not found");
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, { menu }, "Menu fetched successfully"));
+});
+// Fetch menu by ID for a restaurant
 const fetchMenuByRestraurnt = asyncHandler(async (req, res) => {
   const { restaurantId } = req.params;
   const restaurant = await Restaurant.findById(restaurantId);
@@ -72,7 +91,7 @@ const addCategory = asyncHandler(async (req, res) => {
   }
 
   let menu = await Menu.findOne({ restaurantId: restaurant._id });
-
+  const newCategory = {};
   if (!menu) {
     menu = await Menu.create({
       restaurantId: restaurant._id,
@@ -88,11 +107,25 @@ const addCategory = asyncHandler(async (req, res) => {
       );
     }
 
+    // Check if the category name already exists
+    const existingCategory = menu.categories.find(
+      (category) => category.name === name
+    );
+    if (existingCategory) {
+      throw new ApiError(400, "Category with this name already exists");
+    }
+
     menu.categories.push({ name, items: [] });
-    await menu.save();
+    const updatedMenu = await menu.save();
+
+    newCategory = updatedMenu.categories.find(
+      (category) => category.name === name
+    );
   }
 
-  res.status(201).json(new ApiResponse(201, {}, "Category added successfully"));
+  res
+    .status(201)
+    .json(new ApiResponse(201, newCategory, "Category added successfully"));
 });
 
 // Update a category in a menu
@@ -220,11 +253,21 @@ const addMenuItem = asyncHandler(async (req, res) => {
     itemType,
     foodGroup,
   });
-  await menu.save();
+  const savedMenu = await menu.save();
 
+  const addedItem = savedMenu.categories
+    .id(categoryId)
+    .items.find(
+      (item) =>
+        item.title === title &&
+        item.description === description &&
+        item.price == price &&
+        item.itemType === itemType &&
+        item.foodGroup === foodGroup
+    );
   res
     .status(201)
-    .json(new ApiResponse(201, {}, "Menu item added successfully"));
+    .json(new ApiResponse(201, addedItem, "Menu item added successfully"));
 });
 
 // Update a menu item in a category in a menu
@@ -619,6 +662,7 @@ const updateCategoryImage = asyncHandler(async (req, res) => {
 
 export {
   fetchMenus,
+  fetchMyMenu,
   fetchMenuByRestraurnt,
   deleteMenuById,
   addCategory,

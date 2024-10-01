@@ -7,6 +7,7 @@ export const ROUTES = {
   CATEGORIES: "/categories",
   MENU: "/menu",
   MENU_MANAGEMENT: "/menu-management",
+  CATEGORIES_MANAGEMENT: "/menu-management/categories-management",
   MENU_ITEM: "/menu-item",
   CART: "/cart",
   CHECKOUT: "/checkout",

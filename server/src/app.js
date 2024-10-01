@@ -81,17 +81,19 @@ app.set("trust proxy", true);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const staticPath = path.join(__dirname, "../../", "client", "dist");
-// Serve static files from the React app
-app.use(express.static(staticPath));
+// const staticPath = path.join(__dirname, "../../", "client", "dist");
+// // Serve static files from the React app
+// app.use(express.static(staticPath));
 
 app.get("/", (req, res) => {
-  res.sendFile(path.join(staticPath, "index.html"));
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "OK", "Health check passed"));
 });
 
-app.get("/home", (req, res) => {
-  res.sendFile(path.join(staticPath, "index.html"));
-});
+// app.get("/home", (req, res) => {
+//   res.sendFile(path.join(staticPath, "index.html"));
+// });
 
 // api routes
 import { errorHandler } from "./middlewares/error.middlewares.js";
@@ -138,9 +140,9 @@ app.use("/api/v1/admin/taxes", taxRouter);
 initializeSocketIO(io);
 
 // Catch-all route to serve index.html for client-side routing
-app.get("*", (req, res) => {
-  res.sendFile(path.join(staticPath, "index.html"));
-});
+// app.get("*", (req, res) => {
+//   res.sendFile(path.join(staticPath, "index.html"));
+// });
 
 app.use(errorHandler);
 

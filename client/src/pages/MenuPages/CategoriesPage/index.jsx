@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useGetMenuCategoryByIdQuery } from "api/menuApi";
+import { useGetMenuCategoryByRestaurantIdQuery } from "api/menuApi";
 import {
   useGetRestaurantDetailsByIdQuery,
   useGetTableDetailsByIdQuery,
@@ -22,9 +22,12 @@ const CategoriesPage = () => {
     }
   }, [restaurantId, tableId, navigate]);
 
-  const { data, error, isLoading } = useGetMenuCategoryByIdQuery(restaurantId, {
-    skip: !restaurantId,
-  });
+  const { data, error, isLoading } = useGetMenuCategoryByRestaurantIdQuery(
+    restaurantId,
+    {
+      skip: !restaurantId,
+    }
+  );
   useGetRestaurantDetailsByIdQuery(restaurantId, { skip: !restaurantId });
   useGetTableDetailsByIdQuery(tableId, { skip: !tableId });
 

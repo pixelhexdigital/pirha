@@ -101,7 +101,7 @@ const createOrder = asyncHandler(async (req, res) => {
 
 // Controller to get orders for a specific customer
 const getOrderByCustomer = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 10 } = req.query;
+  const { page = 1, limit = 10, status } = req.query;
   const customer = req.customer._id;
   if (!customer) {
     throw new ApiError(401, "Customer not found");
@@ -112,6 +112,7 @@ const getOrderByCustomer = asyncHandler(async (req, res) => {
     {
       $match: {
         customerId: new mongoose.Types.ObjectId(req.customer._id),
+        ...(status && { status }),
       },
     },
     {
@@ -146,6 +147,28 @@ const getOrderByCustomer = asyncHandler(async (req, res) => {
       },
     },
     {
+      $lookup: {
+        from: "restaurants",
+        localField: "restaurantId",
+        foreignField: "_id",
+        as: "restaurant",
+      },
+    },
+    {
+      $unwind: "$restaurant", // Unwind the restaurant array to include restaurant details directly in the document
+    },
+    {
+      $lookup: {
+        from: "tables",
+        localField: "tableId",
+        foreignField: "_id",
+        as: "table",
+      },
+    },
+    {
+      $unwind: "$table", // Unwind the table array to include table details directly in the document
+    },
+    {
       $addFields: {
         items: {
           $map: {
@@ -174,11 +197,39 @@ const getOrderByCustomer = asyncHandler(async (req, res) => {
     {
       $project: {
         menuItems: 0, // Remove the temporary field 'menuItems' after merging
+        restaurant: {
+          email: "$restaurant.email",
+          restroName: "$restaurant.restroName",
+          ownerFullName: "$restaurant.ownerFullName",
+          location: "$restaurant.location",
+          restroType: "$restaurant.restroType",
+          yearOfEstablishment: "$restaurant.yearOfEstablishment",
+          avatar: "$restaurant.avatar",
+          socialLink: "$restaurant.socialLink",
+        },
+        table: "$table.title",
+        restaurantId: 1,
+        customerId: 1,
+        tableId: 1,
+        items: 1,
+        totalAmount: 1,
+        status: 1,
+        createdAt: 1,
+        updatedAt: 1,
       },
     },
   ];
 
-  const orders = await Order.aggregate(pipeline);
+  const orderAggregation = Order.aggregate(pipeline);
+
+  const orders = await Order.aggregatePaginate(orderAggregation, {
+    page,
+    limit,
+    customLabels: {
+      totalDocs: "totalOrders",
+      docs: "orders",
+    },
+  });
 
   // If no orders found, return a 404 response
   if (!orders || orders.totalOrders === 0) {

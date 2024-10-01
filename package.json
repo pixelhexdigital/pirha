@@ -7,7 +7,7 @@
     "server"
   ],
   "scripts": {
-    "build": "npm install --prefix client --production=false && npm run build --prefix client && chmod -R 755 client/dist",
+    "build": "npm install",
     "start": "npm install --prefix server && npm run build --prefix server"
   }
 }

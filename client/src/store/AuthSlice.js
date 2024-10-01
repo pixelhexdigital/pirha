@@ -5,6 +5,7 @@ const initialState = {
   accessToken: "",
   refreshToken: "",
   isAuthenticated: false,
+  restaurantId: null,
 };
 
 const AuthSlice = createSlice({
@@ -15,6 +16,9 @@ const AuthSlice = createSlice({
       state.accessToken = action.payload.accessToken;
       state.refreshToken = action.payload.refreshToken;
       state.isAuthenticated = true;
+    },
+    loggedOut: (state) => {
+      Object.assign(state, initialState);
     },
   },
   extraReducers: (builder) => {
@@ -31,6 +35,7 @@ const AuthSlice = createSlice({
         state.isAuthenticated = true;
         state.accessToken = action.payload.accessToken;
         state.refreshToken = action.payload.refreshToken;
+        state.restaurantId = action.payload.restaurant._id;
       }
     );
   },
@@ -39,7 +44,8 @@ const AuthSlice = createSlice({
 export const selectAccessToken = (state) => state.Auth.accessToken;
 export const selectRefreshToken = (state) => state.Auth.refreshToken;
 export const selectIsAuthenticated = (state) => state.Auth.isAuthenticated;
+export const selectRestaurantId = (state) => state.Auth.restaurantId;
 
-export const { setCredentials } = AuthSlice.actions;
+export const { setCredentials, loggedOut } = AuthSlice.actions;
 
 export default AuthSlice.reducer;

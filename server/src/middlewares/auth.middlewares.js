@@ -7,6 +7,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
 import { v4 as uuid } from "uuid";
+import { changePlanHandler } from "../controllers/superAdmin/subscription.controllers.js";
 
 export const verifyJWT = asyncHandler(async (req, res, next) => {
   const token =
@@ -87,6 +88,22 @@ export const verifySubscription = asyncHandler(async (req, res, next) => {
 
     if (!subscription) {
       throw new ApiError(403, "No subscription found for this restaurant");
+    }
+
+    const isFromMiddleware = true;
+
+    if (true) {
+      await changePlanHandler(
+        {
+          body: {
+            restaurantId: restaurantId,
+            plan: "Free",
+            days: 90,
+          },
+        },
+        res,
+        next
+      );
     }
 
     const today = new Date();

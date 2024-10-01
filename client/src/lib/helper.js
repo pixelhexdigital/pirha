@@ -71,3 +71,27 @@ export const groupBy = (items = [], key = "") => {
     };
   }, {});
 };
+
+// Format number to currency format
+export const numberToCurrency = (
+  number,
+  currency = "INR",
+  minimumFractionDigits = 2,
+  maximumFractionDigits = 2
+) => {
+  // check if the number is a valid number
+  if (isNaN(number) || !number) {
+    return new Intl.NumberFormat("en-IN", {
+      currency: currency,
+      style: "currency",
+      minimumFractionDigits: minimumFractionDigits,
+      maximumFractionDigits: maximumFractionDigits,
+    }).format(0);
+  }
+  return new Intl.NumberFormat("en-IN", {
+    currency: currency,
+    style: "currency",
+    minimumFractionDigits: minimumFractionDigits,
+    maximumFractionDigits: maximumFractionDigits,
+  }).format(number);
+};

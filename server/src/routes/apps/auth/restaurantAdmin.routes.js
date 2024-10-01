@@ -15,7 +15,10 @@ import {
 } from "../../../validators/apps/social-media/profile.validators.js";
 import { validate } from "../../../validators/validate.js";
 import { getDashboard } from "../../../controllers/apps/restaurantAdmin/adminDashboard.controllers.js";
-import { updateOrder } from "../../../controllers/apps/restaurantAdmin/orderAdmin.controllers.js";
+import {
+  getOrders,
+  updateOrder,
+} from "../../../controllers/apps/restaurantAdmin/orderAdmin.controllers.js";
 import {
   fetchTaxes,
   registerTax,
@@ -35,9 +38,10 @@ router.route("/dashboard").get(getDashboard);
 
 router.route("/taxes").get(fetchTaxes).post(registerTax).patch(updateTaxById);
 
-router.route("orders/:orderId").patch(updateOrder);
+router.route("/orders").get(getOrders);
+router.route("/orders/:orderId").patch(updateOrder);
 
-router.route("bills/:customerId").patch(generateCustomerBill);
+router.route("/bills/:customerId").patch(generateCustomerBill);
 
 router
   .route("/cover-image")

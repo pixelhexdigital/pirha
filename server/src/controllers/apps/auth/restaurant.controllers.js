@@ -73,7 +73,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   // Get the default subscription plan from the config
   const defaultSubscriptionPlan = subscriptionPlans.find(
-    (plan) => plan.name === "Free"
+    (plan) => plan.name === "Silver"
   );
 
   // Create the subscription for the new user

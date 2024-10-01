@@ -7,91 +7,115 @@ import { ApiResponse } from "../../utils/ApiResponse.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import { subscriptionPlans } from "../../constants/subscriptionConfigs.js";
 
-const changePlan = asyncHandler(async (req, res) => {
-  const { restaurantId, plan, reffererId, days } = req.body;
-  const admin = req.restaurant;
-
-  if (!restaurantId || !plan) {
-    throw new ApiError(401, "Please provide all details");
-  }
-
-  // Calculate the end date based on the provided days or default to 30 days
-  const endDate = new Date();
-  const durationDays = days ? days : 30;
-  endDate.setDate(endDate.getDate() + durationDays);
-
-  const restaurant = await Restaurant.findById(restaurantId);
-  if (!restaurant) {
-    throw new ApiError(401, "No restaurant found for given restaurantId");
-  }
-
+const getPlanDetails = (plan) => {
   const isValidPlan = ENUMS.subscriptionPlan.includes(plan);
   if (!isValidPlan) {
     throw new ApiError(401, "Please select a valid plan");
   }
-
-  let subscription = await Subscription.findOne({
-    restaurantId: restaurantId,
-  }).populate("plan");
   const planDetails = subscriptionPlans.find((e) => e.name === plan);
-
   if (!planDetails) {
     throw new ApiError(401, "Subscription plan details not found");
   }
+  return planDetails;
+};
 
+const calculateEndDate = (days) => {
+  const endDate = new Date();
+  const durationDays = days || 30;
+  endDate.setDate(endDate.getDate() + durationDays);
+  return endDate;
+};
+
+const updateOrCreateSubscription = async (
+  restaurantId,
+  planDetails,
+  endDate
+) => {
+  let subscription = await Subscription.findOne({ restaurantId }).populate(
+    "plan"
+  );
   if (subscription) {
-    // Update the existing subscription
     subscription.plan = planDetails;
     subscription.endDate = endDate;
     await subscription.save();
   } else {
-    // Create a new subscription
     subscription = await Subscription.create({
-      restaurantId: restaurant._id,
+      restaurantId,
       plan: planDetails,
-      endDate: endDate,
+      endDate,
     });
   }
+};
 
-  // Fetch the subscription plan limits
-  const { menuCategoryLimit, menuItemLimit } = planDetails;
-
-  // Fetch the restaurant's menu
-  const menu = await Menu.findOne({ restaurantId: restaurantId });
-  if (!menu) {
-    throw new ApiError(401, "No menu found for the given restaurantId");
-  }
-
-  // Deactivate excess menu categories
+const updateMenuCategoriesAndItems = (
+  menu,
+  menuCategoryLimit,
+  menuItemLimit
+) => {
   const activeCategories = menu.categories.filter(
     (category) => category.isActive
   );
-  if (activeCategories.length > menuCategoryLimit) {
-    activeCategories.forEach((category, index) => {
-      if (index >= menuCategoryLimit) {
-        category.isActive = false;
-      }
-    });
-  }
 
-  // Deactivate excess menu items in each active category
-  activeCategories.forEach((category) => {
-    const activeItems = category.items.filter((item) => item.isActive);
-    if (activeItems.length > menuItemLimit) {
-      activeItems.forEach((item, index) => {
-        if (index >= menuItemLimit) {
+  activeCategories.forEach((category, index) => {
+    if (index >= menuCategoryLimit) {
+      category.isActive = false;
+    } else {
+      const activeItems = category.items.filter((item) => item.isActive);
+      activeItems.forEach((item, itemIndex) => {
+        if (itemIndex >= menuItemLimit) {
           item.isActive = false;
         }
       });
     }
   });
 
-  // Save the updated menu
-  await menu.save();
+  return activeCategories;
+};
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, "OK", "Plan changed successfully"));
+const changePlanLogic = async (restaurantId, plan, days) => {
+  const restaurant = await Restaurant.findById(restaurantId);
+  if (!restaurant) {
+    throw new ApiError(401, "No restaurant found for given restaurantId");
+  }
+
+  const planDetails = getPlanDetails(plan);
+  const endDate = calculateEndDate(days);
+
+  await updateOrCreateSubscription(restaurantId, planDetails, endDate);
+
+  const { menuCategoryLimit, menuItemLimit } = planDetails;
+  const menu = await Menu.findOne({ restaurantId });
+  if (!menu) {
+    throw new ApiError(401, "No menu found for the given restaurantId");
+  }
+
+  updateMenuCategoriesAndItems(menu, menuCategoryLimit, menuItemLimit);
+
+  await menu.save();
+};
+
+const changePlan = asyncHandler(async (req, res, next) => {
+  const { restaurantId, plan, days } = req.body;
+
+  if (!restaurantId || !plan) {
+    throw new ApiError(401, "Please provide all details");
+  }
+
+  await changePlanLogic(restaurantId, plan, days);
+
+  res.status(200).json(new ApiResponse(200, "OK", "Plan changed successfully"));
 });
 
-export { changePlan };
+const changePlanHandler = asyncHandler(async (req, res, next) => {
+  const { restaurantId, plan, days } = req.body;
+
+  if (!restaurantId || !plan) {
+    throw new ApiError(401, "Please provide all details");
+  }
+
+  await changePlanLogic(restaurantId, plan, days);
+
+  next();
+});
+
+export { changePlan, changePlanHandler };

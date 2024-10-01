@@ -14,6 +14,9 @@ import { ordersApi } from "api/orderApi";
 import { authApi } from "api/authApi";
 import { adminApi } from "api/adminApi";
 import { tableApi } from "api/tableApi";
+import MenuSlice from "store/MenuSlice";
+import TableSlice from "./TableSlice";
+import OrderSlice from "store/OrderSlice";
 
 // Persist configurations
 const rootPersistConfig = {
@@ -38,6 +41,9 @@ const rootReducer = combineReducers({
   cart: persistedCartReducer,
   Misc: MiscellaneousSlice,
   Auth: AuthSlice,
+  Menu: MenuSlice,
+  Table: TableSlice,
+  Order: OrderSlice,
   [menuApi.reducerPath]: menuApi.reducer,
   [miscApi.reducerPath]: miscApi.reducer,
   [customerApi.reducerPath]: customerApi.reducer,
