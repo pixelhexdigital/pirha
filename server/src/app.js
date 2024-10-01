@@ -17,13 +17,15 @@ const allowedOrigins = process.env.CORS_ORIGIN.split(",");
 
 const corsOptions = {
   origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
     if (allowedOrigins.includes(origin) || !origin) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
     }
   },
-  credentials: true,
+  exposedHeaders: ["Authorization", "X-Requested-With", "Content-Type"],
+  credentials: true, // Enable Access-Control-Allow-Credentials
 };
 
 const io = new Server(httpServer, {
