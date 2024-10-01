@@ -1,22 +1,12 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { BASE_URL } from "lib/constants";
+import { createApi } from "@reduxjs/toolkit/query/react";
+
 import { errorToast } from "lib/helper";
+import { BASE_URL } from "lib/constants";
+import { baseQueryWithReAuth } from "lib/baseQueryWithReAuth";
 
 export const menuApi = createApi({
   reducerPath: "menuApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: `${BASE_URL}/api/v1/menus`,
-    credentials: "include",
-    jsonContentType: "application/json",
-    prepareHeaders: (headers, { getState }) => {
-      const token = getState().auth?.token;
-      if (token) {
-        headers.set("authorization", `Token ${token}`);
-      }
-      return headers;
-    },
-  }),
-
+  baseQuery: baseQueryWithReAuth(`${BASE_URL}/api/v1/menus`),
   endpoints: (builder) => ({
     getMenuCategoryByRestaurantId: builder.query({
       query: (id) => `/${id}`,
@@ -44,40 +34,89 @@ export const menuApi = createApi({
         method: "POST",
         body: item,
       }),
-      invalidatesTags: ["Menu"],
     }),
 
     updateItemInCategory: builder.mutation({
       query: ({ categoryId, itemId, item }) => ({
-        url: `/${categoryId}/items/${itemId}`,
-        method: "PUT",
+        url: `/categories/${categoryId}/items/${itemId}`,
+        method: "PATCH",
         body: item,
+      }),
+    }),
+
+    updateImageOfItem: builder.mutation({
+      query: ({ categoryId, itemId, itemImage }) => {
+        const formData = new FormData();
+        formData.append("itemImage", itemImage);
+        return {
+          url: `/categories/${categoryId}/items/${itemId}/image`,
+          method: "PATCH",
+          body: formData,
+        };
+      },
+      extraOptions: {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
+    }),
+
+    toggleItemAvailability: builder.mutation({
+      query: ({ categoryId, itemId, isActive }) => ({
+        url: `/categories/${categoryId}/items/${itemId}/${isActive ? "activate" : "deactivate"}`,
+        method: "PATCH",
       }),
     }),
 
     deleteItemFromCategory: builder.mutation({
       query: ({ categoryId, itemId }) => ({
-        url: `/${categoryId}/items/${itemId}`,
+        url: `categories/${categoryId}/items/${itemId}`,
         method: "DELETE",
       }),
     }),
 
-    createMenuCategory: builder.mutation({
+    addMenuCategory: builder.mutation({
       query: (category) => ({
         url: "/categories",
         method: "POST",
         body: category,
       }),
     }),
+
     updateMenuCategory: builder.mutation({
       query: ({ categoryId, category }) => ({
         url: `/categories/${categoryId}`,
-        method: "PUT",
+        method: "PATCH",
         body: category,
       }),
     }),
+
+    updateImageOfCategory: builder.mutation({
+      query: ({ categoryId, categoryImage }) => {
+        const formData = new FormData();
+        formData.append("categoryImage", categoryImage);
+        return {
+          url: `/categories/${categoryId}/image`,
+          method: "PATCH",
+          body: formData,
+        };
+      },
+      extraOptions: {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
+    }),
+
+    toggleCategoryAvailability: builder.mutation({
+      query: ({ categoryId, isActive }) => ({
+        url: `/categories/${categoryId}/${isActive ? "activate" : "deactivate"}`,
+        method: "PATCH",
+      }),
+    }),
+
     deleteMenuCategory: builder.mutation({
-      query: (categoryId) => ({
+      query: ({ categoryId }) => ({
         url: `/categories/${categoryId}`,
         method: "DELETE",
       }),
@@ -90,4 +129,13 @@ export const {
   useGetMenuCategoryByRestaurantIdQuery,
   useGetMyMenuQuery,
   useCreateMenuCategoryMutation,
+  useUpdateItemInCategoryMutation,
+  useToggleItemAvailabilityMutation,
+  useUpdateImageOfCategoryMutation,
+  useUpdateImageOfItemMutation,
+  useDeleteItemFromCategoryMutation,
+  useAddMenuCategoryMutation,
+  useUpdateMenuCategoryMutation,
+  useToggleCategoryAvailabilityMutation,
+  useDeleteMenuCategoryMutation,
 } = menuApi;
