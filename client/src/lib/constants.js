@@ -1,7 +1,7 @@
 // Base URL for the API
 export const BASE_URL = import.meta.env.DEV
   ? "http://localhost:8080"
-  : `https://pirha.in`;
+  : `https://pirha.onrender.in`;
 
 // Path to the icons used in the app
 const ICONS = {};
