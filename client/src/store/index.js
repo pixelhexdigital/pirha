@@ -22,6 +22,7 @@ import OrderSlice from "store/OrderSlice";
 const rootPersistConfig = {
   key: "root",
   storage,
+  timeout: 200,
   version: 1,
   whitelist: ["Misc", "Auth"],
 };
@@ -29,6 +30,7 @@ const rootPersistConfig = {
 const cartPersistConfig = {
   key: "cart",
   storage: sessionStorage,
+  timeout: 200,
   version: 2,
   whitelist: ["cart", "total", "totalItems", "totalUniqueItems"],
 };
