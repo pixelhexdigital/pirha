@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import {
   Route,
   Navigate,
@@ -7,27 +8,25 @@ import {
 } from "react-router-dom";
 import { ROUTES } from "routes/RouterConfig";
 import { useSelector } from "react-redux";
+import lazyLoad from "lazyLoad";
 
-import AuthPage from "pages/AuthPage";
-import MenuPage from "pages/MenuPages/MenuPage";
-import CategoriesPage from "pages/MenuPages/CategoriesPage";
-import OrderListPage from "pages/AdminPages/OrderListPage";
-import OrderDetailsPage from "pages/AdminPages/OrderDetailsPage";
-import OnboardingPage from "pages/OnboardingPage/index.jsx";
-import ProtectedRoute from "components/ProtectedRoute";
 import { selectIsAuthenticated } from "store/AuthSlice";
-import DashboardPage from "pages/AdminPages/DashboardPage";
-
-import CategoriesManagementPage from "pages/AdminPages/MenuManagementPage/CategoriesManagement";
-import ItemManagementPage from "pages/AdminPages/MenuManagementPage/ItemManagementPage";
-
-const Routes = [
-  { path: ROUTES.CATEGORIES, element: <CategoriesPage /> },
-  { path: ROUTES.ORDER_LIST, element: <OrderListPage /> },
-  { path: ROUTES.ORDER_DETAILS, element: <OrderDetailsPage /> },
-  { path: ROUTES.ONBOARDING, element: <OnboardingPage /> },
-  { path: `${ROUTES.MENU}/:category`, element: <MenuPage /> },
-];
+const AuthPage = lazyLoad(() => import("pages/AuthPage"));
+const CategoriesPage = lazyLoad(() => import("pages/MenuPages/CategoriesPage"));
+const MenuPage = lazyLoad(() => import("pages/MenuPages/MenuPage"));
+const OrderListPage = lazyLoad(() => import("pages/AdminPages/OrderListPage"));
+const OrderDetailsPage = lazyLoad(
+  () => import("pages/AdminPages/OrderDetailsPage")
+);
+const OnboardingPage = lazyLoad(() => import("pages/OnboardingPage/index.jsx"));
+const ProtectedRoute = lazyLoad(() => import("components/ProtectedRoute"));
+const DashboardPage = lazyLoad(() => import("pages/AdminPages/DashboardPage"));
+const CategoriesManagementPage = lazyLoad(
+  () => import("pages/AdminPages/MenuManagementPage/CategoriesManagement")
+);
+const ItemManagementPage = lazyLoad(
+  () => import("pages/AdminPages/MenuManagementPage/ItemManagementPage")
+);
 
 const AuthenticatedRoutes = [
   { path: ROUTES.DASHBOARD, element: <DashboardPage /> },
@@ -74,7 +73,12 @@ const MyRoutes = () => {
     )
   );
 
-  return <RouterProvider router={router} />;
+  // return <RouterProvider router={router} />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RouterProvider router={router} />
+    </Suspense>
+  );
 };
 
 export default MyRoutes;

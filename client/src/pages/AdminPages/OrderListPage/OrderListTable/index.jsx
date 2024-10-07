@@ -22,7 +22,9 @@ import { useState } from "react";
 const STATUS_COLORS = {
   new: "#f6ad55",
   inProgress: "#4e60ff",
+  ready: "#1abf70",
   completed: "#1abf70",
+  billed: "#1abf70",
   cancelled: "#ff5c60",
 };
 
@@ -30,25 +32,56 @@ const STATUS_TEXT = {
   new: "New Order",
   inProgress: "In Progress",
   completed: "Completed",
+  ready: "Ready",
+  billed: "Billed",
   cancelled: "Cancelled",
 };
 
-export const columns = [
+const columns = [
   {
-    accessorKey: "orderId",
-    header: "Order ID",
-    cell: ({ row }) => <div>#{row.getValue("orderId")}</div>,
+    accessorKey: "_id",
+    cell: ({ row }) => (
+      <div
+        style={{
+          // Since rows are flattened by default,
+          // we can use the row.depth property
+          // and paddingLeft to visually indicate the depth
+          // of the row
+          paddingLeft: `${row.depth * 2}rem`,
+        }}
+      >
+        {console.log("row", row)}
+        <div>
+          {row.getCanExpand() ? (
+            <button
+              {...{
+                onClick: row.getToggleExpandedHandler(),
+                style: { cursor: "pointer" },
+              }}
+            >
+              {row.getIsExpanded() ? "👇" : "👉"}
+            </button>
+          ) : (
+            "🔵"
+          )}{" "}
+          {row.getValue("_id")}
+        </div>
+      </div>
+    ),
   },
   {
-    accessorKey: "tableNo",
+    accessorKey: "table",
     header: "Table No",
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("table")}</div>
+    ),
   },
   {
-    accessorKey: "date",
+    accessorKey: "updatedAt",
     header: "Date",
     cell: ({ row }) => {
-      const date = row.getValue("date");
-      const formattedDate = moment(date, "DD-MM-YYYY").format("DD MMM YYYY");
+      const date = row.getValue("updatedAt");
+      const formattedDate = moment(date).format("DD MMM YYYY");
 
       return <div>{formattedDate}</div>;
     },
@@ -56,13 +89,18 @@ export const columns = [
   {
     accessorKey: "time",
     header: "Time",
-    cell: ({ row }) => <div>{row.getValue("time")}</div>,
+    cell: ({ row }) => {
+      const time = row.getValue("updatedAt");
+      const formattedTime = moment(time).format("hh:mm A");
+
+      return <div>{formattedTime}</div>;
+    },
   },
   {
-    accessorKey: "amount",
+    accessorKey: "totalAmount",
     header: "Amount",
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("amount"));
+      const amount = row.getValue("totalAmount");
 
       // Format the amount as a dollar amount
       const formatted = new Intl.NumberFormat("en-US", {
@@ -77,7 +115,9 @@ export const columns = [
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
-      const status = row.getValue("status");
+      let status = row.getValue("status");
+
+      status = typeof status === "string" ? status.toLowerCase() : status;
 
       return (
         <div className="flex items-center gap-2">
@@ -96,17 +136,25 @@ export const columns = [
 const OrderListTable = ({ data }) => {
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
+  const [expanded, setExpanded] = useState({});
+
+  console.log("data", data);
+
+  const tableData = Array.isArray(data) ? data : [];
 
   const table = useReactTable({
-    data,
+    data: tableData,
     columns,
     onSortingChange: setSorting,
+    onExpandedChange: setExpanded,
+    getSubRows: (row) => row.items,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     state: {
+      expanded,
       sorting,
       columnFilters,
     },
@@ -149,7 +197,7 @@ const OrderListTable = ({ data }) => {
         ) : (
           <TableRow>
             <TableCell
-              colSpan={columns.length}
+              colSpan={columns?.length}
               className="h-24 text-lg text-center"
             >
               No results

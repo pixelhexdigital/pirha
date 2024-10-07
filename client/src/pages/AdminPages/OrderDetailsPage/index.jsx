@@ -1,7 +1,10 @@
+import moment from "moment";
 import { useState } from "react";
+import { useSelector } from "react-redux";
 import {
   flexRender,
   getCoreRowModel,
+  getExpandedRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
@@ -27,6 +30,8 @@ import {
   DropdownMenuTrigger,
 } from "components/ui/dropdown-menu";
 import Layout from "components/Layout";
+import { useGetOrdersDataQuery } from "api/adminApi";
+import { selectOrders } from "store/OrderSlice";
 
 // CONSTANTS FOR STATUS COLORS AND TEXT
 const STATUS_COLORS = {
@@ -43,96 +48,54 @@ const STATUS_TEXT = {
   cancelled: "Cancelled",
 };
 
-const data = [
+const columns = [
   {
-    id: "1",
-    itemName: "Chicken Biryani",
-    quantity: "2",
-    amount: "100.00",
-    request: "No Spicy",
-    imageSrc: "https://picsum.photos/200/?random=9",
-    status: "new",
-    orderTime: "12:00 PM",
-  },
-  {
-    id: "2",
-    itemName: "Mutton Biryani",
-    quantity: "1",
-    amount: "200.00",
-    request: "Extra Spicy",
-    imageSrc: "https://picsum.photos/200/?random=6",
-    status: "new",
-    orderTime: "12:00 PM",
-  },
-
-  {
-    id: "3",
-    itemName: "Veg Biryani",
-    quantity: "3",
-    amount: "150.00",
-    request: "No Spicy",
-    imageSrc: "https://picsum.photos/200/?random=3",
-    status: "cancelled",
-    orderTime: "11:30 PM",
-  },
-  {
-    id: "4",
-    itemName: "Paneer Biryani",
-    quantity: "1",
-    amount: "120.00",
-    request: "Extra Spicy",
-    imageSrc: "https://picsum.photos/200/?random=1",
-    status: "inProgress",
-    orderTime: "11:30 PM",
-  },
-  {
-    id: "5",
-    itemName: "Egg Biryani",
-    quantity: "2",
-    amount: "160.00",
-    request: "No Spicy",
-    imageSrc: "https://picsum.photos/200/?random=2",
-    status: "completed",
-    orderTime: "11:00 PM",
-  },
-];
-
-export const columns = [
-  {
-    accessorKey: "id",
-    header: "Item",
-    cell: ({ row }) => {
-      const { itemName, imageSrc, request } = row.original;
-
-      return (
-        <div className="flex items-start gap-4">
-          <img src={imageSrc} alt={itemName} className="w-12 h-12 rounded-md" />
-          <div>
-            <div className="text-sm font-semibold">{itemName}</div>
-            <div className="text-xs text-muted-foreground">
-              {request ? `(${request})` : "No special request"}
-            </div>
-          </div>
+    accessorKey: "_id",
+    cell: ({ row }) => (
+      <div
+        style={{
+          paddingLeft: `${row.depth * 2}rem`,
+        }}
+      >
+        <div>
+          {row.getCanExpand() ? (
+            <button
+              {...{
+                onClick: row.getToggleExpandedHandler(),
+                style: { cursor: "pointer" },
+              }}
+            >
+              {row.getIsExpanded() ? "👇" : "👉"}
+            </button>
+          ) : (
+            "🔵"
+          )}{" "}
+          {row.getValue("_id")}
         </div>
-      );
-    },
+      </div>
+    ),
   },
 
   {
     accessorKey: "quantity",
     header: "Quantity",
     cell: ({ row }) => {
-      const quantity = row.getValue("quantity");
+      // const quantity = row.getValue("quantity");
+      const quantity =
+        row.getValue("quantity") ||
+        row.original?.items?.reduce((acc, item) => acc + item.quantity, 0);
 
       return <div className="w-full">{quantity}x</div>;
     },
   },
 
   {
-    accessorKey: "amount",
+    accessorKey: "price",
     header: "Amount",
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("amount"));
+      const amount = parseFloat(
+        row.original?.totalAmount || row.getValue("price")
+      );
 
       // Format the amount as a dollar amount
       const formatted = new Intl.NumberFormat("en-US", {
@@ -144,15 +107,22 @@ export const columns = [
     },
   },
   {
-    accessorKey: "orderTime",
+    accessorKey: "updatedAt",
     header: "Order Time",
-    cell: ({ row }) => <div>{row.getValue("orderTime")}</div>,
+    cell: ({ row }) => {
+      const time = row.getValue("updatedAt");
+      const formattedTime = moment(time).format("hh:mm A");
+
+      return <div>{formattedTime}</div>;
+    },
   },
   {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
-      const status = row.getValue("status");
+      let status = row.getValue("status");
+
+      status = typeof status === "string" ? status.toLowerCase() : status;
 
       return (
         <div className="flex items-center gap-2">
@@ -198,20 +168,36 @@ export const columns = [
 ];
 
 const OrderDetailsPage = () => {
+  const ordersData = useSelector(selectOrders);
+
+  const [pageNo, setPageNo] = useState(1);
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
+  const [expanded, setExpanded] = useState({});
+
+  const { isLoading, isFetching, refetch } = useGetOrdersDataQuery(
+    { pageNo, status: "New" },
+    { refetchOnMountOrArgChange: true }
+  );
+  const { orders } = ordersData || {};
+
+  const tableData = orders ? orders : [];
+  console.log("tableData", tableData);
 
   const table = useReactTable({
-    data,
+    data: tableData,
     columns,
     onSortingChange: setSorting,
+    onExpandedChange: setExpanded,
+    getSubRows: (row) => row.items,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     state: {
@@ -219,6 +205,7 @@ const OrderDetailsPage = () => {
       columnFilters,
       columnVisibility,
       rowSelection,
+      expanded,
     },
   });
 
@@ -265,7 +252,10 @@ const OrderDetailsPage = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className="h-24 tex">
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
                     No results.
                   </TableCell>
                 </TableRow>
