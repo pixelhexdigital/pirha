@@ -15,13 +15,6 @@ services:
       - myapp-network
     env_file:
       - ./server/.env
-  redis:
-    image: "redis:alpine"
-    container_name: pirha-redis
-    ports:
-      - "6379:6379" # Exposing Redis on port 6379
-    networks:
-      - myapp-network
 
 networks:
   myapp-network:

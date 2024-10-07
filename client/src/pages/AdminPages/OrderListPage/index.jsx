@@ -1,134 +1,77 @@
 import { useState } from "react";
+import { useSelector } from "react-redux";
+import { RotateCcw, X } from "lucide-react";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "components/ui/tabs";
-import OrderListTable from "pages/AdminPages/OrderListPage/OrderListTable";
 import Layout from "components/Layout";
+import OrderListTable from "./OrderListTable";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "components/ui/tabs";
+import { selectOrders } from "store/OrderSlice";
+import { useGetOrdersDataQuery } from "api/adminApi";
+import { Button } from "components/ui/button";
 
 // CONSTANTS FOR STATUS COLORS AND TEXT
-
 const FILTER_BUTTONS = [
   {
-    label: "All",
-    value: "all",
-  },
-  {
     label: "New Order",
-    value: "new",
+    value: "New",
   },
   {
-    label: "In Process",
-    value: "inProcess",
+    label: "Ready",
+    value: "Ready",
   },
   {
-    label: "Completed",
-    value: "completed",
-  },
-];
-
-const data = [
-  {
-    orderId: "1",
-    status: "inProgress",
-    date: "01-01-2024",
-    time: "12:00 PM",
-    amount: "100.00",
-    customerName: "Wolverine",
-    tableNo: "1",
+    label: "Served",
+    value: "Served",
   },
   {
-    orderId: "2",
-    status: "completed",
-    date: "01-01-2024",
-    time: "12:00 PM",
-    amount: "200.00",
-    customerName: "Wade Wilson",
-    tableNo: "2",
+    label: "Cancelled",
+    value: "Cancelled",
   },
   {
-    orderId: "3",
-    status: "cancelled",
-    date: "01-01-2024",
-    time: "12:00 PM",
-    amount: "300.00",
-    customerName: "John wick",
-    tableNo: "3",
-  },
-  {
-    orderId: "4",
-    status: "inProgress",
-    date: "01-01-2024",
-    time: "12:00 PM",
-    amount: "400.00",
-    customerName: "John cena",
-    tableNo: "4",
-  },
-  {
-    orderId: "5",
-    status: "completed",
-    date: "01-01-2024",
-    time: "12:00 PM",
-    amount: "500.00",
-    customerName: "Goku",
-    tableNo: "5",
-  },
-  {
-    orderId: "6",
-    status: "cancelled",
-    date: "01-01-2024",
-    time: "12:00 PM",
-    amount: "600.00",
-    customerName: "Freiza",
-    tableNo: "6",
-  },
-  {
-    orderId: "7",
-    status: "inProgress",
-    date: "01-01-2024",
-    time: "12:00 PM",
-    amount: "700.00",
-    customerName: "Oliver Queen",
-    tableNo: "7",
-  },
-  {
-    orderId: "8",
-    status: "completed",
-    date: "01-01-2024",
-    time: "12:00 PM",
-    amount: "800.00",
-    customerName: "I am Batman",
-    tableNo: "8",
-  },
-  {
-    orderId: "9",
-    status: "cancelled",
-    date: "01-01-2024",
-    time: "12:00 PM",
-    amount: "900.00",
-    customerName: "I am Groot",
-    tableNo: "9",
-  },
-  {
-    orderId: "10",
-    status: "inProgress",
-    date: "01-01-2024",
-    time: "12:00 PM",
-    amount: "1000.00",
-    customerName: "I am Ironman",
-    tableNo: "10",
+    label: "Billed",
+    value: "Billed",
   },
 ];
 
 const OrderListPage = () => {
-  const [activeFilter, setActiveFilter] = useState("all");
+  const ordersData = useSelector(selectOrders);
+  const [activeFilter, setActiveFilter] = useState(FILTER_BUTTONS[0].value);
+  const [pageNo, setPageNo] = useState(1);
 
-  const tableData = data.filter((order) => order.status === activeFilter);
+  const { orders } = ordersData || {};
+
+  const { isLoading, isFetching, refetch } = useGetOrdersDataQuery(
+    { pageNo, status: activeFilter },
+    { refetchOnMountOrArgChange: true }
+  );
+
+  const tableData = orders?.filter((order) => order.status === activeFilter);
 
   return (
     <Layout>
       <div className="space-y-4 w-[98%] mx-auto">
-        <h2 className="h4">Orders</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="h4">Orders</h2>
+
+          <Button
+            variant="outline"
+            onClick={() =>
+              refetch({
+                pageNo: pageNo,
+                status: activeFilter,
+              })
+            }
+            className="h-9"
+          >
+            {isFetching ? (
+              <X className="size-4 animate-pulse" />
+            ) : (
+              <RotateCcw className="size-4" />
+            )}
+          </Button>
+        </div>
         <div className="w-full p-4 space-y-4 bg-white rounded-md shadow-md ring-1 ring-black/5">
-          <Tabs defaultValue="all" className="space-y-4">
+          <Tabs defaultValue={FILTER_BUTTONS[0].value} className="space-y-4">
             <TabsList className="gap-4">
               {FILTER_BUTTONS.map((filter) => {
                 return (
@@ -145,9 +88,11 @@ const OrderListPage = () => {
             {FILTER_BUTTONS.map((filter) => {
               return (
                 <TabsContent key={filter.value} value={filter.value}>
-                  <OrderListTable
-                    data={filter.value === "all" ? data : tableData}
-                  />
+                  {isLoading ? (
+                    <div className="flex mx-auto my-20 ring-loader border-primary" />
+                  ) : (
+                    <OrderListTable data={tableData} />
+                  )}
                 </TabsContent>
               );
             })}

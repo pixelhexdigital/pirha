@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import moment from "moment";
 
-import "./App.css";
 import Cart from "components/Cart";
 import MyRoutes from "routes/Router";
 import { useGetEnumValuesQuery } from "api/miscApi";

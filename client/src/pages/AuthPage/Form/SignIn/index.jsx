@@ -20,8 +20,8 @@ const PASSWORD_REGEX =
 
 // Default form values
 const DEFAULT_VALUES = {
-  username: "sagar",
-  password: "Sagar@123",
+  username: "",
+  password: "",
 };
 
 // Button labels

@@ -657,7 +657,9 @@ const updateCategoryImage = asyncHandler(async (req, res) => {
   // Return success response with updated item
   res
     .status(200)
-    .json(new ApiResponse(200, item, "Category image updated successfully"));
+    .json(
+      new ApiResponse(200, category, "Category image updated successfully")
+    );
 });
 
 export {
