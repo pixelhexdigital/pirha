@@ -10,6 +10,7 @@ import { promisify } from "util";
 import { Image, createCanvas, loadImage } from "canvas";
 import path from "path";
 import { fileURLToPath } from "url";
+import mongoose from "mongoose";
 
 // Get list of tables for a restaurant
 const fetchTables = asyncHandler(async (req, res) => {
