@@ -5,9 +5,9 @@
   "type": "module",
   "main": "src/index.js",
   "scripts": {
-    "start": "nodemon -r dotenv/config --experimental-json-modules src/index.js",
-    "build": "node -r dotenv/config --experimental-json-modules src/index.js",
-    "debug": "nodemon -r dotenv/config --experimental-json-modules --inspect src/index.js"
+    "start": "nodemon  --env-file=.env --experimental-json-modules src/index.js",
+    "build": "NODE_ENV=production && node --experimental-json-modules src/index.js",
+    "debug": "nodemon  --env-file=.env --experimental-json-modules --inspect src/index.js"
   },
   "keywords": [
     "restaurant",
@@ -28,7 +28,6 @@
     "cloudinary": "^2.2.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "express-compression": "^1.0.2",
     "express-rate-limit": "^6.7.0",
