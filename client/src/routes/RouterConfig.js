@@ -14,5 +14,7 @@ export const ROUTES = {
   ORDER: "/order",
   ORDER_LIST: "/order-list",
   ORDER_DETAILS: "/order-details",
+  TABLES: "/tables",
+  KITCHEN: "/kitchen",
   NOT_FOUND: "/404",
 };

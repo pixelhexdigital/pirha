@@ -1,11 +1,13 @@
 import { useSelector } from "react-redux";
 import { twMerge } from "tailwind-merge";
 import {
-  AlignLeft,
   ChefHat,
   LayoutDashboard,
-  ReceiptText,
+  LayoutGridIcon,
+  List,
+  MenuSquare,
   Settings,
+  Store,
 } from "lucide-react";
 
 import LeftSidebar, { SidebarItem } from "components/LeftSideBar";
@@ -20,19 +22,29 @@ const navigation = [
   },
   {
     name: "Order List",
-    url: ROUTES.ORDER_LIST,
-    icon: <AlignLeft size={20} />,
+    url: ROUTES.ORDER,
+    icon: <List size={20} />,
+  },
+  {
+    name: "Kitchen Orders",
+    url: ROUTES.KITCHEN,
+    icon: <ChefHat size={20} />,
   },
   {
     name: "Order Details",
     url: ROUTES.ORDER_DETAILS,
-    icon: <ReceiptText size={20} />,
+    icon: <Store size={20} />,
   },
 
   {
     name: "Menu Items",
     url: ROUTES.MENU_MANAGEMENT,
-    icon: <ChefHat size={20} />,
+    icon: <MenuSquare size={20} />,
+  },
+  {
+    name: "Tables",
+    url: ROUTES.TABLES,
+    icon: <LayoutGridIcon size={20} />,
   },
   {
     name: "Settings",
