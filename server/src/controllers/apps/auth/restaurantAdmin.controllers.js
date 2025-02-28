@@ -132,7 +132,6 @@ const updateSocialProfile = asyncHandler(async (req, res) => {
     {
       $set: {
         restroName,
-        baseURL,
         ownerFullName,
         location,
         restroType,
