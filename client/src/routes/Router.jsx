@@ -11,10 +11,11 @@ import { useSelector } from "react-redux";
 import lazyLoad from "lazyLoad";
 
 import { selectIsAuthenticated } from "store/AuthSlice";
+
 const AuthPage = lazyLoad(() => import("pages/AuthPage"));
 const CategoriesPage = lazyLoad(() => import("pages/MenuPages/CategoriesPage"));
 const MenuPage = lazyLoad(() => import("pages/MenuPages/MenuPage"));
-const OrderListPage = lazyLoad(() => import("pages/AdminPages/OrderListPage"));
+// const OrderListPage = lazyLoad(() => import("pages/OrderListPage/indexV0"));
 const OrderDetailsPage = lazyLoad(
   () => import("pages/AdminPages/OrderDetailsPage")
 );
@@ -27,14 +28,19 @@ const CategoriesManagementPage = lazyLoad(
 const ItemManagementPage = lazyLoad(
   () => import("pages/AdminPages/MenuManagementPage/ItemManagementPage")
 );
+const Table = lazyLoad(() => import("pages/TablesPage"));
+const KitchenPage = lazyLoad(() => import("pages/KitchenPages"));
+const OrdersPage = lazyLoad(() => import("pages/OrdersPage"));
 
 const AuthenticatedRoutes = [
   { path: ROUTES.DASHBOARD, element: <DashboardPage /> },
-  { path: ROUTES.ORDER_LIST, element: <OrderListPage /> },
+  { path: ROUTES.ORDER, element: <OrdersPage /> },
+  // { path: ROUTES.ORDER_LIST, element: <OrderListPage /> },
   { path: ROUTES.ORDER_DETAILS, element: <OrderDetailsPage /> },
   { path: ROUTES.ONBOARDING, element: <OnboardingPage /> },
   { path: ROUTES.MENU_MANAGEMENT, element: <ItemManagementPage /> },
-  { path: ROUTES.CATEGORIES_MANAGEMENT, element: <CategoriesManagementPage /> },
+  { path: ROUTES.TABLES, element: <Table /> },
+  { path: ROUTES.KITCHEN, element: <KitchenPage /> },
 ];
 
 const UnauthenticatedRoutes = [
