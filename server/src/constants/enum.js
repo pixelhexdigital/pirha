@@ -25,4 +25,5 @@ export const ENUMS = {
     "Food court",
     "Cloud kitchen",
   ],
+  onboardingState: ["NEW", "TABLE", "MENU", "COMPLETED"],
 };

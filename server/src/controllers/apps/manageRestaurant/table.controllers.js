@@ -240,6 +240,10 @@ const registerTables = asyncHandler(async (req, res) => {
   }
 
   await Table.bulkWrite(bulkOperations);
+  const onboardingState = ENUMS.onboardingState[2];
+
+  // Restaurant.findByIdAndUpdate(restaurant._id, { onboardingState });
+  await restaurant.updateOne({ onboardingState });
 
   const zipData = await generateQRCode(
     newTables,

@@ -133,6 +133,11 @@ const restaurantSchema = new Schema(
         public_id: null,
       },
     },
+    onboardingState: {
+      type: String,
+      enum: ENUMS.onboardingState,
+      default: ENUMS.onboardingState[0],
+    },
     subscription: { type: Schema.Types.ObjectId, ref: "Subscription" },
 
     refreshToken: {
