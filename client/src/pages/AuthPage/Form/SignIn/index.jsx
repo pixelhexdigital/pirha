@@ -63,7 +63,8 @@ const SignInTab = ({ onClick }) => {
   // Navigate to onboarding or dashboard based on the response
   useEffect(() => {
     if (!isSuccess) return;
-    const { ownerFullName, restroName } = data.restaurant;
+
+    const { ownerFullName, restroName } = data.restaurant || {};
 
     if (!ownerFullName || !restroName) {
       navigate(ROUTES.ONBOARDING, { replace: true });

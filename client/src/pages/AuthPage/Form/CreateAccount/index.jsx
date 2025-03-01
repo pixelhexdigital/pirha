@@ -70,12 +70,12 @@ const REGISTER_FORM_SCHEMA = object().shape({
       PASSWORD_REGEX.test(value)
     ),
   confirmPassword: string()
-    .test(
-      "passwords-match",
-      ERROR_MESSAGES.PASSWORDS_MATCH,
-      (value) => this.parent.password === value
-    )
-    .required("Required"),
+    .required("Required")
+    .test("passwords-match", ERROR_MESSAGES.PASSWORDS_MATCH, function (value) {
+      // `this.options.context` gives you access to the sibling fields
+      const { password } = this.parent;
+      return password === value;
+    }),
 });
 
 const CreateAccountTab = () => {

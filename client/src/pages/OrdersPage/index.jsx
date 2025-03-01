@@ -6,13 +6,51 @@ import { OrdersTable } from "./components/OrdersTable";
 import { OrderFilters } from "./components/OrderFilters";
 import { OrderSummary } from "./components/OrderSummary";
 import Layout from "components/Layout";
+import { useGetOrdersDataQuery } from "api/adminApi";
+import { useState } from "react";
+import { useSelector } from "react-redux";
+import { selectOrders } from "store/OrderSlice";
 
 // export const metadata: Metadata = {
 //   title: "Orders | PirHa.in",
 //   description: "Restaurant order management system",
 // }
 
+const OrderStatuses = [
+  {
+    value: "new",
+    label: "New Order",
+  },
+  {
+    value: "ready",
+    label: "Ready",
+  },
+  {
+    value: "served",
+    label: "Served",
+  },
+  {
+    value: "cancelled",
+    label: "Cancelled",
+  },
+  {
+    value: "billed",
+    label: "Billed",
+  },
+];
+
 export default function OrdersPage() {
+  const ordersData = useSelector(selectOrders);
+  const [activeFilter, setActiveFilter] = useState("new");
+  const [pageNo, setPageNo] = useState(1);
+
+  const { isLoading, isFetching, refetch } = useGetOrdersDataQuery(
+    { pageNo, status: activeFilter },
+    { refetchOnMountOrArgChange: true }
+  );
+
+  console.log("ordersData", ordersData);
+
   return (
     <Layout>
       <div className="flex flex-col h-full">
@@ -35,7 +73,7 @@ export default function OrdersPage() {
         <div className="flex-1 p-4 space-y-4">
           <OrderSummary />
           <OrderTabs />
-          <OrderFilters />
+          {/* <OrderFilters /> */}
           <OrdersTable />
         </div>
       </div>

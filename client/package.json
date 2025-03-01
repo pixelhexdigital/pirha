@@ -25,6 +25,7 @@
     "@reduxjs/toolkit": "^2.2.3",
     "@tanstack/react-table": "^8.16.0",
     "axios": "^1.6.8",
+    "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",

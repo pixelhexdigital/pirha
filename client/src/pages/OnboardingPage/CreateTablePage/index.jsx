@@ -12,6 +12,9 @@ import Field from "components/Field";
 import { Button } from "components/ui/button";
 import { Combobox } from "components/ui/Combobox";
 import { errorToast, successToast } from "lib/helper";
+import { Switch } from "components/ui/switch";
+import { Label } from "components/ui/label";
+import { useState } from "react";
 
 // Constants for class names and placeholders
 const CLASS_INPUT =
@@ -19,6 +22,10 @@ const CLASS_INPUT =
 const PLACEHOLDERS = {
   PREFIX_OF_TABLES: "Prefix of tables",
   NUMBER_OF_TABLES: "Number of tables",
+  START: "Start",
+  START_NUMBER: "Start Number",
+  END_NUMBER: "End Number",
+  TABLE_NUMBER: "Table Number",
 };
 
 // Validation schema
@@ -47,6 +54,8 @@ const generateAlphabetOptions = () =>
   }));
 
 const CreateTablePage = ({ onNext }) => {
+  const [isBulkCreation, setIsBulkCreation] = useState(false);
+
   const [generateTableQr, { data: qrData, isLoading: generatingQr }] =
     useGenerateTableQrMutation();
   const [downloadQr, { data: qrDownloadData, isLoading: downloadingQr }] =
@@ -117,7 +126,7 @@ const CreateTablePage = ({ onNext }) => {
           {tableData.data.tables.map((table) => {
             return (
               <div
-                className="flex flex-auto bg-secondary min-w-min p-4 m-2 text-secondary-foreground "
+                className="flex flex-auto p-4 m-2 bg-secondary min-w-min text-secondary-foreground "
                 key={table._id.toString()}
               >
                 {table.title}
@@ -140,8 +149,17 @@ const CreateTablePage = ({ onNext }) => {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="w-full max-w-xl px-4 mx-auto"
+      className="w-full max-w-xl px-4 mx-auto space-y-4"
     >
+      <div className="flex items-center mb-6 space-x-2">
+        <Switch
+          id="bulk-creation"
+          checked={isBulkCreation}
+          onCheckedChange={setIsBulkCreation}
+        />
+        <Label htmlFor="bulk-creation">Bulk Table Creation</Label>
+      </div>
+
       <Controller
         name="prefixOfTables"
         control={control}
@@ -168,6 +186,45 @@ const CreateTablePage = ({ onNext }) => {
           {...register("numberOfTables")}
         />
       </div>
+      {isBulkCreation ? (
+        <div className="flex space-x-4">
+          {/* <FormField
+                  control={form.control}
+                  name="startNumber"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel>Start Number</FormLabel>
+                      <FormControl> */}
+          <Field
+            name="startNumber"
+            type="number"
+            min="1"
+            {...register("startNumber")}
+            className="w-full"
+            classInput={CLASS_INPUT}
+            placeholder={PLACEHOLDERS.START_NUMBER}
+          />
+          <Field
+            name="endNumber"
+            placeholder
+            type="number"
+            className="w-full"
+            classInput={CLASS_INPUT}
+            min="1"
+            {...register("endNumber")}
+          />
+        </div>
+      ) : (
+        <Field
+          name="startNumber"
+          type="number"
+          min="1"
+          {...register("startNumber")}
+          className="w-full"
+          classInput={CLASS_INPUT}
+          placeholder={PLACEHOLDERS.TABLE_NUMBER}
+        />
+      )}
       <div className="space-y-4">
         <Button type="submit" size="lg" className="w-full">
           {generatingQr ? (
