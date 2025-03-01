@@ -6,7 +6,8 @@ import { Customer } from "../models/apps/manageRestaurant/customer.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
-import { v4 as uuid } from "uuid";
+import pkg from "uuid";
+const { v4: uuid } = pkg;
 import { changePlanHandler } from "../controllers/superAdmin/subscription.controllers.js";
 
 export const verifyJWT = asyncHandler(async (req, res, next) => {
