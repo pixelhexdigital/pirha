@@ -168,10 +168,12 @@ const downloadTableQr = asyncHandler(async (req, res) => {
   const tables = await Table.find({
     restaurantId,
     title: {
-      $gte: startTable,
-      $lte: endTable,
+      $in: Array.from(
+        { length: endNumber },
+        (_, i) => `${startLetter}-${i + 1}`
+      ),
     },
-  });
+  }).sort({ title: 1 });
 
   if (tables.length === 0) {
     throw new ApiError(404, "No tables found within the specified range");
