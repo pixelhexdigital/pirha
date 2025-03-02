@@ -11,6 +11,7 @@ import { Image, createCanvas, loadImage } from "canvas";
 import path from "path";
 import { fileURLToPath } from "url";
 import mongoose from "mongoose";
+import { ENUMS } from "../../../constants/enum.js";
 
 // Get list of tables for a restaurant
 const fetchTables = asyncHandler(async (req, res) => {
