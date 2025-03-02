@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
 import pirhaLogo from "assets/pirha_logo_white.png";
 
 import AddMenuPage from "./AddMenuPage";
@@ -6,13 +8,42 @@ import CreateTablePage from "./CreateTablePage";
 import UpdateProfilePage from "./UpdateProfilePage";
 // import UpdateAvatarPage from "./UpdateAvatarPage";
 import { Progress } from "components/ui/progress";
+import { selectOnboardingState, setOnboardingState } from "store/AuthSlice";
 
 const NO_OF_STEPS = 3;
+const ONBOARDING_STATE = {
+  NEW: "NEW",
+  TABLE: "TABLE",
+  MENU: "MENU",
+  COMPLETED: "COMPLETED",
+};
 
 const OnboardingPage = () => {
+  const dispatch = useDispatch();
+  const currentOnboardingStep = useSelector(selectOnboardingState);
+
   const [step, setStep] = useState(1);
 
-  const nextStep = () => setStep((prevStep) => prevStep + 1);
+  useEffect(() => {
+    if (currentOnboardingStep === ONBOARDING_STATE.NEW) {
+      setStep(1);
+    } else if (currentOnboardingStep === ONBOARDING_STATE.TABLE) {
+      setStep(2);
+    } else if (currentOnboardingStep === ONBOARDING_STATE.MENU) {
+      setStep(3);
+    }
+  }, [currentOnboardingStep]);
+
+  const nextStep = () => {
+    setStep((prevStep) => prevStep + 1);
+    if (step === 1) {
+      dispatch(setOnboardingState(ONBOARDING_STATE.TABLE));
+    } else if (step === 2) {
+      dispatch(setOnboardingState(ONBOARDING_STATE.MENU));
+    } else if (step > 2) {
+      dispatch(setOnboardingState(ONBOARDING_STATE.COMPLETED));
+    }
+  };
   // const prevStep = () => setStep((prevStep) => prevStep - 1);
 
   const progressValue = ((step - 1) / NO_OF_STEPS) * 100;

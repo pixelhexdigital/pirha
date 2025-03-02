@@ -10,7 +10,10 @@ import { ROUTES } from "routes/RouterConfig";
 import { useSelector } from "react-redux";
 import lazyLoad from "lazyLoad";
 
-import { selectIsAuthenticated } from "store/AuthSlice";
+import {
+  selectIsAuthenticated,
+  selectIsOnboardingComplete,
+} from "store/AuthSlice";
 
 const AuthPage = lazyLoad(() => import("pages/AuthPage"));
 const CategoriesPage = lazyLoad(() => import("pages/MenuPages/CategoriesPage"));
@@ -19,7 +22,7 @@ const MenuPage = lazyLoad(() => import("pages/MenuPages/MenuPage"));
 const OrderDetailsPage = lazyLoad(
   () => import("pages/AdminPages/OrderDetailsPage")
 );
-const OnboardingPage = lazyLoad(() => import("pages/OnboardingPage/index.jsx"));
+const OnboardingPage = lazyLoad(() => import("pages/OnboardingPage"));
 const ProtectedRoute = lazyLoad(() => import("components/ProtectedRoute"));
 const DashboardPage = lazyLoad(() => import("pages/AdminPages/DashboardPage"));
 const CategoriesManagementPage = lazyLoad(
@@ -54,16 +57,18 @@ const UnauthenticatedRoutes = [
 
 const MyRoutes = () => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
+  const isOnboardingComplete = useSelector(selectIsOnboardingComplete);
+
+  const redirectRoute = isAuthenticated
+    ? isOnboardingComplete
+      ? ROUTES.DASHBOARD
+      : ROUTES.ONBOARDING
+    : ROUTES.AUTH;
 
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route>
-        <Route
-          path="*"
-          element={
-            <Navigate to={isAuthenticated ? ROUTES.DASHBOARD : ROUTES.HOME} />
-          }
-        />
+        <Route path="*" element={<Navigate to={redirectRoute} />} />
         {AuthenticatedRoutes.map((route, index) => (
           <Route
             key={index}
