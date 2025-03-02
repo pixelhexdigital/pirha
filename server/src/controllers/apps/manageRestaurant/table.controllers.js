@@ -61,44 +61,34 @@ const __dirname = path.dirname(__filename);
 
 const generateQRCode = async (tables, restaurant, baseURL) => {
   const zip = new JSZip();
-  const templatePath = path.join(
-    __dirname,
-    "../../../assets/qr_generator_template.png"
-  );
-  console.log("Template Path: ", templatePath); // Debugging line to verify path
-
-  let templateImage;
-  try {
-    templateImage = await loadImage(templatePath);
-  } catch (error) {
-    throw new ApiError(500, `Failed to load template image: ${error.message}`);
-  }
-
-  // Load the restaurant's avatar image
-  let avatarImage;
-  if (restaurant.avatar.url) {
-    try {
-      avatarImage = await loadImage(restaurant.avatar.url);
-    } catch (error) {
-      console.error(`Failed to load avatar image: ${error.message}`);
-    }
-  }
 
   for (const table of tables) {
     const qrCodeText = `${baseURL}?tableId=${table._id}&restaurantId=${restaurant._id}`;
-
-    // Create a new canvas to draw QR code
     const canvas = createCanvas(512, 728);
     const ctx = canvas.getContext("2d");
 
-    // Draw the template image onto the canvas
-    ctx.drawImage(templateImage, 0, 0, 512, 728);
+    // Background with gradient
+    const gradient = ctx.createLinearGradient(0, 0, 512, 728);
+    gradient.addColorStop(0, "#1E3A8A"); // Dark blue
+    gradient.addColorStop(1, "#2563EB"); // Lighter blue
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 512, 728);
 
-    // Generate QR code on a separate canvas and draw it onto the main canvas
+    // Add accent shapes
+    ctx.fillStyle = "#EC4899";
+    ctx.beginPath();
+    ctx.arc(60, 60, 80, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(480, 700, 60, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Generate QR Code
     const qrCanvas = createCanvas(200, 200);
     await QRCode.toCanvas(qrCanvas, qrCodeText, {
       color: {
-        dark: "#080b53", // dark blue color for QR code lines
+        dark: "#000",
+        light: "#fff",
       },
       width: 180,
       margin: 5,
@@ -106,30 +96,48 @@ const generateQRCode = async (tables, restaurant, baseURL) => {
       scale: 10,
     });
 
-    ctx.drawImage(qrCanvas, 106, 150, 300, 300); // Adjust positions as needed
-
-    // Add table title
-    ctx.font = "bold 32px Arial";
+    // Draw QR Code inside a rounded white card
     ctx.fillStyle = "#fff";
-    ctx.textAlign = "center";
-    ctx.fillText(table.title.toUpperCase(), 256, 494); // Adjust positions as needed
+    ctx.roundRect(106, 200, 300, 300, 25);
+    ctx.fill();
+    ctx.drawImage(qrCanvas, 116, 210, 280, 280);
 
-    // Add restaurant name
-    ctx.fillText(restaurant.restroName, 240, 590); // Adjust positions as needed
-
-    // Add restaurant avatar
-    if (avatarImage) {
-      ctx.drawImage(avatarImage, 50, 550, 80, 80); // Adjust positions as needed
+    // Restaurant logo
+    if (restaurant.avatar.url) {
+      try {
+        const avatarImage = await loadImage(restaurant.avatar.url);
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(65, 65, 35, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(avatarImage, 30, 30, 70, 70);
+        ctx.restore();
+      } catch (error) {
+        console.error(`Failed to load avatar image: ${error.message}`);
+      }
     }
 
-    // Convert canvas to buffer (PNG image)
-    const buffer = canvas.toBuffer("image/png");
+    // Restaurant Name
+    ctx.font = "bold 28px Poppins";
+    ctx.fillStyle = "#fff";
+    ctx.fillText(restaurant.restroName, 120, 75);
 
-    // Add QR code image to ZIP file with table title as filename
+    // Table Title
+    ctx.font = "bold 40px Poppins";
+    ctx.textAlign = "center";
+    ctx.fillText(`${table.title.toUpperCase()}`, 256, 550);
+
+    // Subtitle
+    ctx.font = "22px Poppins";
+    ctx.fillStyle = "#e5e7eb";
+    ctx.fillText("Scan to view our menu", 256, 590);
+
+    // Convert to buffer
+    const buffer = canvas.toBuffer("image/png");
     zip.file(`${table.title}.png`, buffer);
   }
 
-  // Generate ZIP file containing all QR code images
+  // Generate ZIP file
   const zipData = await zip.generateAsync({ type: "nodebuffer" });
   return zipData;
 };
