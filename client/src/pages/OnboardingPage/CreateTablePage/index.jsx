@@ -12,9 +12,8 @@ import Field from "components/Field";
 import { Button } from "components/ui/button";
 import { Combobox } from "components/ui/Combobox";
 import { errorToast, successToast } from "lib/helper";
-import { Switch } from "components/ui/switch";
-import { Label } from "components/ui/label";
-import { useState } from "react";
+
+const MAX_ALLOWED_TABLES = 5;
 
 // Constants for class names and placeholders
 const CLASS_INPUT =
@@ -33,6 +32,7 @@ const CREATE_TABLE_SCHEMA = object().shape({
   numberOfTables: number()
     .required("Number of tables is required")
     .min(1, "At least one table is required")
+    .max(MAX_ALLOWED_TABLES, `Maximum of ${MAX_ALLOWED_TABLES} tables allowed`)
     .typeError("Number of tables must be a number"),
   prefixOfTables: string().required("Prefix of tables is required"),
 });
@@ -54,14 +54,11 @@ const generateAlphabetOptions = () =>
   }));
 
 const CreateTablePage = ({ onNext }) => {
-  const [isBulkCreation, setIsBulkCreation] = useState(false);
-
   const [generateTableQr, { data: qrData, isLoading: generatingQr }] =
     useGenerateTableQrMutation();
-  const [downloadQr, { data: qrDownloadData, isLoading: downloadingQr }] =
-    useDownloadQrMutation();
+  const [downloadQr, { isLoading: downloadingQr }] = useDownloadQrMutation();
 
-  const { data: tableData, isLoading } = useGetMyTablesQuery();
+  const { data: tableData } = useGetMyTablesQuery();
 
   const qrDataSuccess = qrData?.success;
 
@@ -99,44 +96,76 @@ const CreateTablePage = ({ onNext }) => {
         error,
         message: MESSAGES.GENERATE_FAILURE,
       });
-      console.error("Error generating QR codes:", error);
     }
   };
 
   const handleDownloadQr = async () => {
+    const tables = tableData?.data?.tables;
+
+    const payload = {
+      startTable: tables?.[0]?.title ?? "",
+      endTable: tables?.[tables.length - 1]?.title ?? "",
+    };
+
     try {
-      const response = await downloadQr({}).unwrap();
+      const blob = await downloadQr(payload).unwrap();
+
+      if (!(blob instanceof Blob)) {
+        throw new Error("Invalid file response"); // Check if response is a Blob
+      }
+
+      // Create a URL for the file
+      const url = window.URL.createObjectURL(blob);
+
+      // Create a temporary anchor tag and trigger download
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "qr_codes.zip");
+      document.body.appendChild(link);
+      link.click();
+
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
       successToast({
-        data: response,
-        message: MESSAGES.DOWNLOAD_SUCCESS,
+        message: "QR codes downloaded successfully!",
       });
     } catch (error) {
       console.error("Error downloading QR codes:", error);
       errorToast({
         error,
-        message: MESSAGES.DOWNLOAD_FAILURE,
+        message: "Failed to download QR codes.",
       });
     }
   };
 
   if (tableData?.success && tableData.data?.tables?.length) {
     return (
-      <div>
-        <div className="flex flex-row flex-wrap max-h-svh">
+      <div className="w-full max-w-xl px-4 mx-auto">
+        <p className="mb-4 font-semibold text-gray-800">
+          Tables created successfully. Download the QR codes for the tables
+          below.
+        </p>
+        <div className="grid grid-cols-3 gap-4 md:grid-cols-5 max-h-svh">
           {tableData.data.tables.map((table) => {
             return (
-              <div
-                className="flex flex-auto p-4 m-2 bg-secondary min-w-min text-secondary-foreground "
+              <p
+                className="p-4 text-center capitalize bg-secondary min-w-min text-secondary-foreground"
                 key={table._id.toString()}
               >
                 {table.title}
-              </div>
+              </p>
             );
           })}
         </div>
-        <div className="flex flex-row ">
-          <Button type="submit" size="lg" className="w-full">
-            Download QR
+        <div className="flex flex-row gap-4 mt-4">
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full"
+            onClick={handleDownloadQr}
+          >
+            {downloadingQr ? <div className="ring-loader" /> : "Download QR"}
           </Button>
           <Button type="" size="lg" className="w-full" onClick={onNext}>
             Next
@@ -149,17 +178,11 @@ const CreateTablePage = ({ onNext }) => {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="w-full max-w-xl px-4 mx-auto space-y-4"
+      className="w-full max-w-xl px-4 mx-auto"
     >
-      <div className="flex items-center mb-6 space-x-2">
-        <Switch
-          id="bulk-creation"
-          checked={isBulkCreation}
-          onCheckedChange={setIsBulkCreation}
-        />
-        <Label htmlFor="bulk-creation">Bulk Table Creation</Label>
-      </div>
-
+      <p className="mb-4 font-semibold text-gray-800">
+        Create tables for your restaurant by generating QR codes for them here.
+      </p>
       <Controller
         name="prefixOfTables"
         control={control}
@@ -179,6 +202,8 @@ const CreateTablePage = ({ onNext }) => {
       <div className="my-4">
         <Field
           type="number"
+          max={MAX_ALLOWED_TABLES}
+          min={1}
           placeholder={PLACEHOLDERS.NUMBER_OF_TABLES}
           className="w-full"
           classInput={CLASS_INPUT}
@@ -186,66 +211,10 @@ const CreateTablePage = ({ onNext }) => {
           {...register("numberOfTables")}
         />
       </div>
-      {isBulkCreation ? (
-        <div className="flex space-x-4">
-          {/* <FormField
-                  control={form.control}
-                  name="startNumber"
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormLabel>Start Number</FormLabel>
-                      <FormControl> */}
-          <Field
-            name="startNumber"
-            type="number"
-            min="1"
-            {...register("startNumber")}
-            className="w-full"
-            classInput={CLASS_INPUT}
-            placeholder={PLACEHOLDERS.START_NUMBER}
-          />
-          <Field
-            name="endNumber"
-            placeholder
-            type="number"
-            className="w-full"
-            classInput={CLASS_INPUT}
-            min="1"
-            {...register("endNumber")}
-          />
-        </div>
-      ) : (
-        <Field
-          name="startNumber"
-          type="number"
-          min="1"
-          {...register("startNumber")}
-          className="w-full"
-          classInput={CLASS_INPUT}
-          placeholder={PLACEHOLDERS.TABLE_NUMBER}
-        />
-      )}
-      <div className="space-y-4">
-        <Button type="submit" size="lg" className="w-full">
-          {generatingQr ? (
-            <div className="ring-loader" />
-          ) : qrDataSuccess ? (
-            "Next"
-          ) : (
-            "Generate QR"
-          )}
-        </Button>
-        {qrDataSuccess && (
-          <Button
-            type="button"
-            size="lg"
-            className="w-full"
-            onClick={handleDownloadQr}
-          >
-            Download QR Codes
-          </Button>
-        )}
-      </div>
+
+      <Button type="submit" size="lg" className="w-full">
+        {generatingQr ? <div className="ring-loader" /> : "Generate QR"}
+      </Button>
     </form>
   );
 };
