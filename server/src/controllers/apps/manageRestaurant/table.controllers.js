@@ -64,7 +64,6 @@ const generateQRCode = async (tables, restaurant, baseURL) => {
   const zip = new JSZip();
 
   for (const table of tables) {
-    const table = tables[0]; // Get the first table from the tables array
     const qrCodeText = `${baseURL}?tableId=${table._id}&restaurantId=${restaurant._id}`; // Generate the QR code text with the base URL, table ID, and restaurant ID
     const canvas = createCanvas(512, 728); // Create a canvas with the specified dimensions
     const ctx = canvas.getContext("2d"); // Get the 2D rendering context of the canvas
