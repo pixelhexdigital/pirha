@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { object, string, number } from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import imageCompression from "browser-image-compression";
 
 import { useUpdateLogoMutation, useUpdateProfileMutation } from "api/adminApi";
 import { useCurrentUserQuery } from "api/authApi";
@@ -11,6 +12,7 @@ import Field from "components/Field";
 import { Button } from "components/ui/button";
 import { errorToast } from "lib/helper";
 import { Combobox } from "components/ui/Combobox";
+import { Upload } from "lucide-react";
 
 // Input class styles
 const CLASS_INPUT =
@@ -77,9 +79,9 @@ const UpdateProfilePage = ({ nextStep }) => {
   const { data: user, isLoading: isUserLoading } = useCurrentUserQuery();
 
   const {
-    setValue,
     handleSubmit,
     register,
+    reset,
     formState: { errors },
     control,
   } = useForm({
@@ -89,23 +91,45 @@ const UpdateProfilePage = ({ nextStep }) => {
 
   useEffect(() => {
     if (!user) return;
-    setValue("restroName", user.restroName);
-    setValue("ownerFullName", user.ownerFullName);
-    setValue("location", user.location);
-    setValue("restroType", user.restroType);
-    setValue(
-      "yearOfEstablishment",
-      moment(user.yearOfEstablishment).isValid()
+    reset({
+      restroName: user.restroName,
+      ownerFullName: user.ownerFullName,
+      location: user.location,
+      restroType: user.restroType,
+      yearOfEstablishment: moment(user.yearOfEstablishment).isValid()
         ? moment(user.yearOfEstablishment).format("YYYY")
-        : ""
-    );
+        : "",
+    });
     setImage(user.avatar?.url);
-  }, [user, setValue]);
+  }, [user, reset]);
 
-  const handleImageChange = async (e) => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
 
-    if (!file) return;
+    if (file) {
+      const options = {
+        maxSizeMB: 1, // Max size (in MB)
+        maxWidthOrHeight: 800, // Max width or height
+        useWebWorker: true,
+      };
+
+      try {
+        const compressedFile = await imageCompression(file, options);
+
+        // Generate preview
+        const compressedBlob = URL.createObjectURL(compressedFile);
+        setImage(compressedBlob);
+
+        // Upload compressed file
+        await uploadImageToServer(compressedFile);
+      } catch (error) {
+        console.error("Image compression error:", error);
+      }
+    }
+  };
+
+  const uploadImageToServer = async (file) => {
+    console.log("uploadImageToServer", file);
     try {
       const response = await uploadImage(file).unwrap();
       if (response.success) {
@@ -148,27 +172,26 @@ const UpdateProfilePage = ({ nextStep }) => {
       onSubmit={handleSubmit(handleProfileUpdate)}
       className="w-full max-w-xl px-4 mx-auto"
     >
-      <div className="mb-4 text-center">
-        <label htmlFor="avatar" className="inline-block cursor-pointer">
-          {image ? (
-            <img
-              src={image}
-              alt="Avatar"
-              className="object-cover w-24 h-24 border border-gray-300 rounded-full"
-            />
-          ) : (
-            <div className="flex items-center justify-center w-24 h-24 bg-gray-200 border border-gray-300 rounded-full">
-              <span className="text-gray-500">Upload Image</span>
-            </div>
-          )}
-        </label>
-        <input
-          id="avatar"
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handleImageChange}
-        />
+      <div className="flex flex-col items-center justify-center gap-4 mb-8">
+        <div className="relative">
+          <div className="flex items-center justify-center w-32 h-32 border-2 border-gray-300 border-dashed rounded-full bg-gray-50">
+            {image ? (
+              <img
+                src={image || "/placeholder.svg"}
+                alt="Restaurant logo"
+                className="object-cover w-full h-full rounded-full"
+              />
+            ) : (
+              <Upload className="w-8 h-8 text-gray-400" />
+            )}
+          </div>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          />
+        </div>
         {isUploading && <p className="text-sm text-blue-500">Uploading...</p>}
       </div>
       <Field

@@ -5,6 +5,7 @@ import { ApiError } from "../../../utils/ApiError.js";
 import { ApiResponse } from "../../../utils/ApiResponse.js";
 import { asyncHandler } from "../../../utils/asyncHandler.js";
 import { uploadOnCloudinary } from "../../../utils/cloudinary.js";
+import { ENUMS } from "../../../constants/enum.js";
 
 /**
  *
@@ -124,18 +125,20 @@ const updateSocialProfile = asyncHandler(async (req, res) => {
     socialLink,
   } = req.body;
 
+  const onboardingState = ENUMS.onboardingState[1];
+
   let profile = await Restaurant.findByIdAndUpdate(
     req.restaurant?._id,
     {
       $set: {
         restroName,
-        baseURL,
         ownerFullName,
         location,
         restroType,
         serviceLocation,
         yearOfEstablishment,
         socialLink,
+        onboardingState,
       },
     },
     { new: true }

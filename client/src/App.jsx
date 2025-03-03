@@ -2,8 +2,8 @@ import { useEffect } from "react";
 import moment from "moment";
 
 import Cart from "components/Cart";
-import MyRoutes from "routes/Router";
 import { useGetEnumValuesQuery } from "api/miscApi";
+import MyRoutes from "routes/Router";
 
 function App() {
   const currentTime = moment();

@@ -56,13 +56,13 @@ export function SidebarItem({ icon, name, url }) {
 
   return (
     <NavLink
-      className="relative flex flex-col my-3 font-medium cursor-pointer group"
+      className="relative flex flex-col my-1.5 font-medium cursor-pointer group"
       to={url}
     >
       {({ isActive }) => (
         <div
           className={twMerge(
-            "flex items-center justify-center pl-2 py-3 transition-all border-l-[0.25rem] text-black/70 border-transparent bg-transparent ml-4 w-[85%] mr-auto rounded-tr-md rounded-br-md",
+            "flex items-center justify-center pl-2 py-2.5 transition-all border-l-[0.25rem] text-black/70 border-transparent bg-transparent ml-4 w-[85%] mr-auto rounded-tr-md rounded-br-md",
             isActive && "text-primary/80 border-primary bg-primary/10",
             !isExpanded &&
               "w-full rounded-none border-r-[0.25rem] border-l-0 mx-auto"

@@ -16,6 +16,7 @@ export const tableApi = createApi({
         return response;
       },
     }),
+
     generateTableQr: builder.mutation({
       query: (data) => {
         return {
@@ -25,14 +26,20 @@ export const tableApi = createApi({
         };
       },
     }),
+
     downloadQr: builder.mutation({
-      query: (data) => {
-        return {
-          url: "/qr-download",
-          method: "POST",
-          body: data,
-        };
-      },
+      query: (data) => ({
+        url: "/qr-download",
+        method: "POST",
+        body: data,
+        responseHandler: async (response) => {
+          if (!response.ok) {
+            throw new Error("Failed to download file");
+          }
+          return await response.blob(); // Ensure Blob is returned
+        },
+        cache: "no-cache",
+      }),
     }),
   }),
 });

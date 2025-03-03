@@ -10,6 +10,8 @@ import { Button } from "components/ui/button";
 import { useLoginMutation } from "api/authApi";
 import { errorToast, successToast } from "lib/helper";
 
+const ONBOARDING_COMPLETE = "COMPLETED";
+
 // Input class styles
 const CLASS_INPUT =
   "border-n-7 focus:bg-transparent dark:bg-n-7 dark:border-n-7 dark:focus:bg-transparent";
@@ -63,12 +65,12 @@ const SignInTab = ({ onClick }) => {
   // Navigate to onboarding or dashboard based on the response
   useEffect(() => {
     if (!isSuccess) return;
-    const { ownerFullName, restroName } = data.restaurant;
 
-    if (!ownerFullName || !restroName) {
-      navigate(ROUTES.ONBOARDING, { replace: true });
-    } else {
+    const { onboardingState } = data?.restaurant || {};
+    if (onboardingState === ONBOARDING_COMPLETE) {
       navigate(ROUTES.DASHBOARD, { replace: true });
+    } else {
+      navigate(ROUTES.ONBOARDING, { replace: true });
     }
   }, [data, isSuccess, navigate]);
 
