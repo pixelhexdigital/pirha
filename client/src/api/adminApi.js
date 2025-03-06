@@ -47,6 +47,11 @@ export const adminApi = createApi({
       query: ({ page = 1, status }) => `/orders?page=${page}&status=${status}`,
       transformResponse: (response) => response.data,
     }),
+    onboardDone: builder.mutation({
+      query: () => "/onboard-done",
+      method: "GET",
+      transformResponse: (response) => response,
+    }),
   }),
 });
 
@@ -56,4 +61,5 @@ export const {
   useGetDashBoardDataQuery,
   useUpdateCoverImageMutation,
   useGetOrdersDataQuery,
+  useOnboardDoneMutation,
 } = adminApi;

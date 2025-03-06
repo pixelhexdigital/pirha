@@ -4,6 +4,7 @@ import { useForm, Controller } from "react-hook-form";
 import { object, string, number } from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import imageCompression from "browser-image-compression";
+import { Upload } from "lucide-react";
 
 import { useUpdateLogoMutation, useUpdateProfileMutation } from "api/adminApi";
 import { useCurrentUserQuery } from "api/userApi";
@@ -12,7 +13,6 @@ import Field from "components/Field";
 import { Button } from "components/ui/button";
 import { errorToast } from "lib/helper";
 import { Combobox } from "components/ui/Combobox";
-import { Upload } from "lucide-react";
 
 // Input class styles
 const CLASS_INPUT =
@@ -72,7 +72,6 @@ const RESTRO_TYPES = [
 
 const UpdateProfilePage = ({ nextStep }) => {
   const [image, setImage] = useState(null);
-  const [imageUploaded, setImageUploaded] = useState(false);
 
   const [uploadImage, { isLoading: isUploading }] = useUpdateLogoMutation();
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
@@ -129,11 +128,9 @@ const UpdateProfilePage = ({ nextStep }) => {
   };
 
   const uploadImageToServer = async (file) => {
-    console.log("uploadImageToServer", file);
     try {
       const response = await uploadImage(file).unwrap();
       if (response.success) {
-        setImageUploaded(true);
         setImage(response.data?.avatar?.url);
       } else {
         errorToast({ message: "Image upload failed" });
@@ -154,7 +151,6 @@ const UpdateProfilePage = ({ nextStep }) => {
 
     try {
       const response = await updateProfile(data).unwrap();
-      console.log("Response:", response);
       if (response.success) {
         nextStep();
       } else {
@@ -162,10 +158,17 @@ const UpdateProfilePage = ({ nextStep }) => {
         errorToast({ message: "Profile update failed" });
       }
     } catch (error) {
-      console.error("Profile update failed:", error);
       errorToast({ error });
     }
   };
+
+  if (isUserLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[70vh]">
+        <div className="ring-loader size-16 border-secondary" />
+      </div>
+    );
+  }
 
   return (
     <form

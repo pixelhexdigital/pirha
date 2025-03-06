@@ -142,7 +142,7 @@ const CreateTablePage = ({ onNext }) => {
   if (tableData?.success && tableData.data?.tables?.length) {
     return (
       <div className="w-full max-w-xl px-4 mx-auto">
-        <p className="mb-4 font-semibold text-gray-800">
+        <p className="mb-4 font-semibold text-4/80">
           Tables created successfully. Download the QR codes for the tables
           below.
         </p>
@@ -150,7 +150,7 @@ const CreateTablePage = ({ onNext }) => {
           {tableData.data.tables.map((table) => {
             return (
               <p
-                className="p-4 text-center capitalize bg-secondary min-w-min text-secondary-foreground"
+                className="p-4 text-center capitalize rounded-md bg-secondary min-w-min text-secondary-foreground"
                 key={table._id.toString()}
               >
                 {table.title}

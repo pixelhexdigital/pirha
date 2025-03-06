@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { object, string } from "yup";
 import { useSelector } from "react-redux";
 import { MinusIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import { useDispatch } from "react-redux";
 
 import Field from "components/Field";
 import { Button } from "components/ui/button";
@@ -16,13 +17,14 @@ import {
   useDeleteMenuCategoryMutation,
   useGetMyMenuQuery,
 } from "api/menuApi";
-import { selectRestaurantId } from "store/AuthSlice";
+import { selectRestaurantId, setOnboardingState } from "store/AuthSlice";
 import {
   selectFoodGroups,
   selectMenuItemTypes,
 } from "store/MiscellaneousSlice";
 import { errorToast, numberToCurrency } from "lib/helper";
 import { Separator } from "components/ui/separator";
+import { useOnboardDoneMutation } from "api/adminApi";
 
 const ADD_CATEGORY_SCHEMA = object().shape({
   categoryName: string().required("Category name is required"),
@@ -39,6 +41,7 @@ const predefinedCategories = [
 
 const AddMenuPage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const itemType = useSelector(selectMenuItemTypes);
   const foodGroup = useSelector(selectFoodGroups);
   const restaurantId = useSelector(selectRestaurantId);
@@ -52,6 +55,8 @@ const AddMenuPage = () => {
   const [createMenuCategory] = useAddMenuCategoryMutation();
   const [addItemToCategory] = useAddItemToCategoryMutation();
   const [deleteMenuCategory] = useDeleteMenuCategoryMutation();
+  const [onboardDone, { isLoading: onboardDoneLoading }] =
+    useOnboardDoneMutation();
   const { data: menuData, isLoading } = useGetMyMenuQuery();
 
   const {
@@ -88,7 +93,6 @@ const AddMenuPage = () => {
   const closeModal = () => setShowModal(false);
 
   const addMenuItemToCategory = async (data, resetForm) => {
-    console.log("data", data);
     if (!currentCategory) return;
     const item = {
       title: data.itemName,
@@ -98,7 +102,7 @@ const AddMenuPage = () => {
       itemType: data.itemType,
       foodGroup: data.foodGroup,
     };
-    console.log("item", item);
+
     try {
       await addItemToCategory({
         categoryId: currentCategory._id,
@@ -164,10 +168,18 @@ const AddMenuPage = () => {
     setValue("categoryName", category);
   };
 
-  console.log("categories", categories);
+  const handleOnboardDone = async () => {
+    try {
+      await onboardDone().unwrap();
+      dispatch(setOnboardingState("COMPLETED"));
+      navigate(ROUTES.DASHBOARD, { replace: true });
+    } catch (error) {
+      errorToast({ error, message: "Failed to complete onboarding" });
+    }
+  };
 
   return (
-    <div className="w-full max-w-xl px-4 mx-auto">
+    <div className="w-full max-w-xl px-4 pb-4 mx-auto">
       <h2 className="mb-4 font-semibold text-n-4/80">
         Add your menu categories and items to get started with your restaurant
         menu setup 🍔. You can always edit or add more items later.
@@ -182,17 +194,17 @@ const AddMenuPage = () => {
           >
             <h3 className="mb-2 text-lg font-semibold">{category.name}</h3>
             <ul className="p-0 space-y-2">
-              {category.items.map((item) => (
+              {category?.items?.map((item) => (
                 <>
                   <li key={item._id} className="flex justify-between">
                     <div>
-                      <p className="mb-1">{item.title}</p>
-                      <p className="text-sm text-n-4/50">{item.description}</p>
+                      <p className="mb-1">{item?.title}</p>
+                      <p className="text-sm text-n-4/50">{item?.description}</p>
                     </div>
                     <div>
                       <p className="text-n-4/80">
                         {numberToCurrency(item.price)}
-                        {item.discount > 0 && `(${item.discount} off)`}
+                        {item?.discount > 0 && `(${item.discount} off)`}
                       </p>
                     </div>
                   </li>
@@ -250,12 +262,16 @@ const AddMenuPage = () => {
         foodGroup={foodGroup}
       />
       <Button
-        onClick={() => navigate(ROUTES.DASHBOARD)}
+        onClick={handleOnboardDone}
         size="lg"
         className="w-full mt-4"
         disabled={categories.length === 0}
       >
-        Next
+        {onboardDoneLoading ? (
+          <div className="ring-loader" />
+        ) : (
+          "Complete Onboarding 🚀"
+        )}
       </Button>
     </div>
   );
