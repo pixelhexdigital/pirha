@@ -71,7 +71,7 @@ const OnboardingPage = () => {
     <>
       <Header />
       <Progress value={progressValue} className="w-full mb-6" />
-      <div className="container flex justify-center w-full max-w-[31.5rem] mx-auto">
+      <div className="container flex justify-center w-full max-w-xl mx-auto">
         {onboardingSteps.map(({ content, title }, index) => {
           if (index + 1 === step) {
             return (

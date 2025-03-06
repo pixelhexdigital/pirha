@@ -21,7 +21,7 @@ export const menuApi = createApi({
     getMyMenu: builder.query({
       query: () => ``,
       providesTags: ["Menu"],
-      transformResponse: (response) => response.data,
+      transformResponse: (response) => response?.data?.menu ?? [],
       transformErrorResponse: (response) => {
         errorToast({ error: response });
         return response;
@@ -81,6 +81,7 @@ export const menuApi = createApi({
         method: "POST",
         body: category,
       }),
+      // invalidatesTags: ["Menu"],
     }),
 
     updateMenuCategory: builder.mutation({

@@ -17,6 +17,7 @@ import { tableApi } from "api/tableApi";
 import MenuSlice from "store/MenuSlice";
 import TableSlice from "./TableSlice";
 import OrderSlice from "store/OrderSlice";
+import { userApi } from "api/userApi";
 
 // Persist configurations
 const rootPersistConfig = {
@@ -53,6 +54,7 @@ const rootReducer = combineReducers({
   [authApi.reducerPath]: authApi.reducer,
   [adminApi.reducerPath]: adminApi.reducer,
   [tableApi.reducerPath]: tableApi.reducer,
+  [userApi.reducerPath]: userApi.reducer,
 });
 
 // Create persisted reducer
@@ -69,7 +71,8 @@ export const store = configureStore({
       customerApi.middleware,
       ordersApi.middleware,
       adminApi.middleware,
-      tableApi.middleware
+      tableApi.middleware,
+      userApi.middleware
     ),
 });
 

@@ -25,13 +25,6 @@ export const authApi = createApi({
       }),
       transformResponse: (response) => response.data,
     }),
-    currentUser: builder.query({
-      query: () => ({
-        url: "/current-user",
-        method: "GET",
-      }),
-      transformResponse: (response) => response.data,
-    }),
     forgotPassword: builder.mutation({
       query: (data) => ({
         url: "/forgot-password",
@@ -77,5 +70,4 @@ export const {
   useVerifyUserNameMutation,
   useRegisterMutation,
   useLoginMutation,
-  useCurrentUserQuery,
 } = authApi;

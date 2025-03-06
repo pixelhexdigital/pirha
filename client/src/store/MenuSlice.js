@@ -2,8 +2,8 @@ import { createSlice, current } from "@reduxjs/toolkit";
 import { menuApi } from "api/menuApi";
 
 const initialState = {
-  menuData: null,
-  menuCategoryData: null,
+  menuData: [],
+  menuCategoryData: [],
 };
 
 // Helper function to find category index

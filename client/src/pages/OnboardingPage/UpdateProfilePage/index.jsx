@@ -6,7 +6,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import imageCompression from "browser-image-compression";
 
 import { useUpdateLogoMutation, useUpdateProfileMutation } from "api/adminApi";
-import { useCurrentUserQuery } from "api/authApi";
+import { useCurrentUserQuery } from "api/userApi";
 
 import Field from "components/Field";
 import { Button } from "components/ui/button";
