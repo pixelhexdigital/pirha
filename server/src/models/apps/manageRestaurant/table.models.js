@@ -10,11 +10,16 @@ const tableSchema = new Schema(
     baseUrl: {
       type: String,
       required: true,
+      default: "https:www.pirha.in",
     },
     restaurantId: {
       type: Schema.Types.ObjectId,
       ref: "Restaurant",
       required: true,
+    },
+    capacity: {
+      type: Number,
+      default: 4,
     },
     status: {
       type: String,
