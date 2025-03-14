@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 import pirhaLogo from "assets/pirha_logo_white.png";
 
 import AddMenuPage from "./AddMenuPage";
 import CreateTablePage from "./CreateTablePage";
 import UpdateProfilePage from "./UpdateProfilePage";
-// import UpdateAvatarPage from "./UpdateAvatarPage";
 import { Progress } from "components/ui/progress";
 import { selectOnboardingState, setOnboardingState } from "store/AuthSlice";
+import { ROUTES } from "routes/RouterConfig";
 
 const NO_OF_STEPS = 3;
 const ONBOARDING_STATE = {
@@ -19,6 +20,7 @@ const ONBOARDING_STATE = {
 };
 
 const OnboardingPage = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const currentOnboardingStep = useSelector(selectOnboardingState);
 
@@ -31,8 +33,10 @@ const OnboardingPage = () => {
       setStep(2);
     } else if (currentOnboardingStep === ONBOARDING_STATE.MENU) {
       setStep(3);
+    } else if (currentOnboardingStep === ONBOARDING_STATE.COMPLETED) {
+      navigate(ROUTES.DASHBOARD, { replace: true });
     }
-  }, [currentOnboardingStep]);
+  }, [currentOnboardingStep, navigate]);
 
   const nextStep = () => {
     setStep((prevStep) => prevStep + 1);
@@ -53,10 +57,6 @@ const OnboardingPage = () => {
       title: "",
       content: <UpdateProfilePage nextStep={nextStep} />,
     },
-    // {
-    //   title: "Update Avatar",
-    //   content: <UpdateAvatarPage />,
-    // },
     {
       title: "Create Tables",
       content: <CreateTablePage onNext={nextStep} />,
@@ -84,10 +84,6 @@ const OnboardingPage = () => {
           return null;
         })}
       </div>
-
-      <button onClick={nextStep} className="btn btn-primary">
-        Next
-      </button>
     </>
   );
 };

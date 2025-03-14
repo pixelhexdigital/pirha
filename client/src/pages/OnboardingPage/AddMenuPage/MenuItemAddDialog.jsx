@@ -103,7 +103,7 @@ const MenuItemAddDialog = ({
             control={control}
             render={({ field }) => (
               <div className="space-y-2">
-                <div className="flex mb-2 font-semibold base2">Item Type</div>
+                <p className="flex mb-2 font-semibold base2">Item Type</p>
                 <Select
                   defaultValue={field.value}
                   onValueChange={field.onChange}
@@ -133,7 +133,7 @@ const MenuItemAddDialog = ({
             control={control}
             render={({ field }) => (
               <div className="space-y-2">
-                <div className="flex font-semibold base2">Food Group</div>
+                <p className="flex font-semibold base2">Food Group</p>
                 <Select
                   defaultValue={field.value}
                   onValueChange={field.onChange}
