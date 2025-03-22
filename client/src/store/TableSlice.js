@@ -1,22 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { menuApi } from "api/menuApi";
 
-const initialState = {
-  menuData: null,
-};
+const initialState = {};
 
 const MenuSlice = createSlice({
   name: "Table",
   initialState,
   reducers: {},
-  extraReducers: (builder) => {
-    builder.addMatcher(
-      menuApi.endpoints.getMenuCategoryByRestaurantId.matchFulfilled,
-      (state, action) => {
-        state.table = action.payload?.table;
-      }
-    );
-  },
+  extraReducers: (builder) => {},
 });
 
 export const {} = MenuSlice.actions;
