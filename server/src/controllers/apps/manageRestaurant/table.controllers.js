@@ -52,24 +52,29 @@ const fetchTables = asyncHandler(async (req, res) => {
     page,
     limit,
     customLabels: {
-      totalDocs: "totalTables",
+      totalDocs: "filteredTables",
       docs: "tables",
     },
   });
 
-  // Count occupied and free tables using the same filters
+  // Count occupied tables
   const occupiedTables = await Table.countDocuments({
-    ...matchStage,
+    restaurantId: restaurant._id,
     status: ENUMS.tableStatus[1],
   });
 
+  // Count free tables
   const freeTables = await Table.countDocuments({
-    ...matchStage,
+    restaurantId: restaurant._id,
     status: ENUMS.tableStatus[0],
   });
 
+  const totalTables = await Table.countDocuments({
+    restaurantId: restaurant._id,
+  });
+
   // If no tables found, return a 404 response
-  if (!tables || tables.totalTables === 0) {
+  if (!tables || tables.filteredTables === 0) {
     return res
       .status(404)
       .json(new ApiResponse(404, {}, "No tables found for this restaurant"));
@@ -81,7 +86,7 @@ const fetchTables = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        { ...tables, occupiedTables, freeTables },
+        { ...tables, occupiedTables, freeTables, totalTables },
         "Tables retrieved successfully"
       )
     );
