@@ -42,6 +42,7 @@ const AuthenticatedRoutes = [
   { path: ROUTES.ORDER_DETAILS, element: <OrderDetailsPage /> },
   { path: ROUTES.ONBOARDING, element: <OnboardingPage /> },
   { path: ROUTES.MENU_MANAGEMENT, element: <ItemManagementPage /> },
+  { path: ROUTES.CATEGORIES_MANAGEMENT, element: <CategoriesManagementPage /> },
   { path: ROUTES.TABLES, element: <Table /> },
   { path: ROUTES.KITCHEN, element: <KitchenPage /> },
 ];
