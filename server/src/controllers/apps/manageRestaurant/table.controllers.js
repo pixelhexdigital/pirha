@@ -138,6 +138,7 @@ const getTableAggregationPipeline = ({
         totalStats: [
           {
             $group: {
+              _id: null,
               totalTables: { $sum: 1 },
               totalOccupied: {
                 $sum: {
