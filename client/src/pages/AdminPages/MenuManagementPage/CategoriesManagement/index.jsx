@@ -1,13 +1,30 @@
 import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { PencilLine, SlidersVertical, Trash2 } from "lucide-react";
+import {
+  LucideEdit2,
+  MoreVerticalIcon,
+  SlidersVertical,
+  Trash2,
+} from "lucide-react";
+import { twMerge } from "tailwind-merge";
+
+import Placeholder from "assets/placeholder.svg";
 
 import CategoriesForm from "./CategoriesForm";
 import Layout from "components/Layout";
-import { Switch } from "components/ui/switch";
 import { Skeleton } from "components/ui/skeleton";
 import { Button } from "components/ui/button";
+import { Card } from "components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "components/ui/dropdown-menu";
+import { Badge } from "components/ui/badge";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -219,60 +236,95 @@ const CategoriesManagementPage = () => {
                   <div className="ring-loader border-primary/80" />
                 )}
               </button>
+
               {menuData?.map((category) => (
-                <article
+                <Card
                   key={category._id}
-                  className="w-full gap-4 pt-4 transition ease-in-out delay-150 transform scale-[0.98] border rounded-lg shadow-sm hover:shadow-md border-primary/10 hover:border-primary/20 hover:scale-100 bg-white/100 hover:-translate-y-1 duration-300"
+                  className="overflow-hidden transition duration-300 ease-in-out delay-150 transform border rounded-lg shadow-sm hover:shadow-md border-primary/10 hover:border-primary/20 bg-white/100 hover:-translate-y-1 "
                 >
-                  <div className="flex items-center justify-between px-4 pb-2 mb-4 border-b m border-primary/10">
-                    <button
-                      onClick={() =>
-                        setDeleteCategoryData({
-                          categoryId: category._id,
-                          categoryName: category.name,
-                        })
-                      }
-                    >
-                      <Trash2
-                        size={22}
-                        color="red"
-                        className="transition-all duration-300 ease-in-out transform cursor-pointer hover:scale-110 hover:text-red-500"
-                      />
-                    </button>
-                    <Switch
-                      checked={category.isActive}
-                      onCheckedChange={(isActive) =>
-                        updateCategoryAvailability(category._id, isActive)
-                      }
-                    />
-                  </div>
-                  <div className="flex flex-col items-center w-full">
+                  <div className="relative aspect-video">
                     <img
-                      src={category.image.url}
-                      alt={category.title}
-                      className="rounded-md aspect-square size-44 md:size-48 lg:size-52"
+                      src={category.image?.url || Placeholder}
+                      alt={category.name}
+                      className="w-full h-full min-h-[22rem] "
                     />
-                    <h3 className="mt-4 font-semibold">{category.name}</h3>
-                    <Link
-                      to={ROUTES.MENU_MANAGEMENT}
-                      state={{ categoryIdFromState: category._id }}
-                      className="font-semibold hover:underline text-primary/80"
-                    >
-                      No of items: {category.items.length}
-                    </Link>
-                    <p className="mt-2 text-primary"></p>
+                    <div className="absolute right-2 top-2">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="w-8 h-8 bg-white"
+                          >
+                            <MoreVerticalIcon className="w-4 h-4 text-black" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setFormVisible(true);
+                              setSelectedCategory(category);
+                            }}
+                          >
+                            <LucideEdit2 className="w-4 h-4 mr-2" />
+                            Edit Item
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              updateCategoryAvailability(
+                                category._id,
+                                !category.isActive
+                              )
+                            }
+                          >
+                            {category.isActive
+                              ? "Mark as Unavailable"
+                              : "Mark as Available"}
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() =>
+                              setDeleteCategoryData({
+                                categoryId: category._id,
+                                categoryName: category.name,
+                              })
+                            }
+                            className="text-red-600"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete Item
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => {
-                      setFormVisible(true);
-                      setSelectedCategory(category);
-                    }}
-                    className="flex items-center justify-center w-full p-4 mt-4 text-primary/80 border-primary bg-primary/10 rounded-b-md hover:bg-primary/20 hover:text-primary/90 hover:border-primary group hover:font-semibold"
-                  >
-                    <PencilLine className="mr-2 transition-all size-5 group-hover:size-6" />
-                    Edit Category
-                  </button>
-                </article>
+                  <div className="p-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h3 className="font-semibold">{category.name}</h3>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between mt-2">
+                      <Link
+                        to={ROUTES.MENU_MANAGEMENT}
+                        state={{ categoryIdFromState: category._id }}
+                        className="font-semibold hover:underline text-primary/80"
+                      >
+                        No of items: {category.items.length}
+                      </Link>
+                      <Badge
+                        variant={category.isActive ? "default" : "outline"}
+                        className={twMerge(
+                          category.isActive
+                            ? "text-primary/80 border-primary bg-primary/10 hover:bg-primary/10 hover:text-primary/80 hover:border-primary group hover:font-semibold"
+                            : "text-foreground"
+                        )}
+                      >
+                        {category.isActive ? "Available" : "Unavailable"}
+                      </Badge>
+                    </div>
+                  </div>
+                </Card>
               ))}
             </>
           )}
