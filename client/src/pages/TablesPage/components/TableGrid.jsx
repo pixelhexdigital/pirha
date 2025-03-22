@@ -1,79 +1,52 @@
-import { useState } from "react";
-import { TableCard } from "./TableCard";
-import { TableDetailsModal } from "./TableDetailsModal";
+import { useEffect, useState } from "react";
+import { useInView } from "react-intersection-observer";
+import { Download } from "lucide-react";
+import { useGetMyTablesQuery } from "api/tableApi";
 
-// This would typically come from an API call
-const initialTablesData = {
-  statusCode: 200,
-  data: {
-    tables: [
-      {
-        _id: "667ceeefdda8032e506d08a1",
-        title: "a-3",
-        baseUrl: "https://www.pirha.onrender.com/home",
-        restaurantId: "667a82e32fa639ab387f786e",
-        status: "Free",
-        capacity: 4,
-        createdAt: "2024-06-27T04:47:43.362Z",
-        updatedAt: "2024-06-27T04:47:43.362Z",
-        __v: 0,
-      },
-      {
-        _id: "667ceeefdda8032e506d089f",
-        title: "a-1",
-        baseUrl: "https://www.pirha.onrender.com/home",
-        restaurantId: "667a82e32fa639ab387f786e",
-        status: "Occupied",
-        capacity: 2,
-        createdAt: "2024-06-27T04:47:43.358Z",
-        updatedAt: "2024-06-27T04:47:43.358Z",
-        __v: 0,
-      },
-      {
-        _id: "667ceeefdda8032e506d08a0",
-        title: "a-2",
-        baseUrl: "https://www.pirha.onrender.com/home",
-        restaurantId: "667a82e32fa639ab387f786e",
-        status: "Reserved",
-        capacity: 6,
-        createdAt: "2024-06-27T04:47:43.360Z",
-        updatedAt: "2024-06-27T04:47:43.360Z",
-        __v: 0,
-      },
-      {
-        _id: "667ceeefdda8032e506d08a2",
-        title: "a-4",
-        baseUrl: "https://www.pirha.onrender.com/home",
-        restaurantId: "667a82e32fa639ab387f786e",
-        status: "Free",
-        capacity: 4,
-        createdAt: "2024-06-27T04:47:43.362Z",
-        updatedAt: "2024-06-27T04:47:43.362Z",
-        __v: 0,
-      },
-    ],
-    totalTables: 4,
-    limit: 10,
-    page: 1,
-    totalPages: 1,
-    pagingCounter: 1,
-    hasPrevPage: false,
-    hasNextPage: false,
-    prevPage: null,
-    nextPage: null,
-  },
-  message: "Tables retrieved successfully",
-  success: true,
-};
+import { Button } from "components/ui/button";
+import { TableCard } from "./TableCard";
+import { QRCodeModal } from "./QRCodeModal";
+import { TableDetailsModal } from "./TableDetailsModal";
+import { BulkQRCodeModal } from "./BulkQRCodeModal";
+
+const PAGINATION_LIMIT = 20;
 
 export function TableGrid() {
-  const [tables, setTables] = useState(initialTablesData.data.tables);
+  const [tables, setTables] = useState([]);
   const [selectedTable, setSelectedTable] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+  const [selectedTableForQR, setSelectedTableForQR] = useState(null);
+  const [isBulkQRModalOpen, setIsBulkQRModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const { ref, inView } = useInView({ threshold: 1 });
+
+  const { data: tableData, isLoading } = useGetMyTablesQuery({
+    page: currentPage,
+    limit: PAGINATION_LIMIT,
+  });
+
+  // console.log("tableData", tableData);
+
+  const hasNextPage = tableData?.data?.hasNextPage || false;
+
+  useEffect(() => {
+    if (tableData?.data?.tables) {
+      setTables(tableData.data.tables);
+    }
+  }, [tableData]);
+
+  useEffect(() => {
+    // Only fetch if inView, not fetching, and hasNextPage is true
+    if (inView && !isLoading && hasNextPage) {
+      setCurrentPage((prevPage) => prevPage + 1);
+    }
+  }, [inView, isLoading, hasNextPage]);
 
   const handleTableClick = (table) => {
     setSelectedTable(table);
-    setIsModalOpen(true);
+    setIsDetailsModalOpen(true);
   };
 
   const handleTableUpdate = (updatedTable) => {
@@ -85,22 +58,65 @@ export function TableGrid() {
     setSelectedTable(updatedTable);
   };
 
+  const handleQuickAction = (tableId, newStatus) => {
+    setTables(
+      tables.map((table) =>
+        table._id === tableId ? { ...table, status: newStatus } : table
+      )
+    );
+  };
+
+  const handleGenerateQR = (tableId) => {
+    setSelectedTableForQR(tableId);
+    setIsQRModalOpen(true);
+  };
+
+  const handleBulkQRGenerate = () => {
+    setIsBulkQRModalOpen(true);
+  };
+
   return (
     <div>
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">Tables</h2>
+        <Button onClick={handleBulkQRGenerate}>
+          <Download className="mr-2 h-4 w-4" /> Download Bulk QR Codes
+        </Button>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {tables.map((table) => (
           <TableCard
             key={table._id}
             table={table}
             onClick={() => handleTableClick(table)}
+            onQuickAction={handleQuickAction}
+            onGenerateQR={handleGenerateQR}
           />
         ))}
       </div>
+      {isLoading && (
+        <div className="flex justify-center items-center mt-4">
+          <div className="ring-loader border-secondary size-10" />
+        </div>
+      )}
+
+      {/* This div acts as a trigger for infinite scroll */}
+      {hasNextPage && <div ref={ref} className="h-10"></div>}
       <TableDetailsModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
         table={selectedTable}
         onTableUpdate={handleTableUpdate}
+      />
+      <QRCodeModal
+        isOpen={isQRModalOpen}
+        onClose={() => setIsQRModalOpen(false)}
+        tableId={selectedTableForQR || ""}
+      />
+      <BulkQRCodeModal
+        isOpen={isBulkQRModalOpen}
+        onClose={() => setIsBulkQRModalOpen(false)}
+        tables={tables}
       />
     </div>
   );

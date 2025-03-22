@@ -3,6 +3,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { useGenerateTableQrMutation } from "api/tableApi";
+
 import { Button } from "components/ui/button";
 import {
   Dialog,
@@ -23,42 +25,67 @@ import {
   FormMessage,
 } from "components/ui/form";
 import { Input } from "components/ui/input";
+import { Switch } from "components/ui/switch";
+import { errorToast, successToast } from "lib/helper";
 
-const formSchema = z.object({
-  title: z.string().min(2, {
-    message: "Table title must be at least 2 characters.",
-  }),
-  capacity: z.string().min(1, {
-    message: "Capacity is required.",
-  }),
-});
+const formSchema = z
+  .object({
+    prefixOfTables: z.string().min(1, "Prefix is required"),
+    startNumber: z.number().min(1, "Start number must be at least 1"),
+    endNumber: z.number().min(1, "End number must be at least 1"),
+    capacity: z.number().min(1, "Capacity must be at least 1"),
+    isBulkCreation: z.boolean().default(false),
+  })
+  .refine((data) => !data.isBulkCreation || data.endNumber > data.startNumber, {
+    message:
+      "For bulk creation, the end number must be greater than the start number.",
+    path: ["endNumber"],
+  });
 
 export function AddTableDialog({ children }) {
   const [open, setOpen] = useState(false);
 
-  // const form =
-  //   useForm <
-  //   z.infer <
-  //   typeof formSchema >>
-  //     {
-  //       resolver: zodResolver(formSchema),
-  //       defaultValues: {
-  //         title: "",
-  //         capacity: "",
-  //       },
-  //     };
+  const [generateTableQr, { isLoading: generatingQr }] =
+    useGenerateTableQrMutation();
 
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
-      capacity: "",
+      prefixOfTables: "",
+      startNumber: 1,
+      endNumber: 1,
+      capacity: 4,
+      isBulkCreation: false,
     },
   });
 
-  function onSubmit(values) {
-    console.log(values);
-    setOpen(false);
+  const { handleSubmit, reset, control, watch } = form;
+
+  const isBulkCreation = watch("isBulkCreation");
+
+  async function onSubmit(data) {
+    const payload = {
+      letter: data.prefixOfTables.toLowerCase(),
+      startTable: data.startNumber,
+      endTable: data.isBulkCreation ? data.endNumber : data.startNumber,
+      capacity: data.capacity,
+      bulkCreate: data.isBulkCreation,
+    };
+
+    try {
+      const response = await generateTableQr(payload).unwrap();
+      successToast({
+        data: response,
+        message: "Table and QR codes generated successfully",
+      });
+      reset();
+      setOpen(false);
+    } catch (error) {
+      errorToast({
+        error,
+        message: "Failed to generate table QR codes, please try again",
+      });
+    }
   }
 
   return (
@@ -66,47 +93,138 @@ export function AddTableDialog({ children }) {
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New Table</DialogTitle>
+          <DialogTitle>Add New Table(s)</DialogTitle>
           <DialogDescription>
-            Add a new table to your restaurant. Click save when you{"'"}re done.
+            Create a new table or bulk create multiple tables.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <FormField
-              control={form.control}
-              name="title"
+              control={control}
+              name="prefixOfTables"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Table Title</FormLabel>
+                  <FormLabel>Table Prefix</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., A-1, B-2" {...field} />
+                    <Input placeholder="e.g., A, B, C" {...field} />
                   </FormControl>
                   <FormDescription>
-                    This is the unique identifier for the table.
+                    The prefix for the table number(s).
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <FormField
-              control={form.control}
+              control={control}
+              name="isBulkCreation"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                  <div className="space-y-0.5">
+                    <FormLabel>Bulk Creation</FormLabel>
+                    <FormDescription>
+                      Enable to create multiple tables at once.
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            {isBulkCreation ? (
+              <>
+                <FormField
+                  control={control}
+                  name="startNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Start Number</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={control}
+                  name="endNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>End Number</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            ) : (
+              <FormField
+                control={control}
+                name="startNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Table Number</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        {...field}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+            <FormField
+              control={control}
               name="capacity"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Capacity</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="e.g., 4" {...field} />
+                    <Input
+                      type="number"
+                      {...field}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                    />
                   </FormControl>
-                  <FormDescription>
-                    The number of people this table can accommodate.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <DialogFooter>
-              <Button type="submit">Save Table</Button>
+              <Button
+                disabled={generatingQr}
+                type="submit"
+                className="min-w-32"
+              >
+                {generatingQr ? (
+                  <div className="ring-loader size-5" />
+                ) : (
+                  "Add Table(s)"
+                )}
+              </Button>
             </DialogFooter>
           </form>
         </Form>

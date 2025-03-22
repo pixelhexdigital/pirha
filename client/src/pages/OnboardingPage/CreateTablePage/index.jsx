@@ -82,7 +82,10 @@ const CreateTablePage = ({ onNext }) => {
 
     const payload = {
       letter: data.prefixOfTables.toLowerCase(),
-      tables: data.numberOfTables,
+      startTable: "1",
+      endTable: data.numberOfTables.toString(),
+      capacity: "4",
+      bulkCreate: true,
     };
 
     try {

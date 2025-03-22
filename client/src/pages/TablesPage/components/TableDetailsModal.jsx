@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { Users, Utensils } from "lucide-react";
+
 import {
   Dialog,
   DialogContent,
@@ -7,36 +10,33 @@ import {
 import { Badge } from "components/ui/badge";
 import { Button } from "components/ui/button";
 import { Separator } from "components/ui/separator";
-import { Users, Clock, Utensils, DollarSign, AlertCircle } from "lucide-react";
-import { ManageTableDialog } from "./ManageTableDialog";
+import { Input } from "components/ui/input";
+import { Label } from "components/ui/label";
 
 const statusStyles = {
   Free: "bg-green-100 text-green-800",
   Occupied: "bg-red-100 text-red-800",
-  Reserved: "bg-yellow-100 text-yellow-800",
 };
 
 export function TableDetailsModal({ isOpen, onClose, table, onTableUpdate }) {
+  const [occupancy, setOccupancy] = useState(table?.currentOccupancy || 0);
+
   if (!table) return null;
 
-  // Mock data for demonstration purposes
-  const currentOrder = {
-    items: ["Butter Chicken", "Naan", "Mango Lassi"],
-    total: 450,
-    startTime: new Date(Date.now() - 45 * 60000), // 45 minutes ago
-  };
-
-  const reservationInfo = {
-    name: "John Doe",
-    time: new Date(Date.now() + 2 * 60 * 60000), // 2 hours from now
-    partySize: 4,
+  const handleUpdateTable = () => {
+    const updatedTable = {
+      ...table,
+      currentOccupancy: occupancy,
+    };
+    onTableUpdate(updatedTable);
+    onClose();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Table {table.title.toUpperCase()} Details</DialogTitle>
+          <DialogTitle>Table {table.title} Details</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="flex items-center justify-between">
@@ -51,60 +51,36 @@ export function TableDetailsModal({ isOpen, onClose, table, onTableUpdate }) {
             </div>
           </div>
           <Separator />
+          <div>
+            <Label htmlFor="occupancy">Current Occupancy</Label>
+            <Input
+              id="occupancy"
+              type="number"
+              value={occupancy}
+              onChange={(e) => setOccupancy(Number(e.target.value))}
+              min={0}
+              max={table.capacity}
+            />
+          </div>
           {table.status === "Occupied" && (
-            <>
-              <div>
-                <span className="flex items-center mb-2 font-semibold">
-                  <Utensils className="w-4 h-4 mr-2" />
-                  Current Order:
-                </span>
-                <ul className="ml-6 list-disc list-inside">
-                  {currentOrder.items.map((item, index) => (
-                    <li key={index}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="font-semibold">Order Total:</span>
-                <span>₹{currentOrder.total}</span>
-              </div>
-              <div className="flex items-center">
-                <Clock className="w-4 h-4 mr-2" />
-                <span className="mr-2 font-semibold">Seated for:</span>
-                {Math.floor(
-                  (Date.now() - currentOrder.startTime.getTime()) / 60000
-                )}{" "}
-                minutes
-              </div>
-            </>
-          )}
-          {table.status === "Reserved" && (
-            <>
-              <div>
-                <span className="flex items-center mb-2 font-semibold">
-                  <AlertCircle className="w-4 h-4 mr-2" />
-                  Upcoming Reservation:
-                </span>
-                <p>Name: {reservationInfo.name}</p>
-                <p>Time: {reservationInfo.time.toLocaleTimeString()}</p>
-                <p>Party Size: {reservationInfo.partySize}</p>
-              </div>
-            </>
-          )}
-          {table.status === "Free" && (
-            <div className="flex items-center text-green-600">
-              <DollarSign className="w-4 h-4 mr-2" />
-              <span>Available for seating</span>
+            <div>
+              <span className="font-semibold flex items-center mb-2">
+                <Utensils className="w-4 h-4 mr-2" />
+                Current Order:
+              </span>
+              <ul className="list-disc list-inside ml-6">
+                <li>Butter Chicken</li>
+                <li>Naan</li>
+                <li>Mango Lassi</li>
+              </ul>
             </div>
           )}
         </div>
         <div className="flex justify-between mt-4">
           <Button variant="outline" onClick={onClose}>
-            Close
+            Cancel
           </Button>
-          <ManageTableDialog table={table} onTableUpdate={onTableUpdate}>
-            <Button>Manage Table</Button>
-          </ManageTableDialog>
+          <Button onClick={handleUpdateTable}>Update Table</Button>
         </div>
       </DialogContent>
     </Dialog>
