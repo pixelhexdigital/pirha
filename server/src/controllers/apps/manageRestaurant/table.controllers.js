@@ -22,7 +22,7 @@ const getTableAggregationPipeline = ({
   limit,
   search,
   status,
-  minCapacity,
+  minCapacity = 0,
 }) => {
   const matchStage = {
     restaurantId: new mongoose.Types.ObjectId(restaurantId),
@@ -34,12 +34,17 @@ const getTableAggregationPipeline = ({
       $regex: new RegExp(`^${sanitizedSearch.replace(/(\d+)/, "-$1")}`, "i"),
     };
   }
-  if (status === "occupied" || status === "free")
-    matchStage.isOccupied = status === "occupied";
+  if (status) {
+    //check if status is valid ENUM.tableStatus
+    if (!ENUMS.tableStatus.includes(status)) {
+      throw new ApiError(400, "Invalid table status");
+    }
+  }
   if (minCapacity) matchStage.capacity = { $gte: parseInt(minCapacity) };
 
   const pipeline = [
     { $match: matchStage },
+    { $match: status ? { status } : {} }, // Add filter to check for table.status = status if status is available
     {
       $lookup: {
         from: "customers",
@@ -133,13 +138,16 @@ const getTableAggregationPipeline = ({
         totalStats: [
           {
             $group: {
-              _id: null,
               totalTables: { $sum: 1 },
               totalOccupied: {
-                $sum: { $cond: [{ $eq: ["$isOccupied", true] }, 1, 0] },
+                $sum: {
+                  $cond: [{ $eq: ["$status", ENUMS.tableStatus[1]] }, 1, 0],
+                },
               },
               totalFree: {
-                $sum: { $cond: [{ $eq: ["$isOccupied", false] }, 1, 0] },
+                $sum: {
+                  $cond: [{ $eq: ["$status", ENUMS.tableStatus[0]] }, 1, 0],
+                },
               },
             },
           },
