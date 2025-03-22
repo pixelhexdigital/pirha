@@ -7,7 +7,7 @@ import {
   updateTables,
   fetchTables,
   downloadTableQr,
-  getTableOrders,
+  fetchTableById,
 } from "../../../controllers/apps/manageRestaurant/table.controllers.js";
 import { verifyJWT } from "../../../middlewares/auth.middlewares.js";
 
@@ -16,7 +16,7 @@ const router = Router();
 // Get list of tables for a restaurant
 router.route("/").get(verifyJWT, fetchTables);
 
-router.route("/detail").get(verifyJWT, getTableOrders);
+router.route("/:id").get(verifyJWT, fetchTableById);
 
 router.route("/qr-download").post(verifyJWT, downloadTableQr);
 

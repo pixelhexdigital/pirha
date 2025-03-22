@@ -12,48 +12,195 @@ import path from "path";
 import { fileURLToPath } from "url";
 import mongoose from "mongoose";
 import { ENUMS } from "../../../constants/enum.js";
+import { Order } from "../../../models/apps/manageRestaurant/order.models.js";
 
 // Get list of tables for a restaurant
-const fetchTables = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 10 } = req.query;
-
-  const restaurant = await Restaurant.findById(req.restaurant?._id);
-
-  if (!restaurant) {
-    throw new ApiError(404, "Restaurant does not exist");
+const getTableAggregationPipeline = ({
+  restaurantId,
+  tableId,
+  page,
+  limit,
+  search,
+  status,
+  minCapacity,
+}) => {
+  const matchStage = {
+    restaurantId: new mongoose.Types.ObjectId(restaurantId),
+  };
+  if (tableId) matchStage._id = new mongoose.Types.ObjectId(tableId);
+  if (search) {
+    const sanitizedSearch = search.replace(/[-\s]/g, "").toLowerCase();
+    matchStage.title = {
+      $regex: new RegExp(`^${sanitizedSearch.replace(/(\d+)/, "-$1")}`, "i"),
+    };
   }
+  if (status === "occupied" || status === "free")
+    matchStage.isOccupied = status === "occupied";
+  if (minCapacity) matchStage.capacity = { $gte: parseInt(minCapacity) };
 
-  // Define the aggregation pipeline stages
   const pipeline = [
+    { $match: matchStage },
     {
-      $match: {
-        restaurantId: new mongoose.Types.ObjectId(req.restaurant._id),
+      $lookup: {
+        from: "customers",
+        localField: "customerId",
+        foreignField: "_id",
+        as: "customer",
+      },
+    },
+    { $unwind: { path: "$customer", preserveNullAndEmptyArrays: true } },
+    {
+      $lookup: {
+        from: "orders",
+        let: { tableId: "$_id" },
+        pipeline: [
+          { $match: { $expr: { $eq: ["$tableId", "$$tableId"] } } },
+          {
+            $lookup: {
+              from: "menus",
+              let: { items: "$items.menuItemId" },
+              pipeline: [
+                { $unwind: "$categories" },
+                { $unwind: "$categories.items" },
+                {
+                  $match: {
+                    $expr: { $in: ["$categories.items._id", "$$items"] },
+                  },
+                },
+                {
+                  $project: {
+                    _id: "$categories.items._id",
+                    title: "$categories.items.title",
+                    description: "$categories.items.description",
+                    image: "$categories.items.image",
+                    itemType: "$categories.items.itemType",
+                  },
+                },
+              ],
+              as: "menuItems",
+            },
+          },
+          {
+            $addFields: {
+              items: {
+                $map: {
+                  input: "$items",
+                  as: "origItem",
+                  in: {
+                    $mergeObjects: [
+                      {
+                        $arrayElemAt: [
+                          {
+                            $filter: {
+                              input: "$menuItems",
+                              cond: {
+                                $eq: ["$$origItem.menuItemId", "$$this._id"],
+                              },
+                            },
+                          },
+                          0,
+                        ],
+                      },
+                      "$$origItem",
+                    ],
+                  },
+                },
+              },
+            },
+          },
+          {
+            $project: {
+              items: 1,
+              totalAmount: 1,
+              status: 1,
+              createdAt: 1,
+              updatedAt: 1,
+            },
+          },
+        ],
+        as: "orders",
       },
     },
   ];
 
-  const tableAggregation = Table.aggregate(pipeline);
-
-  const tables = await Table.aggregatePaginate(tableAggregation, {
-    page,
-    limit,
-    customLabels: {
-      totalDocs: "totalTables",
-      docs: "tables",
-    },
-  });
-
-  // If no tables found, return a 404 response
-  if (!tables || tables.totalTables === 0) {
-    return res
-      .status(404)
-      .json(new ApiResponse(404, {}, "No tables found for this restaurant"));
+  if (!tableId) {
+    pipeline.push({
+      $facet: {
+        paginatedResults: [
+          { $skip: (page - 1) * limit },
+          { $limit: parseInt(limit) },
+        ],
+        totalStats: [
+          {
+            $group: {
+              _id: null,
+              totalTables: { $sum: 1 },
+              totalOccupied: {
+                $sum: { $cond: [{ $eq: ["$isOccupied", true] }, 1, 0] },
+              },
+              totalFree: {
+                $sum: { $cond: [{ $eq: ["$isOccupied", false] }, 1, 0] },
+              },
+            },
+          },
+        ],
+      },
+    });
   }
+  return pipeline;
+};
 
-  // Return the paginated tables as a successful response
+const fetchTables = asyncHandler(async (req, res) => {
+  const { page = 1, limit = 10, search = "", status, minCapacity } = req.query;
+  const restaurant = await Restaurant.findById(req.restaurant?._id);
+  if (!restaurant) throw new ApiError(404, "Restaurant does not exist");
+
+  const result = await Table.aggregate(
+    getTableAggregationPipeline({
+      restaurantId: req.restaurant._id,
+      page,
+      limit,
+      search,
+      status,
+      minCapacity,
+    })
+  );
+
+  if (!result || !result[0].paginatedResults.length)
+    return res.status(404).json(new ApiResponse(404, {}, "No tables found"));
+  const tables = result[0].paginatedResults;
+  const stats = result[0].totalStats[0] || {
+    totalTables: 0,
+    totalOccupied: 0,
+    totalFree: 0,
+  };
   res
     .status(200)
-    .json(new ApiResponse(200, tables, "Tables retrieved successfully"));
+    .json(
+      new ApiResponse(
+        200,
+        { tables, ...stats },
+        "Tables retrieved successfully"
+      )
+    );
+});
+
+const fetchTableById = asyncHandler(async (req, res) => {
+  const restaurant = await Restaurant.findById(req.restaurant?._id);
+  if (!restaurant) throw new ApiError(404, "Restaurant does not exist");
+
+  const result = await Table.aggregate(
+    getTableAggregationPipeline({
+      restaurantId: req.restaurant._id,
+      tableId: req.params.id,
+    })
+  );
+
+  if (!result || result.length === 0)
+    return res.status(404).json(new ApiResponse(404, {}, "Table not found"));
+  res
+    .status(200)
+    .json(new ApiResponse(200, result[0], "Table retrieved successfully"));
 });
 
 // Determine the directory of the current module
@@ -462,125 +609,6 @@ const updateTables = asyncHandler(async (req, res) => {
   );
 });
 
-const getTableOrders = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const restaurantId = req.restaurant?._id;
-
-  // Check if the table exists
-  const table = await Table.findById(id);
-  if (!table) {
-    throw new ApiError(404, "Table not found");
-  }
-
-  // Define the aggregation pipeline stages
-  const pipeline = [
-    {
-      $match: {
-        tableId: new mongoose.Types.ObjectId(id),
-        restaurantId: new mongoose.Types.ObjectId(restaurantId),
-      },
-    },
-    {
-      $lookup: {
-        from: "menus", // Assuming "menus" is the name of your menus collection
-        let: { items: "$items.menuItemId" },
-        pipeline: [
-          {
-            $unwind: "$categories",
-          },
-          {
-            $unwind: "$categories.items",
-          },
-          {
-            $match: {
-              $expr: {
-                $in: ["$categories.items._id", "$$items"],
-              },
-            },
-          },
-          {
-            $project: {
-              _id: "$categories.items._id",
-              title: "$categories.items.title",
-              description: "$categories.items.description",
-              image: "$categories.items.image",
-              itemType: "$categories.items.itemType",
-            },
-          },
-        ],
-        as: "menuItems",
-      },
-    },
-    {
-      $lookup: {
-        from: "customers",
-        localField: "customerId",
-        foreignField: "_id",
-        as: "customer",
-      },
-    },
-    {
-      $unwind: "$customer",
-    },
-    {
-      $addFields: {
-        items: {
-          $map: {
-            input: "$items",
-            as: "origItem",
-            in: {
-              $mergeObjects: [
-                {
-                  $arrayElemAt: [
-                    {
-                      $filter: {
-                        input: "$menuItems",
-                        cond: { $eq: ["$$origItem.menuItemId", "$$this._id"] },
-                      },
-                    },
-                    0,
-                  ],
-                },
-                "$$origItem",
-              ],
-            },
-          },
-        },
-      },
-    },
-    {
-      $project: {
-        customer: {
-          firstName: "$customer.firstName",
-          lastName: "$customer.lastName",
-          number: "$customer.number",
-        },
-        table: "$tableId",
-        restaurantId: 1,
-        customerId: 1,
-        tableId: 1,
-        items: 1,
-        totalAmount: 1,
-        status: 1,
-        createdAt: 1,
-        updatedAt: 1,
-      },
-    },
-  ];
-
-  const orders = await Order.aggregate(pipeline);
-
-  if (!orders || orders.length === 0) {
-    return res
-      .status(404)
-      .json(new ApiResponse(404, {}, "No orders found for this table"));
-  }
-
-  res
-    .status(200)
-    .json(new ApiResponse(200, orders, "Table orders retrieved successfully"));
-});
-
 export {
   fetchTables,
   registerTables,
@@ -589,5 +617,5 @@ export {
   updateTableById,
   updateTables,
   downloadTableQr,
-  getTableOrders,
+  fetchTableById,
 };
