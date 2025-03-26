@@ -83,6 +83,119 @@ export const tableApi = createApi({
         cache: "no-cache",
       }),
     }),
+
+    // deleteTableById: builder.mutation({
+    //   query: (tableId) => ({
+    //     url: `/${tableId}`,
+    //     method: "DELETE",
+    //   }),
+    //   invalidatesTags: ["Table"],
+    // }),
+
+    // deleteTableById: builder.mutation({
+    //   query: (tableId) => ({
+    //     url: `/${tableId}`,
+    //     method: "DELETE",
+    //   }),
+    //   async onQueryStarted(tableId, { dispatch, queryFulfilled }) {
+    //     const patchResult = dispatch(
+    //       tableApi.util.updateQueryData("getMyTables", (draft) => {
+    //         draft.data.tables = draft.data.tables.filter(
+    //           (table) => table._id !== tableId
+    //         );
+    //       })
+    //     );
+
+    //     try {
+    //       await queryFulfilled;
+    //     } catch (error) {
+    //       patchResult.undo(); // Rollback if API call fails
+    //       console.error("Delete failed:", error);
+    //     }
+    //   },
+    // }),
+
+    deleteTableById: builder.mutation({
+      query: (tableId) => ({
+        url: `/${tableId}`,
+        method: "DELETE",
+      }),
+      // onQueryStarted: async (id, { dispatch, getState, queryFulfilled }) => {
+      //   const { tableApi } = getState();
+      //   const queryArgs = Object.keys(tableApi.queries).find((key) =>
+      //     key.startsWith("getMyTables")
+      //   );
+
+      //   if (!queryArgs) return; // Ensure there's valid cache data before modifying
+
+      //   try {
+      //     // Optimistically update the cache before the actual API call
+      //     dispatch(
+      //       tableApi.util.updateQueryData(
+      //         "getMyTables",
+      //         JSON.parse(queryArgs),
+      //         (draft) => {
+      //           if (draft.data?.tables) {
+      //             draft.data.tables = draft.data.tables.filter(
+      //               (table) => table._id !== id
+      //             );
+      //           }
+      //         }
+      //       )
+      //     );
+
+      //     // Wait for the API call to complete
+      //     await queryFulfilled;
+      //   } catch {
+      //     // Handle rollback if API call fails (optional)
+      //   }
+      // },
+      onQueryStarted: async (id, { dispatch, getState, queryFulfilled }) => {
+        // Find the query arguments dynamically
+        const cacheEntries = getState().tableApi.queries;
+        const queryArgs = Object.keys(cacheEntries).find((key) =>
+          key.startsWith("getMyTables")
+        );
+
+        if (!queryArgs) return; // Ensure there's valid cache data before modifying
+
+        console.log("Updating cache for:", queryArgs);
+
+        try {
+          // Optimistically update cache before API call
+          dispatch(
+            tableApi.util.updateQueryData(
+              "getMyTables",
+              JSON.parse(queryArgs),
+              (draft) => {
+                console.log("Before deletion:", draft.data.tables);
+
+                if (draft.data?.tables) {
+                  draft.data.tables = draft.data.tables.filter(
+                    (table) => table._id !== id
+                  );
+                  console.log("After deletion:", draft.data.tables);
+                }
+              }
+            )
+          );
+
+          // Wait for API call to complete
+          await queryFulfilled;
+        } catch (error) {
+          console.error("Failed to delete, rolling back:", error);
+        }
+      },
+    }),
+
+    updateTableById: builder.mutation({
+      query: ({ tableId, ...data }) => ({
+        url: `/${tableId}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Table"],
+    }),
   }),
 });
 
@@ -90,4 +203,6 @@ export const {
   useGenerateTableQrMutation,
   useDownloadQrMutation,
   useGetMyTablesQuery,
+  useDeleteTableByIdMutation,
+  useUpdateTableByIdMutation,
 } = tableApi;

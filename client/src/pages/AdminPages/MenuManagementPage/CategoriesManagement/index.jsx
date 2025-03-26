@@ -240,7 +240,7 @@ const CategoriesManagementPage = () => {
               {menuData?.map((category) => (
                 <Card
                   key={category._id}
-                  className="overflow-hidden transition duration-300 ease-in-out delay-150 transform border rounded-lg shadow-sm hover:shadow-md border-primary/10 hover:border-primary/20 bg-white/100 hover:-translate-y-1 "
+                  className="overflow-hidden transition-all duration-300 ease-in-out delay-150 border rounded-lg shadow-sm hover:shadow-md border-primary/10 hover:border-primary/20 bg-white/100 hover:-translate-y-1 "
                 >
                   <div className="relative aspect-video">
                     <img

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { Download } from "lucide-react";
-import { useGetMyTablesQuery } from "api/tableApi";
+import { useDeleteTableByIdMutation, useGetMyTablesQuery } from "api/tableApi";
 
 import { Button } from "components/ui/button";
 import { TableCard } from "./TableCard";
@@ -26,13 +26,18 @@ export function TableGrid() {
     page: currentPage,
     limit: PAGINATION_LIMIT,
   });
+  const [deleteTableById, { isLoading: isDeleting }] =
+    useDeleteTableByIdMutation();
 
   // console.log("tableData", tableData);
 
   const hasNextPage = tableData?.data?.hasNextPage || false;
 
+  console.log("tableData", tableData);
+
   useEffect(() => {
     if (tableData?.data?.tables) {
+      console.log("setting tables");
       setTables(tableData.data.tables);
     }
   }, [tableData]);
@@ -75,6 +80,16 @@ export function TableGrid() {
     setIsBulkQRModalOpen(true);
   };
 
+  const handleDelete = async (tableId) => {
+    try {
+      await deleteTableById(tableId).unwrap();
+      // setTables(tables.filter((table) => table._id !== tableId));
+      console.log("Table deleted successfully");
+    } catch (error) {
+      console.error("Failed to delete table", error);
+    }
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -91,6 +106,7 @@ export function TableGrid() {
             onClick={() => handleTableClick(table)}
             onQuickAction={handleQuickAction}
             onGenerateQR={handleGenerateQR}
+            onDelete={handleDelete}
           />
         ))}
       </div>
