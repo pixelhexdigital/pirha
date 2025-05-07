@@ -1,6 +1,4 @@
 import { useState } from "react";
-import JSZip from "jszip";
-import saveAs from "file-saver";
 import { QRCodeSVG } from "qrcode.react";
 
 import {
@@ -13,7 +11,13 @@ import { Button } from "components/ui/button";
 import { Checkbox } from "components/ui/checkbox";
 import { ScrollArea } from "components/ui/scroll-area";
 
-export function BulkQRCodeModal({ isOpen, onClose, tables }) {
+export function BulkQRCodeModal({
+  isOpen,
+  onClose,
+  tables,
+  OnDownloadQRCode,
+  isDownloading,
+}) {
   const [selectedTables, setSelectedTables] = useState([]);
 
   const handleSelectAll = () => {
@@ -32,39 +36,7 @@ export function BulkQRCodeModal({ isOpen, onClose, tables }) {
     }
   };
 
-  const downloadBulkQRCodes = async () => {
-    const zip = new JSZip();
-    const promises = selectedTables.map((tableId) => {
-      const table = tables.find((t) => t._id === tableId);
-      return new Promise((resolve) => {
-        const svg = document.getElementById(`qr-code-${tableId}`);
-        if (svg) {
-          const svgData = new XMLSerializer().serializeToString(svg);
-          const canvas = document.createElement("canvas");
-          const ctx = canvas.getContext("2d");
-          const img = new Image();
-          img.onload = () => {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx?.drawImage(img, 0, 0);
-            canvas.toBlob((blob) => {
-              if (blob) {
-                zip.file(`qr_code_table_${table?.title}.png`, blob);
-              }
-              resolve();
-            });
-          };
-          img.src = "data:image/svg+xml;base64," + btoa(svgData);
-        } else {
-          resolve();
-        }
-      });
-    });
-
-    await Promise.all(promises);
-    const content = await zip.generateAsync({ type: "blob" });
-    saveAs(content, "bulk_qr_codes.zip");
-  };
+  const downloadBulkQRCodes = async () => OnDownloadQRCode({ selectedTables });
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -114,7 +86,11 @@ export function BulkQRCodeModal({ isOpen, onClose, tables }) {
             onClick={downloadBulkQRCodes}
             disabled={selectedTables.length === 0}
           >
-            Download Selected QR Codes
+            {isDownloading ? (
+              <div className="ring-loader" />
+            ) : (
+              "Download Selected QR Codes"
+            )}
           </Button>
         </div>
       </DialogContent>

@@ -49,8 +49,6 @@ export default function TablesPage() {
           </AddTableDialog>
         </div>
         <div className="p-4 space-y-4 flex-1">
-          <TableSummary />
-          <TableFilters />
           <TableGrid />
         </div>
       </div>

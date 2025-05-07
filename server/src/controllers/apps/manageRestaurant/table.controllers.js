@@ -1,5 +1,6 @@
 import { Restaurant } from "../../../models/apps/auth/restaurant.models.js";
 import { Table } from "../../../models/apps/manageRestaurant/table.models.js";
+import { Order } from "../../../models/apps/manageRestaurant/order.models.js";
 import { ApiError } from "../../../utils/ApiError.js";
 import { ApiResponse } from "../../../utils/ApiResponse.js";
 import { asyncHandler } from "../../../utils/asyncHandler.js";
@@ -331,15 +332,7 @@ const generateQRCode = async (tables, restaurant, baseURL) => {
 };
 
 const downloadTableQr = asyncHandler(async (req, res) => {
-  const { startTable, endTable } = req.body;
-
-  // Validate startTable and endTable
-  const [startLetter, startNumber] = startTable.split("-");
-  const [endLetter, endNumber] = endTable.split("-");
-
-  if (startLetter !== endLetter || isNaN(startNumber) || isNaN(endNumber)) {
-    throw new ApiError(400, "Invalid startTable or endTable format");
-  }
+  const { tableIds } = req.body;
 
   const restaurant = await Restaurant.findById(req.restaurant?._id);
 
@@ -347,32 +340,18 @@ const downloadTableQr = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Restaurant does not exist");
   }
 
-  let baseURL = restaurant.baseURL || "";
-
-  // Remove trailing '/' from baseURL if present at the end
-  if (baseURL.endsWith("/")) {
-    baseURL = baseURL.slice(0, -1); // Remove the last character (which is '/')
-  }
-
-  if (!baseURL) {
-    throw new ApiError(404, "Please update baseURL of restaurant");
-  }
+  let baseURL = process.env.baseURL;
 
   const restaurantId = restaurant._id;
 
-  // Find tables within the specified range and belonging to the restaurant
+  // Find tables with _id from the array of tableIds and belonging to the restaurant
   const tables = await Table.find({
     restaurantId,
-    title: {
-      $in: Array.from(
-        { length: endNumber },
-        (_, i) => `${startLetter}-${i + 1}`
-      ),
-    },
+    _id: { $in: tableIds },
   }).sort({ title: 1 });
 
   if (tables.length === 0) {
-    throw new ApiError(404, "No tables found within the specified range");
+    throw new ApiError(404, "No tables found within the given ids");
   }
 
   const zipData = await generateQRCode(tables, restaurant, baseURL);

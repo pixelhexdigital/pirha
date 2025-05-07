@@ -13,8 +13,8 @@ export function TableCard({
   table,
   onClick,
   onQuickAction,
-  onGenerateQR,
   onDelete,
+  onQrCodeDownload,
 }) {
   return (
     <Card className="hover:shadow-md hover:-translate-y-1 transition-all duration-300 ease-in-out delay-150 border-primary/5 hover:border-primary/20 shadow-sm">
@@ -40,7 +40,7 @@ export function TableCard({
             variant="outline"
             onClick={(e) => {
               e.stopPropagation();
-              onGenerateQR(table._id);
+              onQrCodeDownload({ selectedTables: table._id });
             }}
           >
             <QrCode className="w-4 h-4 mr-1" />
@@ -73,7 +73,7 @@ export function TableCard({
             </Button>
           )}
         </div>
-        <div className="absolute top-2 right-2">
+        <div className="absolute top-2 right-1">
           <Button
             size="sm"
             variant="ghost"

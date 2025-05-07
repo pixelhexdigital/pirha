@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 import { Input } from "components/ui/input";
 import { Label } from "components/ui/label";
 import {
@@ -10,18 +8,35 @@ import {
   SelectValue,
 } from "components/ui/select";
 
-export function TableFilters() {
-  const [status, setStatus] = useState("all");
-  const [capacity, setCapacity] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
+export function TableFilters({
+  filter,
+  setFilter,
+  searchQuery,
+  setSearchQuery,
+}) {
+  const { status, minCapacity } = filter;
+
+  const setStatus = (value) => {
+    setFilter((prev) => ({
+      ...prev,
+      status: value,
+    }));
+  };
+
+  const setCapacity = (value) => {
+    setFilter((prev) => ({
+      ...prev,
+      minCapacity: value,
+    }));
+  };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6 mt-2">
       <div>
         <Label htmlFor="search-filter">Search</Label>
         <Input
           id="search-filter"
-          placeholder="Search by table number..."
+          placeholder="Search by table number or name"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -33,7 +48,7 @@ export function TableFilters() {
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All</SelectItem>
+            <SelectItem value={null}>All</SelectItem>
             <SelectItem value="Free">Available</SelectItem>
             <SelectItem value="Occupied">Occupied</SelectItem>
           </SelectContent>
@@ -45,7 +60,7 @@ export function TableFilters() {
           id="capacity-filter"
           type="number"
           min="1"
-          value={capacity}
+          value={minCapacity}
           onChange={(e) => setCapacity(e.target.value)}
           placeholder="Enter minimum capacity"
         />
