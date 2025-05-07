@@ -65,14 +65,14 @@ const DEFAULT_DELETE_ITEM_DATA = {
 
 const FOOD_GROUP_BG_COLORS = {
   veg: "bg-green-500",
-  nonVeg: "bg-red-500",
+  "non-veg": "bg-red-500",
   egg: "bg-yellow-500",
   vegan: "bg-blue-500",
 };
 
 const FOOD_GROUP_BORDER_COLORS = {
   veg: "border-green-500",
-  nonVeg: "border-red-500",
+  "non-veg": "border-red-500",
   egg: "border-yellow-500",
   vegan: "border-blue-500",
 };
