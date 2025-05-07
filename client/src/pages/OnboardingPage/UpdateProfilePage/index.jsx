@@ -255,7 +255,7 @@ const UpdateProfilePage = ({ nextStep }) => {
         type="submit"
         size="lg"
         className="w-full mb-4"
-        disabled={!image || isUploading}
+        disabled={isUploading}
       >
         {isUpdating ? <div className="ring-loader" /> : "Save and Continue"}
       </Button>
