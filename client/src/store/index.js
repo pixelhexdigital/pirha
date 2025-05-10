@@ -1,5 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { combineReducers } from "redux";
+import { combineReducers, compose } from "redux";
 import { persistReducer, persistStore } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // defaults to localStorage for web
 import sessionStorage from "redux-persist/es/storage/session";
@@ -59,6 +59,7 @@ const rootReducer = combineReducers({
 
 // Create persisted reducer
 const persistedReducer = persistReducer(rootPersistConfig, rootReducer);
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
 // Configure store
 export const store = configureStore({
@@ -74,8 +75,12 @@ export const store = configureStore({
       tableApi.middleware,
       userApi.middleware
     ),
+  devTools: import.meta.env.DEV,
+  composeEnhancers,
 });
 
 export const persistor = persistStore(store);
+
+// Enable Redux DevTools
 
 export default store;

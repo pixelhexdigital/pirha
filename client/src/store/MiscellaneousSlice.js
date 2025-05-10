@@ -11,6 +11,7 @@ const initialState = {
   foodGroups: [],
   restroTypes: [],
   menuItemTypes: [],
+  tableStatus: [],
 };
 
 const MiscellaneousSlice = createSlice({
