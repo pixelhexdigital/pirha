@@ -55,9 +55,9 @@ export const verifySubscription = asyncHandler(async (req, res, next) => {
     }); // 1 day expiry
   }
 
-  let restaurantId;
+  let restaurantId = req.params.restaurantId;
 
-  if (token) {
+  if (!restaurantId) {
     try {
       const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
       const restaurant = await Restaurant.findById(decodedToken?._id).select(
@@ -73,8 +73,6 @@ export const verifySubscription = asyncHandler(async (req, res, next) => {
   }
 
   if (!restaurantId || restaurantId.toString() !== req.params.restaurantId) {
-    restaurantId = req.params.restaurantId;
-
     if (!restaurantId || restaurantId === "null") {
       throw new ApiError(400, "Restaurant ID is required");
     }
