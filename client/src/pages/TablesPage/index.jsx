@@ -32,7 +32,7 @@ export default function TablesPage() {
         </div>
       </div> */}
       <div className="flex flex-col h-full">
-        <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex sm:items-center justify-between p-4 border-b sm:flex-row flex-col gap-4">
           <div className="flex flex-col gap-1">
             <h1 className="text-2xl font-bold tracking-tight">
               Table Management
@@ -42,7 +42,7 @@ export default function TablesPage() {
             </p>
           </div>
           <AddTableDialog>
-            <Button>
+            <Button className="flex items-center gap-2 max-w-fit px-4 self-end">
               <Plus className="h-4 w-4 mr-2" />
               Add New Table
             </Button>

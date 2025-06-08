@@ -8,16 +8,15 @@ import {
   useGetTableDetailsByIdMutation,
   useUpdateTableByIdMutation,
 } from "api/tableApi";
+import { useDebounce } from "hooks/useDebounce";
 
-import { Button } from "components/ui/button";
 import { TableCard } from "./TableCard";
-
-import { TableDetailsModal } from "./TableDetailsModal";
 import { BulkQRCodeModal } from "./BulkQRCodeModal";
+import { TableDetailsModal } from "./TableDetailsModal";
+import { Button } from "components/ui/button";
 import { errorToast, successToast } from "lib/helper";
 import { TableSummary } from "pages/TablesPage/components/TableSummary";
 import { TableFilters } from "pages/TablesPage/components/TableFilters";
-import { useDebounce } from "hooks/useDebounce";
 
 const PAGINATION_LIMIT = 20;
 const DEBOUNCE_TIME = 500;
@@ -57,13 +56,16 @@ export function TableGrid() {
 
   // console.log("tableData", tableData);
 
-  const hasNextPage = tableData?.data?.hasNextPage || false;
+  const tableSummaryData = {
+    totalTables: tableData?.data?.totalTables || 0,
+    availableTables: tableData?.data?.freeTables || 0,
+    occupiedTables: tableData?.data?.occupiedTables || 0,
+  };
 
-  console.log("tableData", tableData);
+  const hasNextPage = tableData?.data?.hasNextPage || false;
 
   useEffect(() => {
     if (tableData?.data?.tables) {
-      console.log("setting tables");
       setTables(tableData.data.tables);
     }
   }, [tableData]);
@@ -71,7 +73,6 @@ export function TableGrid() {
   useEffect(() => {
     // Only fetch if inView, not fetching, and hasNextPage is true
     if (inView && !isLoading && hasNextPage && !isFetching) {
-      console.log("Fetching next page");
       setCurrentPage((prevPage) => prevPage + 1);
     }
   }, [inView, isLoading, hasNextPage, isFetching]);
@@ -118,10 +119,8 @@ export function TableGrid() {
   };
 
   const handleDetailsClick = async (tableId) => {
-    console.log("tableId", tableId);
     try {
       const { data } = await getTableDetailsById(tableId).unwrap();
-      console.log("data", data);
       setSelectedTable(data);
       setIsDetailsModalOpen(true);
     } catch (error) {
@@ -158,7 +157,6 @@ export function TableGrid() {
       });
       setIsBulkQRModalOpen(false);
     } catch (error) {
-      console.error("Error downloading QR codes:", error);
       errorToast({
         error,
         message: "Failed to download QR codes.",
@@ -168,7 +166,7 @@ export function TableGrid() {
 
   return (
     <div>
-      <TableSummary />
+      <TableSummary data={tableSummaryData} />
       <TableFilters
         filter={filter}
         setFilter={setFilter}
@@ -176,13 +174,13 @@ export function TableGrid() {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
       />
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex sm:items-center justify-between p-4  sm:flex-row flex-col gap-4">
         <h2 className="text-2xl font-bold">Tables</h2>
         <Button onClick={handleBulkQRGenerate}>
           <Download className="mr-2 h-4 w-4" /> Download Bulk QR Codes
         </Button>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-2.5">
         {tables.map((table) => (
           <TableCard
             key={table._id}

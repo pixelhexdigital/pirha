@@ -17,10 +17,12 @@ export function TableCard({
   onQrCodeDownload,
 }) {
   return (
-    <Card className="hover:shadow-md hover:-translate-y-1 transition-all duration-300 ease-in-out delay-150 border-primary/5 hover:border-primary/20 shadow-sm">
+    <Card className="hover:shadow-md hover:-translate-y-1 transition-all duration-300 ease-in-out delay-75 border-primary/5 hover:border-primary/20 shadow-sm">
       <CardContent className="p-4 flex flex-col items-center justify-center text-center relative">
         <h3 className="text-2xl font-bold mb-2">{table.title}</h3>
-        <Badge className={statusStyles[table.status]}>{table.status}</Badge>
+        <Badge variant="outline" className={statusStyles[table.status]}>
+          {table.status}
+        </Badge>
         <div className="flex items-center mt-2 text-sm text-muted-foreground">
           <Users className="w-4 h-4 mr-1" />
           <span>Capacity: {table.capacity}</span>

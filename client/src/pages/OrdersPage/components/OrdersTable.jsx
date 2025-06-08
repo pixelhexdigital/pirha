@@ -78,7 +78,6 @@ export function OrdersTable({ data, onAction }) {
   const handleAction = async (label, order) => {
     const newStatus = statusMap[label];
     if (!newStatus) {
-      console.log("Non-status action selected:", label);
       return;
     }
 
@@ -90,7 +89,7 @@ export function OrdersTable({ data, onAction }) {
       <CardHeader className="py-4">
         <CardTitle>Recent Orders</CardTitle>
       </CardHeader>
-      <CardContent className="p-0">
+      <CardContent>
         {data?.length === 0 ? (
           <div className="p-4 text-center text-muted-foreground">
             <p className="text-sm">No orders found</p>
@@ -146,7 +145,11 @@ export function OrdersTable({ data, onAction }) {
                         {order?.table}
                       </TableCell>
                       <TableCell>
-                        {format(new Date(order.createdAt), "dd MMM yyyy HH:mm")}
+                        {/* {format(new Date(order.createdAt), "dd MMM yyyy HH:mm")} */}
+                        {/* // first show date and and after that show time in 12
+                        hour format */}
+                        {format(new Date(order.createdAt), "dd MMM yyyy")}{" "}
+                        {format(new Date(order.createdAt), "hh:mm aa")}
                       </TableCell>
                       <TableCell>₹{totalAmount?.toFixed(2)}</TableCell>
                       <TableCell>
@@ -157,29 +160,32 @@ export function OrdersTable({ data, onAction }) {
                           {order.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="w-8 h-8 p-0">
-                              <MoreHorizontal className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            {getActionItems(orderStatus, paymentStatus).map(
-                              ({ label, icon: Icon, danger }, idx) => (
-                                <DropdownMenuItem
-                                  key={idx}
-                                  className={danger ? "text-red-600" : ""}
-                                  onClick={() => handleAction(label, order)}
-                                >
-                                  <Icon className="w-4 h-4 mr-2" />
-                                  {label}
-                                </DropdownMenuItem>
-                              )
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
+                      {orderStatus?.toLowerCase() !== "billed" &&
+                        orderStatus?.toLowerCase() !== "cancelled" && (
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="w-8 h-8 p-0">
+                                  <MoreHorizontal className="w-4 h-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                {getActionItems(orderStatus, paymentStatus).map(
+                                  ({ label, icon: Icon, danger }, idx) => (
+                                    <DropdownMenuItem
+                                      key={idx}
+                                      className={danger ? "text-red-600" : ""}
+                                      onClick={() => handleAction(label, order)}
+                                    >
+                                      <Icon className="w-4 h-4 mr-2" />
+                                      {label}
+                                    </DropdownMenuItem>
+                                  )
+                                )}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        )}
                     </TableRow>
                     {expandedRows.includes(order._id) && (
                       <TableRow>
