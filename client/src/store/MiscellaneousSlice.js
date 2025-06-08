@@ -64,6 +64,7 @@ const MiscellaneousSlice = createSlice({
         state.foodGroups = action.payload.foodGroup;
         state.restroTypes = action.payload.restroType;
         state.menuItemTypes = action.payload.menuItemType;
+        state.tableStatus = action.payload.tableStatus;
       }
     );
   },
@@ -77,6 +78,7 @@ export const selectIsNonVegOnly = (state) => state.Misc.isNonVegOnly;
 export const selectFoodGroups = (state) => state.Misc.foodGroups;
 export const selectRestroTypes = (state) => state.Misc.restroTypes;
 export const selectMenuItemTypes = (state) => state.Misc.menuItemTypes;
+export const selectTableStatus = (state) => state.Misc.tableStatus;
 
 export const {
   setSidebarExtended,

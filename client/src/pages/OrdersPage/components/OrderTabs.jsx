@@ -1,36 +1,16 @@
 import { Tabs, TabsList, TabsTrigger } from "components/ui/tabs";
 
-const orderStatuses = [
-  {
-    value: "new",
-    label: "New Order",
-    count: 6,
-  },
-  {
-    value: "ready",
-    label: "Ready",
-    count: 2,
-  },
-  {
-    value: "served",
-    label: "Served",
-    count: 3,
-  },
-  {
-    value: "cancelled",
-    label: "Cancelled",
-    count: 1,
-  },
-  {
-    value: "billed",
-    label: "Billed",
-    count: 4,
-  },
-];
-
-export function OrderTabs() {
+export function OrderTabs({
+  orderStatuses = [],
+  onStatusChange = () => {},
+  defaultValue = "New",
+}) {
   return (
-    <Tabs defaultValue="new" className="w-full">
+    <Tabs
+      onValueChange={onStatusChange}
+      defaultValue={defaultValue}
+      className="w-full"
+    >
       <TabsList className="flex flex-wrap h-auto gap-2 p-0 bg-transparent">
         {orderStatuses.map((status) => (
           <TabsTrigger

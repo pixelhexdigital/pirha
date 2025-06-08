@@ -3,7 +3,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { object, string } from "yup";
 import { useDispatch, useSelector } from "react-redux";
-import { HandPlatter } from "lucide-react";
+import { ShoppingBag, X, Plus, Minus } from "lucide-react";
 
 import { useCreateOrderMutation } from "api/orderApi";
 import { useLoginCustomerMutation } from "api/customerApi";
@@ -29,16 +29,17 @@ import {
 import Field from "components/Field";
 import { Button } from "components/ui/button";
 import {
-  addToCart,
   clearCart,
   removeFromCart,
   selectCart,
+  increaseQuantity,
+  decreaseQuantity,
 } from "store/CartSlice";
 import {
   selectRestaurantDetails,
   selectTableDetailById,
 } from "store/MiscellaneousSlice";
-import { errorToast, successToast } from "lib/helper";
+import { errorToast, successToast, numberToCurrency } from "lib/helper";
 
 const CLASS_INPUT =
   "border-n-7 focus:bg-transparent dark:bg-n-7 dark:border-n-7 dark:focus:bg-transparent";
@@ -67,6 +68,7 @@ const Cart = () => {
     handleSubmit,
     register,
     formState: { errors },
+    reset,
   } = useForm({
     defaultValues: {
       userName: "",
@@ -75,11 +77,12 @@ const Cart = () => {
     resolver: yupResolver(FORM_SCHEMA),
   });
 
-  const totalItems = cartData?.reduce((acc, item) => acc + item.quantity, 0);
-  const total = cartData?.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0
-  );
+  const totalItems =
+    cartData?.reduce((acc, item) => acc + item.quantity, 0) || 0;
+  const subtotal =
+    cartData?.reduce((acc, item) => acc + item.price * item.quantity, 0) || 0;
+  // const tax = subtotal * 0.05; // 5% tax
+  const total = subtotal;
 
   const onOpenChange = (isOpen) => setSheetOpen(isOpen);
 
@@ -108,142 +111,185 @@ const Cart = () => {
       successToast({ message: "Order Placed Successfully" });
       dispatch(clearCart());
       setSheetOpen(false);
+      reset();
     } catch (error) {
       errorToast({ error: error });
     }
   };
 
+  if (cartData?.length === 0) return null;
+
   return (
     <Sheet open={sheetOpen} onOpenChange={onOpenChange}>
-      {cartData?.length > 0 && (
-        <section className="fixed bottom-0 flex justify-between w-full p-4 bg-primary text-primary-background">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center bg-white border rounded-full size-10">
-              <HandPlatter size={18} fill="black" />
-            </div>
-            <p className="text-white">
-              <span>&#8377; </span>
-              {total}
-            </p>
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-background to-transparent h-24 pointer-events-none" />
+
+      <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-between items-center p-4 bg-primary text-primary-foreground shadow-lg">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center bg-white rounded-full w-10 h-10">
+            <ShoppingBag size={18} className="text-primary" />
           </div>
-          <div className="flex flex-col items-end gap-1">
-            <p className="text-white caption1">
+          <div>
+            <p className="font-semibold text-white">
+              {numberToCurrency(total, "INR", 0)}
+            </p>
+            <p className="text-xs text-white">
               {totalItems} {totalItems > 1 ? "Items" : "Item"}
             </p>
-            <SheetTrigger className="px-4 py-2 text-sm font-semibold bg-white rounded-lg text-primary-background focus:outline-none focus:ring focus:ring-primary-background focus:ring-opacity-50">
-              View Order
-            </SheetTrigger>
           </div>
-        </section>
-      )}
-
-      <SheetContent className="w-full">
-        <SheetHeader>
-          <SheetTitle>Order Summary</SheetTitle>
-        </SheetHeader>
-        {cartData?.map((item) => (
-          <article
-            key={item._id}
-            className="flex justify-between p-2 mt-4 border-b"
+        </div>
+        <SheetTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            className="font-medium text-secondary bg-white "
           >
-            <div className="flex gap-4">
-              <img
-                src={item.image?.url}
-                alt={item.name}
-                className="w-20 h-20 rounded-lg"
-              />
-              <div className="font-semibold text-start">
-                <p>{item.title}</p>
-                <p className="text-sm opacity-70">[{item.description}]</p>
-                <p>
-                  <span>&#8377; </span>
-                  {item.price}
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-col items-end gap-2">
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2">
-                  <button
-                    className="px-1 text-sm font-semibold text-red-700 transition-colors border border-red-700 rounded-lg bg-rose-50 hover:bg-rose-100 hover:text-rose-700 focus:outline-none focus:ring focus:ring-rose-300 focus:ring-opacity-50"
-                    onClick={() => {
-                      dispatch(removeFromCart({ item: item }));
-                    }}
-                  >
-                    -
-                  </button>
-                  <p>{item.quantity}</p>
-                  <button
-                    className="px-1 text-sm font-semibold text-green-700 transition-colors border border-green-700 rounded-lg bg-lime-50 hover:bg-lime-100 hover:text-lime-700 focus:outline-none focus:ring focus:ring-lime-300 focus:ring-opacity-50"
-                    onClick={() => {
-                      dispatch(addToCart({ item: item }));
-                    }}
-                  >
-                    +
-                  </button>
+            View Order
+          </Button>
+        </SheetTrigger>
+      </div>
+
+      <SheetContent className="w-full sm:max-w-md p-0">
+        <SheetHeader className="px-6 py-4 border-b">
+          <SheetTitle className="text-xl">Your Order</SheetTitle>
+        </SheetHeader>
+
+        <div className="flex-1 overflow-auto">
+          <div className="px-6 py-2 bg-muted/50">
+            <p className="text-sm font-medium text-muted-foreground capitalize">
+              Table {tableDetails?.title || "N/A"} •{" "}
+              {restaurantDetails?.restroName || "Restaurant"}
+            </p>
+          </div>
+
+          <div className="divide-y">
+            {cartData?.map((item) => (
+              <div key={item._id} className="flex items-start gap-4 p-4">
+                <div className="h-16 w-16 rounded-md overflow-hidden flex-shrink-0">
+                  {item.image?.url ? (
+                    <img
+                      src={item.image.url || "/placeholder.svg"}
+                      alt={item.title}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-full w-full bg-muted flex items-center justify-center">
+                      <ShoppingBag className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between">
+                    <h3 className="font-medium truncate">{item.title}</h3>
+                    <p className="font-semibold ml-2">
+                      {numberToCurrency(item.price * item.quantity, "INR", 0)}
+                    </p>
+                  </div>
+
+                  {item.description && (
+                    <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">
+                      {item.description}
+                    </p>
+                  )}
+
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center border rounded-md">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-none"
+                        onClick={() => dispatch(decreaseQuantity({ item }))}
+                      >
+                        <Minus className="h-3 w-3" />
+                        <span className="sr-only">Decrease quantity</span>
+                      </Button>
+                      <span className="w-8 text-center">{item.quantity}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-none"
+                        onClick={() => dispatch(increaseQuantity({ item }))}
+                      >
+                        <Plus className="h-3 w-3" />
+                        <span className="sr-only">Increase quantity</span>
+                      </Button>
+                    </div>
+
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive hover:text-destructive/90"
+                      onClick={() => {
+                        // Remove all quantities of this item
+                        for (let i = 0; i < item.quantity; i++) {
+                          dispatch(removeFromCart({ item }));
+                        }
+                      }}
+                    >
+                      <X className="h-4 w-4" />
+                      <span className="sr-only">Remove item</span>
+                    </Button>
+                  </div>
                 </div>
               </div>
-              {item.quantity > 1 ? (
-                <p>
-                  <span>&#8377; </span>
-                  {item.price * item.quantity}
-                </p>
-              ) : null}
-            </div>
-          </article>
-        ))}
-        <section className="flex justify-between p-2 font-bold border-t">
-          <p>Grand Total</p>
-          <p>
-            <span>&#8377; </span>
-            {total}
-          </p>
-        </section>
-        <SheetFooter>
-          <Dialog className="" area-label="Place Order">
-            <DialogTrigger className="w-full px-4 py-2 mt-10 text-sm font-semibold text-white rounded-lg bg-primary focus:outline-none focus:ring focus:ring-primary-background focus:ring-opacity-50">
-              Place Order
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] max-w-md">
-              <DialogHeader>
-                <DialogTitle>Place Order</DialogTitle>
-                <DialogDescription>
-                  Please enter your details to place the order
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <Field
-                  className="mb-4"
-                  placeholder="Enter Your Name"
-                  autoComplete="name"
-                  classInput={CLASS_INPUT}
-                  error={errors.userName?.message}
-                  {...register("userName")}
-                />
-                <Field
-                  className="mb-4"
-                  placeholder="Enter Your Mobile No"
-                  autoComplete="off"
-                  classInput={CLASS_INPUT}
-                  error={errors.mobileNo?.message}
-                  {...register("mobileNo")}
-                />
-              </div>
-              <DialogFooter className="flex flex-row justify-end gap-10">
-                <Button
-                  type="submit"
-                  onClick={handleSubmit(handlePlaceOrder)}
-                  disabled={isLoading || loginLoadingStatus}
-                >
-                  {isLoading || loginLoadingStatus
-                    ? "Placing Order..."
-                    : "Place Order"}
-                </Button>
-                <DialogClose>Cancel</DialogClose>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </SheetFooter>
+            ))}
+          </div>
+        </div>
+
+        <div className="border-t p-6">
+          <div className="flex justify-between font-medium">
+            <p>Total</p>
+            <p>{numberToCurrency(total, "INR", 0)}</p>
+          </div>
+
+          <SheetFooter className="mt-6">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="w-full">Place Order</Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Complete Your Order</DialogTitle>
+                  <DialogDescription>
+                    Please provide your details to place the order
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="grid gap-4 py-4">
+                  <Field
+                    placeholder="Enter Your Name"
+                    autoComplete="name"
+                    classInput={CLASS_INPUT}
+                    error={errors.userName?.message}
+                    {...register("userName")}
+                  />
+                  <Field
+                    placeholder="Enter Your Mobile No"
+                    autoComplete="tel"
+                    classInput={CLASS_INPUT}
+                    error={errors.mobileNo?.message}
+                    {...register("mobileNo")}
+                  />
+                </div>
+
+                <DialogFooter className="gap-2">
+                  <DialogClose asChild>
+                    <Button variant="outline">Cancel</Button>
+                  </DialogClose>
+                  <Button
+                    type="submit"
+                    onClick={handleSubmit(handlePlaceOrder)}
+                    disabled={isLoading || loginLoadingStatus}
+                  >
+                    {isLoading || loginLoadingStatus
+                      ? "Processing..."
+                      : "Confirm Order"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </SheetFooter>
+        </div>
       </SheetContent>
     </Sheet>
   );

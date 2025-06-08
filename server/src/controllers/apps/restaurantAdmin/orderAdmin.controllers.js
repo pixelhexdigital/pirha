@@ -7,7 +7,7 @@ import { OrderEventEnum } from "../../../constants.js";
 import { Restaurant } from "../../../models/apps/auth/restaurant.models.js";
 import mongoose from "mongoose";
 
-const updateOrder = asyncHandler(async (req, res) => {
+const updateOrder = asyncHandler(async (req, res, next) => {
   const { orderId } = req.params;
   const { status, paymentStatus, paymentMethod } = req.body;
   const restaurantId = req.restaurant?._id;
@@ -30,12 +30,12 @@ const updateOrder = asyncHandler(async (req, res) => {
     { new: true }
   );
 
-  emitSocketEvent(
-    req,
-    restaurantId.toString(),
-    OrderEventEnum.UPDATE_ORDER_STATUS_EVENT,
-    updateOrder
-  );
+  // emitSocketEvent(
+  //   req,
+  //   restaurantId.toString(),
+  //   OrderEventEnum.UPDATE_ORDER_STATUS_EVENT,
+  //   updateOrder
+  // );
 
   //   profile = await getUserSocialProfile(req.restaurant._id, req);
 
@@ -171,12 +171,12 @@ const getOrders = asyncHandler(async (req, res) => {
     },
   });
 
-  // If no orders found, return a 404 response
-  if (!orders || orders.totalOrders === 0) {
-    return res
-      .status(404)
-      .json(new ApiResponse(404, {}, "No orders found for this restaurant"));
-  }
+  // // If no orders found, return a 404 response
+  // if (!orders || orders.totalOrders === 0) {
+  //   return res
+  //     .status(404)
+  //     .json(new ApiResponse(404, {}, "No orders found for this restaurant"));
+  // }
 
   // Return the paginated orders as a successful response
   res
