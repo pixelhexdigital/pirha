@@ -1,118 +1,168 @@
-import React from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import * as Dialog from "@radix-ui/react-dialog";
-import { Cross2Icon } from "@radix-ui/react-icons";
 import { object, string } from "yup";
 
 import Field from "components/Field";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "components/ui/dialog";
 import { Button } from "components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "components/ui/select";
 
 // Validation schema for menu item
 const ADD_ITEM_SCHEMA = object().shape({
   itemName: string().required("Item name is required"),
+  description: string().optional(),
   itemPrice: string().required("Price is required"),
   itemType: string().required("Item type is required"),
   foodGroup: string().required("Food group is required"),
 });
 
-const menuItemType = ["Food", "Alcoholic Drink", "Non-Alcoholic Drink"];
-const foodGroup = ["Veg", "Non-veg", "Vegan", "Egg"];
+const CLASS_INPUT =
+  "border-n-7 focus:bg-transparent dark:bg-n-7 dark:border-n-7 dark:focus:bg-transparent ";
 
-const MenuItemAddDialog = ({ open, onClose, onAddItem }) => {
+const defaultValues = {
+  itemName: "",
+  description: "",
+  itemPrice: 0,
+  itemType: "",
+  foodGroup: "",
+};
+
+const MenuItemAddDialog = ({
+  open,
+  onClose,
+  onAddItem,
+  itemType,
+  foodGroup,
+}) => {
   const {
     handleSubmit,
     register,
+    control,
+    reset,
     formState: { errors },
   } = useForm({
+    defaultValues,
     resolver: yupResolver(ADD_ITEM_SCHEMA),
   });
 
   const onSubmit = (data) => {
-    onAddItem(data);
+    onAddItem(data, reset);
   };
 
   return (
-    <Dialog.Root open={open} onOpenChange={onClose}>
-      <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-50" />
-        <Dialog.Content className="fixed inset-0 bg-white rounded-lg p-4 max-w-md mx-auto mt-20 h-fit">
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Dialog.Title className="text-lg font-semibold mb-4">
-              Add Menu Item
-            </Dialog.Title>
-            <Dialog.Description className="mb-4 text-gray-500">
-              Enter details of the menu item.
-            </Dialog.Description>
-            <div className="mb-4">
-              <Field
-                type="text"
-                placeholder="Item name"
-                className="w-full border border-gray-300 rounded p-2"
-                error={errors.itemName?.message}
-                {...register("itemName")}
-              />
-            </div>
-            <div className="mb-4">
-              <Field
-                type="text"
-                placeholder="Price"
-                className="w-full border border-gray-300 rounded p-2"
-                error={errors.itemPrice?.message}
-                {...register("itemPrice")}
-              />
-            </div>
-            <div className="mb-4">
-              <select
-                className="w-full border border-gray-300 rounded p-2"
-                {...register("itemType")}
-              >
-                <option value="">Select item type</option>
-                {menuItemType.map((type, index) => (
-                  <option key={index} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-              {errors.itemType && (
-                <span className="text-red-500 text-sm">
-                  {errors.itemType.message}
-                </span>
-              )}
-            </div>
-            <div className="mb-4">
-              <select
-                className="w-full border border-gray-300 rounded p-2"
-                {...register("foodGroup")}
-              >
-                <option value="">Select food group</option>
-                {foodGroup.map((group, index) => (
-                  <option key={index} value={group}>
-                    {group}
-                  </option>
-                ))}
-              </select>
-              {errors.foodGroup && (
-                <span className="text-red-500 text-sm">
-                  {errors.foodGroup.message}
-                </span>
-              )}
-            </div>
-            <Button type="submit" size="lg" className="w-full">
-              Save Item
-            </Button>
-          </form>
-          <Dialog.Close asChild>
-            <button
-              className="absolute top-2 right-2 p-1 bg-transparent border-none cursor-pointer"
-              aria-label="Close"
-            >
-              <Cross2Icon className="h-5 w-5" />
-            </button>
-          </Dialog.Close>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-lg">
+        <DialogHeader>
+          <DialogTitle>Add Menu Item</DialogTitle>
+          <DialogDescription>
+            Add your menu item details below
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+          <Field
+            label="Name"
+            placeholder="Enter item name"
+            classInput={CLASS_INPUT}
+            error={errors.itemName?.message}
+            {...register("itemName")}
+          />
+          <Field
+            textarea
+            label="Description"
+            placeholder="Enter item description"
+            autoComplete="off"
+            error={errors.description?.message}
+            classInput={CLASS_INPUT}
+            {...register("description")}
+          />
+          <Field
+            type="number"
+            label="Price"
+            min={0}
+            step={0.01}
+            placeholder="Enter item price"
+            classInput={CLASS_INPUT}
+            error={errors.itemPrice?.message}
+            {...register("itemPrice")}
+          />
+          <Controller
+            name="itemType"
+            control={control}
+            render={({ field }) => (
+              <div className="space-y-2">
+                <p className="flex mb-2 font-semibold base2">Item Type</p>
+                <Select
+                  defaultValue={field.value}
+                  onValueChange={field.onChange}
+                >
+                  <SelectTrigger className={CLASS_INPUT}>
+                    <SelectValue placeholder="Select Item Type " />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {itemType.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.itemType?.message && (
+                  <div className="mt-2 text-red-600 caption1">
+                    {errors.itemType?.message}
+                  </div>
+                )}
+              </div>
+            )}
+          />
+
+          <Controller
+            name="foodGroup"
+            control={control}
+            render={({ field }) => (
+              <div className="space-y-2">
+                <p className="flex font-semibold base2">Food Group</p>
+                <Select
+                  defaultValue={field.value}
+                  onValueChange={field.onChange}
+                >
+                  <SelectTrigger className={CLASS_INPUT}>
+                    <SelectValue placeholder="Select Food Group" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {foodGroup.map((group) => (
+                      <SelectItem key={group} value={group}>
+                        {group}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.foodGroup?.message && (
+                  <div className="mt-2 text-red-600 caption1">
+                    {errors.foodGroup?.message}
+                  </div>
+                )}
+              </div>
+            )}
+          />
+          <DialogFooter>
+            <Button type="submit">Save changes</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 };
 

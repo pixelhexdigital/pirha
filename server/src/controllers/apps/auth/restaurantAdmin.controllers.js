@@ -155,6 +155,32 @@ const updateSocialProfile = asyncHandler(async (req, res) => {
     );
 });
 
+const onboardComplete = asyncHandler(async (req, res) => {
+  const onboardingState = ENUMS.onboardingState[3];
+
+  let profile = await Restaurant.findByIdAndUpdate(
+    req.restaurant?._id,
+    {
+      $set: {
+        onboardingState,
+      },
+    },
+    { new: true }
+  ).select(
+    "-password -refreshToken -emailVerificationToken -emailVerificationExpiry"
+  );
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        profile,
+        "Restaurant onboarding completed successfully"
+      )
+    );
+});
+
 const updateCoverImage = asyncHandler(async (req, res) => {
   const coverImageLocalPath = req.file?.path;
 
@@ -230,4 +256,4 @@ const updateAvatar = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, updatedUser, "Avatar updated successfully"));
 });
 
-export { updateSocialProfile, updateCoverImage, updateAvatar };
+export { updateSocialProfile, updateCoverImage, updateAvatar, onboardComplete };

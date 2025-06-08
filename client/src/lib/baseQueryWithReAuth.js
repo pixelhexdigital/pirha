@@ -47,6 +47,7 @@ export const baseQueryWithReAuth =
     let result = await baseQuery(args, api, extraOptions);
 
     if (result.error) {
+      console.log("status Code =>", result.error.status);
       if (result.error.status === 401) {
         result = await handleReAuthentication(
           api,

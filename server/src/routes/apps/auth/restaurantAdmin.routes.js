@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  onboardComplete,
   updateAvatar,
   updateCoverImage,
   updateSocialProfile,
@@ -33,6 +34,8 @@ router.use(verifyJWT);
 router
   .route("/")
   .patch(updateSocialProfileValidator(), validate, updateSocialProfile);
+
+router.route("/onboard-done").get(validate, onboardComplete);
 
 router.route("/dashboard").get(getDashboard);
 

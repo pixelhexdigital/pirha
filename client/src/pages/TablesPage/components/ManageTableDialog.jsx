@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import {
   Dialog,
   DialogContent,
@@ -48,7 +49,7 @@ export function ManageTableDialog({ children, table, onTableUpdate }) {
           <DialogTitle>Manage Table {table.title.toUpperCase()}</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="grid items-center grid-cols-4 gap-4">
+          <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="status" className="text-right">
               Status
             </Label>
@@ -59,11 +60,10 @@ export function ManageTableDialog({ children, table, onTableUpdate }) {
               <SelectContent>
                 <SelectItem value="Free">Free</SelectItem>
                 <SelectItem value="Occupied">Occupied</SelectItem>
-                <SelectItem value="Reserved">Reserved</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          <div className="grid items-center grid-cols-4 gap-4">
+          <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="capacity" className="text-right">
               Capacity
             </Label>

@@ -196,7 +196,7 @@ const getOrderByCustomer = asyncHandler(async (req, res) => {
     },
     {
       $project: {
-        menuItems: 0, // Remove the temporary field 'menuItems' after merging
+        // menuItems: 0, // Remove the temporary field 'menuItems' after merging
         restaurant: {
           email: "$restaurant.email",
           restroName: "$restaurant.restroName",

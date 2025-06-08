@@ -1,5 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { combineReducers } from "redux";
+import { combineReducers, compose } from "redux";
 import { persistReducer, persistStore } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // defaults to localStorage for web
 import sessionStorage from "redux-persist/es/storage/session";
@@ -17,6 +17,7 @@ import { tableApi } from "api/tableApi";
 import MenuSlice from "store/MenuSlice";
 import TableSlice from "./TableSlice";
 import OrderSlice from "store/OrderSlice";
+import { userApi } from "api/userApi";
 
 // Persist configurations
 const rootPersistConfig = {
@@ -53,10 +54,12 @@ const rootReducer = combineReducers({
   [authApi.reducerPath]: authApi.reducer,
   [adminApi.reducerPath]: adminApi.reducer,
   [tableApi.reducerPath]: tableApi.reducer,
+  [userApi.reducerPath]: userApi.reducer,
 });
 
 // Create persisted reducer
 const persistedReducer = persistReducer(rootPersistConfig, rootReducer);
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
 // Configure store
 export const store = configureStore({
@@ -69,10 +72,15 @@ export const store = configureStore({
       customerApi.middleware,
       ordersApi.middleware,
       adminApi.middleware,
-      tableApi.middleware
+      tableApi.middleware,
+      userApi.middleware
     ),
+  devTools: import.meta.env.DEV,
+  composeEnhancers,
 });
 
 export const persistor = persistStore(store);
+
+// Enable Redux DevTools
 
 export default store;

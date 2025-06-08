@@ -2,12 +2,17 @@ import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { twMerge } from "tailwind-merge";
-import { PencilLine, SlidersVertical, Trash2 } from "lucide-react";
+import {
+  LucideEdit2,
+  MoreVerticalIcon,
+  SlidersVertical,
+  Trash2,
+} from "lucide-react";
+import Placeholder from "assets/placeholder.svg";
 
 import DishForm from "./DishForm";
 import Layout from "components/Layout";
 import { Button } from "components/ui/button";
-import { Switch } from "components/ui/switch";
 import { Skeleton } from "components/ui/skeleton";
 import {
   AlertDialog,
@@ -43,6 +48,15 @@ import {
 import { selectRestaurantId } from "store/AuthSlice";
 import { ROUTES } from "routes/RouterConfig";
 import { errorToast, successToast } from "lib/helper";
+import { Card } from "components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "components/ui/dropdown-menu";
+import { Badge } from "components/ui/badge";
 
 const DEFAULT_DELETE_ITEM_DATA = {
   itemId: null,
@@ -51,14 +65,14 @@ const DEFAULT_DELETE_ITEM_DATA = {
 
 const FOOD_GROUP_BG_COLORS = {
   veg: "bg-green-500",
-  nonVeg: "bg-red-500",
+  "non-veg": "bg-red-500",
   egg: "bg-yellow-500",
   vegan: "bg-blue-500",
 };
 
 const FOOD_GROUP_BORDER_COLORS = {
   veg: "border-green-500",
-  nonVeg: "border-red-500",
+  "non-veg": "border-red-500",
   egg: "border-yellow-500",
   vegan: "border-blue-500",
 };
@@ -226,7 +240,7 @@ const ItemManagementPage = () => {
     setSelectedDish(null);
   };
 
-  const selectedCategory = menuData?.categories.find(
+  const selectedCategory = menuData?.categories?.find(
     (category) => category._id === activeCategory
   );
 
@@ -302,7 +316,7 @@ const ItemManagementPage = () => {
                   <div className="ring-loader border-primary/80" />
                 )}
               </button>
-              {selectedCategory &&
+              {/* {selectedCategory &&
                 selectedCategory?.items?.map((item) => (
                   <article
                     key={item._id}
@@ -382,6 +396,110 @@ const ItemManagementPage = () => {
                       Edit Dish
                     </button>
                   </article>
+                ))} */}
+
+              {selectedCategory &&
+                selectedCategory?.items?.map((item) => (
+                  <Card
+                    key={item.id}
+                    className="overflow-hidden transition duration-300 ease-in-out delay-150 transform border rounded-lg shadow-sm hover:shadow-md border-primary/10 hover:border-primary/20 bg-white/100 hover:-translate-y-1 "
+                  >
+                    <div className="relative aspect-video">
+                      <img
+                        src={item.image?.url || Placeholder}
+                        alt={item.name}
+                        className="w-full h-full min-h-[22rem] "
+                      />
+                      <div className="absolute right-2 top-2">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="w-8 h-8 bg-white"
+                            >
+                              <MoreVerticalIcon className="w-4 h-4 text-black" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setFormVisible(true);
+                                setSelectedDish(item);
+                              }}
+                            >
+                              <LucideEdit2 className="w-4 h-4 mr-2" />
+                              Edit Item
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                updateItemAvailability(item._id, !item.isActive)
+                              }
+                            >
+                              {item.isActive
+                                ? "Mark as Unavailable"
+                                : "Mark as Available"}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() =>
+                                setDeleteItemData({
+                                  itemId: item._id,
+                                  itemName: item.title,
+                                })
+                              }
+                              className="text-red-600"
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete Item
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <h3 className="font-semibold">{item.title}</h3>
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {item.description}
+                          </p>
+                        </div>
+                        <div
+                          className={twMerge(
+                            "border p-[4px] w-fit",
+                            FOOD_GROUP_BORDER_COLORS[
+                              item.foodGroup?.toLowerCase()
+                            ]
+                          )}
+                        >
+                          <div
+                            className={twMerge(
+                              "size-2.5 rounded-full",
+                              FOOD_GROUP_BG_COLORS[
+                                item.foodGroup?.toLowerCase()
+                              ]
+                            )}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between mt-4">
+                        <p className="font-semibold">
+                          ₹{item?.price?.toFixed(2)}
+                        </p>
+                        <Badge
+                          variant={item.isActive ? "default" : "outline"}
+                          className={twMerge(
+                            item.isActive
+                              ? "text-primary/80 border-primary bg-primary/10 hover:bg-primary/10 hover:text-primary/80 hover:border-primary group hover:font-semibold"
+                              : "text-foreground"
+                          )}
+                        >
+                          {item.isActive ? "Available" : "Unavailable"}
+                        </Badge>
+                      </div>
+                    </div>
+                  </Card>
                 ))}
             </>
           )}
