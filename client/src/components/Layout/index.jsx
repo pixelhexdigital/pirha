@@ -5,9 +5,9 @@ import {
   LayoutDashboard,
   LayoutGridIcon,
   List,
+  LucideUserCog2,
   MenuSquare,
   Settings,
-  Store,
 } from "lucide-react";
 
 import LeftSidebar, { SidebarItem } from "components/LeftSideBar";
@@ -48,7 +48,7 @@ const navigation = [
   },
   {
     name: "Settings",
-    url: ROUTES.NOT_FOUND,
+    url: ROUTES.SETTINGS,
     icon: <Settings size={20} />,
   },
 ];

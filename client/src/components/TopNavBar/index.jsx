@@ -21,9 +21,7 @@ import {
 import {
   selectIsVegOnly,
   selectIsNonVegOnly,
-  // setVegOnly,
-  // setNonVegOnly,
-  // setAllItems,
+  toggleAllItems as setAllItems,
   toggleNonVegOnly as setNonVegOnly,
   toggleVegOnly as setVegOnly,
   selectRestaurantDetails,
@@ -38,7 +36,6 @@ const TopNavBar = ({
   const dispatch = useDispatch();
   const { tableId, restaurantId } = useParams();
   const restaurantDetails = useSelector(selectRestaurantDetails);
-  console.log("restaurantDetails", restaurantDetails);
 
   const isVegOnly = useSelector(selectIsVegOnly);
   const isNonVegOnly = useSelector(selectIsNonVegOnly);
@@ -65,7 +62,7 @@ const TopNavBar = ({
     } else if (type === "nonveg") {
       dispatch(setNonVegOnly());
     } else {
-      // dispatch(setAllItems());
+      dispatch(setAllItems());
     }
   };
 
@@ -99,7 +96,7 @@ const TopNavBar = ({
                 <img
                   src={restaurantAvatar}
                   alt="Restaurant logo"
-                  className="w-8 h-8 rounded-full object-cover"
+                  className="w-8 h-8 rounded-full object-contain"
                 />
               ) : (
                 <div className="w-8 h-8 rounded-full bg-gray-200 flex">

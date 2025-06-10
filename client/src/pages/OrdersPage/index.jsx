@@ -13,7 +13,7 @@ import Layout from "components/Layout";
 import { Button } from "components/ui/button";
 import { OrderTabs } from "./components/OrderTabs";
 import { OrdersTable } from "./components/OrdersTable";
-import { OrderSummary } from "./components/OrderSummary";
+// import { OrderSummary } from "./components/OrderSummary";
 
 const OrderStatuses = [
   {

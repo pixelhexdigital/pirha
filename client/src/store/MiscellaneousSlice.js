@@ -29,6 +29,10 @@ const MiscellaneousSlice = createSlice({
       state.isNonVegOnly = !state.isNonVegOnly;
       state.isVegOnly = false;
     },
+    toggleAllItems: (state) => {
+      state.isVegOnly = false;
+      state.isNonVegOnly = false;
+    },
   },
   extraReducers: (builder) => {
     builder.addMatcher(
@@ -79,12 +83,18 @@ export const selectFoodGroups = (state) => state.Misc.foodGroups;
 export const selectRestroTypes = (state) => state.Misc.restroTypes;
 export const selectMenuItemTypes = (state) => state.Misc.menuItemTypes;
 export const selectTableStatus = (state) => state.Misc.tableStatus;
+export const selectIsEnumValuesLoaded = (state) =>
+  state.Misc.foodGroups.length > 0 &&
+  state.Misc.restroTypes.length > 0 &&
+  state.Misc.menuItemTypes.length > 0 &&
+  state.Misc.tableStatus.length > 0;
 
 export const {
   setSidebarExtended,
   setRestaurantDetails,
   toggleNonVegOnly,
   toggleVegOnly,
+  toggleAllItems,
 } = MiscellaneousSlice.actions;
 
 export default MiscellaneousSlice.reducer;

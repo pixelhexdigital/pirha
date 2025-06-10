@@ -93,27 +93,29 @@ const CategoriesPage = () => {
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {filteredCategories?.map(({ _id, image, items, name }) => (
-              <Link
-                key={_id}
-                to={`${ROUTES.MENU}/${tableId}/${restaurantId}/${name}`}
-                state={{ items } || {}}
-                className="h-auto flex flex-col items-center justify-center p-6 bg-white hover:bg-gray-50 border rounded-lg shadow-sm transition-all"
-              >
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                  {image?.url ? (
-                    <img src={image?.url} alt={name} className="w-8 h-8" />
-                  ) : (
-                    <Utensils className="h-6 w-6 text-primary" />
-                  )}
-                </div>
-                <span className="font-medium text-lg">{name}</span>
-                <span className="text-xs text-muted-foreground mt-1">
-                  {/* {items?.length || 0} items */}
-                  {items?.filter((item) => item?.isActive).length || 0} Items
-                </span>
-              </Link>
-            ))}
+            {filteredCategories
+              ?.filter((category) => category?.isActive)
+              .map(({ _id, image, items, name }) => (
+                <Link
+                  key={_id}
+                  to={`${ROUTES.MENU}/${tableId}/${restaurantId}/${name}`}
+                  state={{ items } || {}}
+                  className="h-auto flex flex-col items-center justify-center p-6 bg-white hover:bg-gray-50 border rounded-lg shadow-sm transition-all"
+                >
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+                    {image?.url ? (
+                      <img src={image?.url} alt={name} className="w-8 h-8" />
+                    ) : (
+                      <Utensils className="h-6 w-6 text-primary" />
+                    )}
+                  </div>
+                  <span className="font-medium text-lg">{name}</span>
+                  <span className="text-xs text-muted-foreground mt-1">
+                    {/* {items?.length || 0} items */}
+                    {items?.filter((item) => item?.isActive).length || 0} Items
+                  </span>
+                </Link>
+              ))}
           </div>
         )}
       </main>
