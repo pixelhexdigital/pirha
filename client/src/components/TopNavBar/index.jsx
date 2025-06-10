@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   Search,
   ArrowLeft,
@@ -34,12 +34,14 @@ const TopNavBar = ({
 }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { tableId, restaurantId } = useParams();
-  const restaurantDetails = useSelector(selectRestaurantDetails);
-
   const isVegOnly = useSelector(selectIsVegOnly);
   const isNonVegOnly = useSelector(selectIsNonVegOnly);
+  const restaurantDetails = useSelector(selectRestaurantDetails);
+  const [searchParams] = useSearchParams();
 
+  const { tableId, restaurantId } = useParams() || {};
+  const restaurantIdFromSearchParams = searchParams.get("restaurantId");
+  const tableIdFromSearchParams = searchParams.get("tableId");
   const restaurantAvatar = restaurantDetails?.avatar?.url;
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -67,7 +69,9 @@ const TopNavBar = ({
   };
 
   const handleViewBill = () => {
-    navigate(`/bill/${tableId}/${restaurantId}`);
+    const tableIdToUse = tableId || tableIdFromSearchParams;
+    const restaurantIdToUse = restaurantId || restaurantIdFromSearchParams;
+    navigate(`/bill/${tableIdToUse}/${restaurantIdToUse}`);
   };
 
   const handleViewHistory = () => {

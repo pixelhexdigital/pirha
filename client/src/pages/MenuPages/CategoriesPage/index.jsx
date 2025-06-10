@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Search, Utensils } from "lucide-react";
 import { useGetMenuCategoryByRestaurantIdQuery } from "api/menuApi";
@@ -22,9 +22,10 @@ const DEBOUNCE_DELAY = 500;
 const CategoriesPage = () => {
   const restaurantDetails = useSelector(selectRestaurantDetails);
   const navigate = useNavigate();
-  const { search } = useLocation();
-  const restaurantId = new URLSearchParams(search).get("restaurantId");
-  const tableId = new URLSearchParams(search).get("tableId");
+  const [searchParams] = useSearchParams();
+
+  const restaurantId = searchParams.get("restaurantId");
+  const tableId = searchParams.get("tableId");
 
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearchQuery = useDebounce(searchQuery, DEBOUNCE_DELAY);
@@ -42,7 +43,7 @@ const CategoriesPage = () => {
       skip: !restaurantId,
     }
   );
-  useGetRestaurantDetailsByIdQuery(restaurantId, { skip: !restaurantId });
+  useGetRestaurantDetailsByIdQuery(restaurantId, { skip: !restaurantDetails });
   useGetTableDetailsByIdQuery(tableId, { skip: !tableId });
 
   const filteredCategories =
