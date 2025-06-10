@@ -6,8 +6,10 @@ import {
   Calendar,
   ChevronDown,
   Clock,
+  Construction,
   Filter,
   Search,
+  UtensilsCrossed,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -27,6 +29,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { selectRestaurantDetails } from "store/MiscellaneousSlice";
 import { numberToCurrency } from "lib/helper";
+import FeatureComingSoon from "components/FeatureComingSoon";
 
 // Mock data for order history
 const mockOrderHistory = [
@@ -130,163 +133,165 @@ const UserOrderHistoryPage = () => {
     });
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="sticky top-0 z-10 bg-white border-b shadow-sm">
-        <div className="container flex items-center h-16 px-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleBack}
-            className="mr-4"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="sr-only">Back</span>
-          </Button>
-          <h1 className="text-xl font-semibold">Order History</h1>
-        </div>
-      </div>
+  return <FeatureComingSoon />;
 
-      <main className="container max-w-md mx-auto px-4 py-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              type="search"
-              placeholder="Search orders..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
+  // return (
+  //   <div className="min-h-screen bg-gray-50">
+  //     <div className="sticky top-0 z-10 bg-white border-b shadow-sm">
+  //       <div className="container flex items-center h-16 px-4">
+  //         <Button
+  //           variant="ghost"
+  //           size="icon"
+  //           onClick={handleBack}
+  //           className="mr-4"
+  //         >
+  //           <ArrowLeft className="w-5 h-5" />
+  //           <span className="sr-only">Back</span>
+  //         </Button>
+  //         <h1 className="text-xl font-semibold">Order History</h1>
+  //       </div>
+  //     </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild className="h-9">
-              <Button variant="outline" size="sm" className="ml-2">
-                <Filter className="mr-2 h-4 w-4" />
-                {filterPeriod === "all"
-                  ? "All Time"
-                  : filterPeriod === "today"
-                    ? "Today"
-                    : filterPeriod === "week"
-                      ? "This Week"
-                      : "This Month"}
-                <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setFilterPeriod("all")}>
-                All Time
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setFilterPeriod("today")}>
-                Today
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setFilterPeriod("week")}>
-                This Week
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setFilterPeriod("month")}>
-                This Month
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+  //     <main className="container max-w-md mx-auto px-4 py-6">
+  //       <div className="flex items-center justify-between mb-6">
+  //         <div className="relative flex-1">
+  //           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+  //           <Input
+  //             type="search"
+  //             placeholder="Search orders..."
+  //             value={searchQuery}
+  //             onChange={(e) => setSearchQuery(e.target.value)}
+  //             className="pl-10"
+  //           />
+  //         </div>
 
-        {orders.length === 0 ? (
-          <div className="text-center py-10">
-            <p className="text-muted-foreground">No orders found</p>
-            {searchQuery && (
-              <Button
-                variant="outline"
-                className="mt-4"
-                onClick={() => setSearchQuery("")}
-              >
-                Clear Search
-              </Button>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {orders.map((order) => (
-              <Accordion type="single" collapsible key={order.id}>
-                <AccordionItem
-                  value={order.id}
-                  className="border rounded-lg bg-white shadow-sm"
-                >
-                  <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                    <div className="flex flex-1 justify-between items-center">
-                      <div>
-                        <p className="font-medium text-left">
-                          Order #{order.id.split("-")[1]}
-                        </p>
-                        <div className="flex items-center text-sm text-muted-foreground mt-1">
-                          <Calendar className="mr-1 h-3 w-3" />
-                          <span>{formatDate(order.date)}</span>
-                          <Clock className="ml-3 mr-1 h-3 w-3" />
-                          <span>{order.time}</span>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium">
-                          {numberToCurrency(order.total, "INR", 0)}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {order.items.length}{" "}
-                          {order.items.length === 1 ? "item" : "items"}
-                        </p>
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4 pb-4">
-                    <Separator className="mb-3" />
-                    <div className="space-y-2">
-                      {order.items.map((item) => (
-                        <div
-                          key={item.id}
-                          className="flex justify-between text-sm"
-                        >
-                          <div>
-                            <span>{item.name}</span>
-                            <span className="text-muted-foreground">
-                              {" "}
-                              × {item.quantity}
-                            </span>
-                          </div>
-                          <p>
-                            {numberToCurrency(
-                              item.price * item.quantity,
-                              "INR",
-                              0
-                            )}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                    <Separator className="my-3" />
-                    <div className="flex justify-between font-medium">
-                      <p>Total</p>
-                      <p>{numberToCurrency(order.total, "INR", 0)}</p>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full mt-4"
-                      onClick={() =>
-                        navigate(
-                          `/bill/${tableId}/${restaurantId}?orderId=${order.id}`
-                        )
-                      }
-                    >
-                      View Bill Details
-                    </Button>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            ))}
-          </div>
-        )}
-      </main>
-    </div>
-  );
+  //         <DropdownMenu>
+  //           <DropdownMenuTrigger asChild className="h-9">
+  //             <Button variant="outline" size="sm" className="ml-2">
+  //               <Filter className="mr-2 h-4 w-4" />
+  //               {filterPeriod === "all"
+  //                 ? "All Time"
+  //                 : filterPeriod === "today"
+  //                   ? "Today"
+  //                   : filterPeriod === "week"
+  //                     ? "This Week"
+  //                     : "This Month"}
+  //               <ChevronDown className="ml-2 h-4 w-4" />
+  //             </Button>
+  //           </DropdownMenuTrigger>
+  //           <DropdownMenuContent align="end">
+  //             <DropdownMenuItem onClick={() => setFilterPeriod("all")}>
+  //               All Time
+  //             </DropdownMenuItem>
+  //             <DropdownMenuItem onClick={() => setFilterPeriod("today")}>
+  //               Today
+  //             </DropdownMenuItem>
+  //             <DropdownMenuItem onClick={() => setFilterPeriod("week")}>
+  //               This Week
+  //             </DropdownMenuItem>
+  //             <DropdownMenuItem onClick={() => setFilterPeriod("month")}>
+  //               This Month
+  //             </DropdownMenuItem>
+  //           </DropdownMenuContent>
+  //         </DropdownMenu>
+  //       </div>
+
+  //       {orders.length === 0 ? (
+  //         <div className="text-center py-10">
+  //           <p className="text-muted-foreground">No orders found</p>
+  //           {searchQuery && (
+  //             <Button
+  //               variant="outline"
+  //               className="mt-4"
+  //               onClick={() => setSearchQuery("")}
+  //             >
+  //               Clear Search
+  //             </Button>
+  //           )}
+  //         </div>
+  //       ) : (
+  //         <div className="space-y-4">
+  //           {orders.map((order) => (
+  //             <Accordion type="single" collapsible key={order.id}>
+  //               <AccordionItem
+  //                 value={order.id}
+  //                 className="border rounded-lg bg-white shadow-sm"
+  //               >
+  //                 <AccordionTrigger className="px-4 py-3 hover:no-underline">
+  //                   <div className="flex flex-1 justify-between items-center">
+  //                     <div>
+  //                       <p className="font-medium text-left">
+  //                         Order #{order.id.split("-")[1]}
+  //                       </p>
+  //                       <div className="flex items-center text-sm text-muted-foreground mt-1">
+  //                         <Calendar className="mr-1 h-3 w-3" />
+  //                         <span>{formatDate(order.date)}</span>
+  //                         <Clock className="ml-3 mr-1 h-3 w-3" />
+  //                         <span>{order.time}</span>
+  //                       </div>
+  //                     </div>
+  //                     <div className="text-right">
+  //                       <p className="font-medium">
+  //                         {numberToCurrency(order.total, "INR", 0)}
+  //                       </p>
+  //                       <p className="text-xs text-muted-foreground mt-1">
+  //                         {order.items.length}{" "}
+  //                         {order.items.length === 1 ? "item" : "items"}
+  //                       </p>
+  //                     </div>
+  //                   </div>
+  //                 </AccordionTrigger>
+  //                 <AccordionContent className="px-4 pb-4">
+  //                   <Separator className="mb-3" />
+  //                   <div className="space-y-2">
+  //                     {order.items.map((item) => (
+  //                       <div
+  //                         key={item.id}
+  //                         className="flex justify-between text-sm"
+  //                       >
+  //                         <div>
+  //                           <span>{item.name}</span>
+  //                           <span className="text-muted-foreground">
+  //                             {" "}
+  //                             × {item.quantity}
+  //                           </span>
+  //                         </div>
+  //                         <p>
+  //                           {numberToCurrency(
+  //                             item.price * item.quantity,
+  //                             "INR",
+  //                             0
+  //                           )}
+  //                         </p>
+  //                       </div>
+  //                     ))}
+  //                   </div>
+  //                   <Separator className="my-3" />
+  //                   <div className="flex justify-between font-medium">
+  //                     <p>Total</p>
+  //                     <p>{numberToCurrency(order.total, "INR", 0)}</p>
+  //                   </div>
+  //                   <Button
+  //                     variant="outline"
+  //                     size="sm"
+  //                     className="w-full mt-4"
+  //                     onClick={() =>
+  //                       navigate(
+  //                         `/bill/${tableId}/${restaurantId}?orderId=${order.id}`
+  //                       )
+  //                     }
+  //                   >
+  //                     View Bill Details
+  //                   </Button>
+  //                 </AccordionContent>
+  //               </AccordionItem>
+  //             </Accordion>
+  //           ))}
+  //         </div>
+  //       )}
+  //     </main>
+  //   </div>
+  // );
 };
 
 export default UserOrderHistoryPage;
