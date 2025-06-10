@@ -195,8 +195,13 @@ const CategoriesManagementPage = () => {
 
   return (
     <Layout>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="mb-4 h4">Menu Management</h2>
+      <div className="flex sm:items-center justify-between p-4 border-b sm:flex-row flex-col gap-4 mb-4">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-bold tracking-tight">Menu Items</h1>
+          <p className="text-sm text-muted-foreground">
+            Manage your restaurant menu items and categories
+          </p>
+        </div>
         <Button
           variant="outline"
           onClick={redirectToCategoriesManagement}

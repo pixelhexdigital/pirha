@@ -13,7 +13,7 @@ import Layout from "components/Layout";
 import { Button } from "components/ui/button";
 import { OrderTabs } from "./components/OrderTabs";
 import { OrdersTable } from "./components/OrdersTable";
-import { OrderSummary } from "./components/OrderSummary";
+// import { OrderSummary } from "./components/OrderSummary";
 
 const OrderStatuses = [
   {
@@ -117,7 +117,7 @@ export default function OrdersPage() {
   return (
     <Layout>
       <div className="flex flex-col h-full">
-        <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex sm:items-center justify-between p-4 border-b sm:flex-row flex-col gap-4 mb-4">
           <div className="flex flex-col gap-1">
             <h1 className="text-2xl font-bold tracking-tight">Orders</h1>
             <p className="text-sm text-muted-foreground">
@@ -127,7 +127,7 @@ export default function OrdersPage() {
           <Button
             variant="outline"
             size="sm"
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 max-w-fit px-4 self-end"
             onClick={handleRefresh}
             disabled={isLoading}
           >
@@ -140,7 +140,7 @@ export default function OrdersPage() {
           </Button>
         </div>
         <div className="flex-1 p-4 space-y-4">
-          <OrderSummary />
+          {/* <OrderSummary /> */}
           <OrderTabs
             orderStatuses={OrderStatuses}
             defaultValue={OrderStatuses[0].value}

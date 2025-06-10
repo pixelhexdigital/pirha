@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   Search,
   ArrowLeft,
@@ -21,9 +21,7 @@ import {
 import {
   selectIsVegOnly,
   selectIsNonVegOnly,
-  // setVegOnly,
-  // setNonVegOnly,
-  // setAllItems,
+  toggleAllItems as setAllItems,
   toggleNonVegOnly as setNonVegOnly,
   toggleVegOnly as setVegOnly,
   selectRestaurantDetails,
@@ -36,13 +34,14 @@ const TopNavBar = ({
 }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { tableId, restaurantId } = useParams();
-  const restaurantDetails = useSelector(selectRestaurantDetails);
-  console.log("restaurantDetails", restaurantDetails);
-
   const isVegOnly = useSelector(selectIsVegOnly);
   const isNonVegOnly = useSelector(selectIsNonVegOnly);
+  const restaurantDetails = useSelector(selectRestaurantDetails);
+  const [searchParams] = useSearchParams();
 
+  const { tableId, restaurantId } = useParams() || {};
+  const restaurantIdFromSearchParams = searchParams.get("restaurantId");
+  const tableIdFromSearchParams = searchParams.get("tableId");
   const restaurantAvatar = restaurantDetails?.avatar?.url;
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -65,12 +64,14 @@ const TopNavBar = ({
     } else if (type === "nonveg") {
       dispatch(setNonVegOnly());
     } else {
-      // dispatch(setAllItems());
+      dispatch(setAllItems());
     }
   };
 
   const handleViewBill = () => {
-    navigate(`/bill/${tableId}/${restaurantId}`);
+    const tableIdToUse = tableId || tableIdFromSearchParams;
+    const restaurantIdToUse = restaurantId || restaurantIdFromSearchParams;
+    navigate(`/bill/${tableIdToUse}/${restaurantIdToUse}`);
   };
 
   const handleViewHistory = () => {
@@ -99,7 +100,7 @@ const TopNavBar = ({
                 <img
                   src={restaurantAvatar}
                   alt="Restaurant logo"
-                  className="w-8 h-8 rounded-full object-cover"
+                  className="w-8 h-8 rounded-full object-contain"
                 />
               ) : (
                 <div className="w-8 h-8 rounded-full bg-gray-200 flex">

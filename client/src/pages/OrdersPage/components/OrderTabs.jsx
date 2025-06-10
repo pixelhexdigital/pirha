@@ -19,9 +19,9 @@ export function OrderTabs({
             className="data-[state=active]:bg-pink-50 data-[state=active]:text-pink-500"
           >
             {status.label}
-            <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs">
+            {/* <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs">
               {status.count}
-            </span>
+            </span> */}
           </TabsTrigger>
         ))}
       </TabsList>

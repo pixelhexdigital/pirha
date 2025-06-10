@@ -29,8 +29,11 @@ export function KitchenOrdersView({ orders, onStatusChange }) {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {orders?.map((order) => (
-        <Card key={order._id} className="flex flex-col">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+        <Card
+          key={order._id}
+          className="flex flex-col hover:shadow-md hover:-translate-y-1 transition-all duration-300 ease-in-out delay-75 border-primary/5 hover:border-primary/20 shadow-sm"
+        >
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 flex-wrap gap-2 mb-2">
             <CardTitle className="text-sm font-medium capitalize">
               Table {order?.table} - Order #{order._id?.slice(-4)}
             </CardTitle>
@@ -59,7 +62,7 @@ export function KitchenOrdersView({ orders, onStatusChange }) {
               ))}
             </ul>
             <div className="flex justify-end mt-4 space-x-2">
-              {order?.status?.toLowerCase() === "new" && (
+              {/* {order?.status?.toLowerCase() === "new" && (
                 <Button
                   size="sm"
                   onClick={() => onStatusChange(order?._id, "Preparing")}
@@ -67,8 +70,8 @@ export function KitchenOrdersView({ orders, onStatusChange }) {
                   <Clock className="w-4 h-4 mr-1" />
                   Start Preparing
                 </Button>
-              )}
-              {order?.status?.toLowerCase() === "preparing" && (
+              )} */}
+              {order?.status?.toLowerCase() === "new" && (
                 <Button
                   size="sm"
                   onClick={() => onStatusChange(order?._id, "Ready")}

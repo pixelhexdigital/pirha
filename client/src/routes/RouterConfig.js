@@ -17,4 +17,5 @@ export const ROUTES = {
   TABLES: "/tables",
   KITCHEN: "/kitchen",
   NOT_FOUND: "/404",
+  SETTINGS: "/settings",
 };

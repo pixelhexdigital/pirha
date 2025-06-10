@@ -41,6 +41,14 @@ export const authApi = createApi({
       }),
       transformResponse: (response) => response.data,
     }),
+    changePassword: builder.mutation({
+      query: (data) => ({
+        url: "/change-password",
+        method: "POST",
+        body: data,
+      }),
+      transformResponse: (response) => response.data,
+    }),
     verifyUserName: builder.mutation({
       query: (username) => ({
         url: `/verify-username/`,
@@ -70,4 +78,5 @@ export const {
   useVerifyUserNameMutation,
   useRegisterMutation,
   useLoginMutation,
+  useChangePasswordMutation,
 } = authApi;

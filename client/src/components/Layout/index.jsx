@@ -5,9 +5,9 @@ import {
   LayoutDashboard,
   LayoutGridIcon,
   List,
+  LucideUserCog2,
   MenuSquare,
   Settings,
-  Store,
 } from "lucide-react";
 
 import LeftSidebar, { SidebarItem } from "components/LeftSideBar";
@@ -30,11 +30,11 @@ const navigation = [
     url: ROUTES.KITCHEN,
     icon: <ChefHat size={20} />,
   },
-  {
-    name: "Order Details",
-    url: ROUTES.ORDER_DETAILS,
-    icon: <Store size={20} />,
-  },
+  // {
+  //   name: "Order Details",
+  //   url: ROUTES.ORDER_DETAILS,
+  //   icon: <Store size={20} />,
+  // },
 
   {
     name: "Menu Items",
@@ -48,7 +48,7 @@ const navigation = [
   },
   {
     name: "Settings",
-    url: ROUTES.NOT_FOUND,
+    url: ROUTES.SETTINGS,
     icon: <Settings size={20} />,
   },
 ];
@@ -70,7 +70,7 @@ function Layout({ children }) {
         ))}
       </LeftSidebar>
       <div className="flex flex-col w-full">
-        <nav
+        {/* <nav
           className={twMerge(
             `fixed z-5 top-0 right-0 bg-background shadow-md h-22 flex items-center justify-between flex-row px-4 md:px-8 rounded-b-2xl transition-all`
           )}
@@ -96,9 +96,9 @@ function Layout({ children }) {
               </div>
             </div>
           </div>
-        </nav>
+        </nav> */}
         <div
-          className={`transition-all duration-200 w-full mt-28 ${
+          className={`transition-all duration-200 w-full pt-4 ${
             isExpanded ? "pl-[17rem]" : "pl-[6rem]"
           } pr-2`}
         >

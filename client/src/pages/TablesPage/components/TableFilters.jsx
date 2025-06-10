@@ -17,6 +17,9 @@ export function TableFilters({
   const { status, minCapacity } = filter;
 
   const setStatus = (value) => {
+    if (value === "All") {
+      value = "";
+    }
     setFilter((prev) => ({
       ...prev,
       status: value,
@@ -48,7 +51,7 @@ export function TableFilters({
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={null}>All</SelectItem>
+            <SelectItem value="All">All</SelectItem>
             <SelectItem value="Free">Available</SelectItem>
             <SelectItem value="Occupied">Occupied</SelectItem>
           </SelectContent>

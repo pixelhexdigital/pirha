@@ -22,12 +22,12 @@ import OnboardingPage from "pages/OnboardingPage";
 import DashboardPage from "pages/AdminPages/DashboardPage";
 import CategoriesManagementPage from "pages/AdminPages/MenuManagementPage/CategoriesManagement";
 import ItemManagementPage from "pages/AdminPages/MenuManagementPage/ItemManagementPage";
-
 import KitchenPage from "pages/KitchenPages";
 import OrdersPage from "pages/OrdersPage";
 import Table from "pages/TablesPage";
 import UserBillPage from "pages/UserBillPage";
 import UserOrderHistoryPage from "pages/UserOrderHistoryPage";
+import SettingPage from "pages/SettingsPage";
 
 const AuthenticatedRoutes = [
   { path: ROUTES.DASHBOARD, element: <DashboardPage /> },
@@ -39,6 +39,7 @@ const AuthenticatedRoutes = [
   { path: ROUTES.CATEGORIES_MANAGEMENT, element: <CategoriesManagementPage /> },
   { path: ROUTES.TABLES, element: <Table /> },
   { path: ROUTES.KITCHEN, element: <KitchenPage /> },
+  { path: ROUTES.SETTINGS, element: <SettingPage /> },
 ];
 
 const UnauthenticatedRoutes = [

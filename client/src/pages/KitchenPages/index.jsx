@@ -26,19 +26,15 @@ export default function KitchenPage() {
   } = useGetOrderListQuery({
     page: currentPage,
     limit: PAGINATION_LIMIT,
-    // status: activeFilter,
+    status: "New",
   });
   const [updateOrderStatus] = useUpdateOrderStatusMutation();
 
   const hasNextPage = orderData?.data?.hasNextPage || false;
 
   useEffect(() => {
-    const includeStatus = ["new", "preparing", "ready"];
     if (orderData?.data?.orders) {
-      const filteredOrders = orderData.data.orders.filter((order) =>
-        includeStatus.includes(order.status?.toLowerCase())
-      );
-      setOrders(filteredOrders);
+      setOrders(orderData.data.orders);
     }
   }, [orderData]);
 
@@ -70,7 +66,7 @@ export default function KitchenPage() {
   return (
     <Layout>
       <div className="flex flex-col h-full">
-        <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex sm:items-center justify-between p-4 border-b sm:flex-row flex-col gap-4">
           <div className="flex flex-col gap-1">
             <h1 className="text-2xl font-bold tracking-tight">
               Kitchen Orders
@@ -82,7 +78,7 @@ export default function KitchenPage() {
           <Button
             variant="outline"
             size="sm"
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 max-w-fit px-4 self-end"
             onClick={handleRefresh}
             disabled={isLoading}
           >
