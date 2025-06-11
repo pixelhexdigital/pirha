@@ -1,15 +1,7 @@
-import { useState } from "react";
-
 import Icon from "components/Icon";
 import ForgotPasswordForm from "./ForgotPasswordForm";
-import ResetPasswordForm from "./ResetPasswordForm";
 
 const ForgotPasswordPage = ({ onClick }) => {
-  const [resetPasswordForm, setResetPasswordForm] = useState({
-    isResetPasswordFormVisible: false,
-    email: "",
-  });
-
   return (
     <>
       <button
@@ -22,11 +14,8 @@ const ForgotPasswordPage = ({ onClick }) => {
         />
         Reset your password
       </button>
-      {resetPasswordForm.isResetPasswordFormVisible ? (
-        <ResetPasswordForm email={resetPasswordForm.email} onClick={onClick} />
-      ) : (
-        <ForgotPasswordForm setResetPasswordForm={setResetPasswordForm} />
-      )}
+
+      <ForgotPasswordForm onSuccess={onClick} />
     </>
   );
 };

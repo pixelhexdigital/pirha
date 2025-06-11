@@ -1,11 +1,9 @@
 import { useSelector } from "react-redux";
-import { twMerge } from "tailwind-merge";
 import {
   ChefHat,
   LayoutDashboard,
   LayoutGridIcon,
   List,
-  LucideUserCog2,
   MenuSquare,
   Settings,
 } from "lucide-react";

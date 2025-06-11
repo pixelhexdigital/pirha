@@ -96,12 +96,10 @@ const CategoriesManagementPage = () => {
   );
 
   const addCategoryToMenu = async (payload) => {
-    console.log("payload", payload);
     try {
       const { data } = await addItemToCategoryMutationFn({
         name: payload.category.name,
       }).unwrap();
-      console.log("data", data);
 
       const imagePayload = {
         ...payload,
@@ -109,6 +107,7 @@ const CategoriesManagementPage = () => {
       };
       changeItemImage({ data: imagePayload, isAddingCategory: true });
     } catch (error) {
+      errorToast({ error, message: "Failed to add category" });
       console.error(error);
     }
   };
@@ -117,9 +116,9 @@ const CategoriesManagementPage = () => {
     try {
       await updateItemInCategoryMutationFn(payload).unwrap();
       dispatch(updateMenuCategoryById(payload));
-      console.log("payload", payload);
       changeItemImage({ data: payload, isAddingCategory: false });
     } catch (error) {
+      errorToast({ error, message: "Failed to update category" });
       console.error(error);
     }
   };
@@ -140,7 +139,7 @@ const CategoriesManagementPage = () => {
   const updateCategoryAvailability = async (categoryId, isActive) => {
     try {
       const payload = { isActive, categoryId };
-      await toggleCategoryAvailabilityMutationFn(payload);
+      await toggleCategoryAvailabilityMutationFn(payload).unwrap();
       dispatch(toggleCategoryAvailability(payload));
     } catch (error) {
       console.error(error);
@@ -164,12 +163,12 @@ const CategoriesManagementPage = () => {
     };
 
     try {
-      await updateCategoryImageMutationFn(payload);
+      await updateCategoryImageMutationFn(payload).unwrap();
       dispatch(updateCategoryImage({ categoryId: data.categoryId, imageUrl }));
       setFormVisible(false);
       successToast({ message });
     } catch (error) {
-      console.error(error);
+      errorToast({ error, message: "Failed to update category image" });
     }
   };
 
@@ -178,13 +177,13 @@ const CategoriesManagementPage = () => {
       const payload = {
         categoryId: deleteCategoryData.categoryId,
       };
-      const { data } = await deleteCategoryMutationFn(payload);
+      const { data } = await deleteCategoryMutationFn(payload).unwrap();
       dispatch(removeCategoryById(payload));
       setDeleteCategoryData(DEFAULT_DELETE_CATEGORY_DATA);
       successToast({ data });
     } catch (error) {
       console.error(error);
-      errorToast({ error });
+      errorToast({ error, message: "Failed to delete category" });
     }
   };
 
@@ -244,13 +243,13 @@ const CategoriesManagementPage = () => {
 
               {menuData?.map((category) => (
                 <Card
-                  key={category._id}
+                  key={category?._id}
                   className="overflow-hidden transition-all duration-300 ease-in-out delay-150 border rounded-lg shadow-sm hover:shadow-md border-primary/10 hover:border-primary/20 bg-white/100 hover:-translate-y-1 "
                 >
                   <div className="relative aspect-video">
                     <img
-                      src={category.image?.url || Placeholder}
-                      alt={category.name}
+                      src={category?.image?.url || Placeholder}
+                      alt={category?.name}
                       className="w-full h-full min-h-[22rem] "
                     />
                     <div className="absolute right-2 top-2">
@@ -277,12 +276,12 @@ const CategoriesManagementPage = () => {
                           <DropdownMenuItem
                             onClick={() =>
                               updateCategoryAvailability(
-                                category._id,
-                                !category.isActive
+                                category?._id,
+                                !category?.isActive
                               )
                             }
                           >
-                            {category.isActive
+                            {category?.isActive
                               ? "Mark as Unavailable"
                               : "Mark as Available"}
                           </DropdownMenuItem>
@@ -290,8 +289,8 @@ const CategoriesManagementPage = () => {
                           <DropdownMenuItem
                             onClick={() =>
                               setDeleteCategoryData({
-                                categoryId: category._id,
-                                categoryName: category.name,
+                                categoryId: category?._id,
+                                categoryName: category?.name,
                               })
                             }
                             className="text-red-600"
@@ -306,26 +305,26 @@ const CategoriesManagementPage = () => {
                   <div className="p-4">
                     <div className="flex items-start justify-between gap-4">
                       <div>
-                        <h3 className="font-semibold">{category.name}</h3>
+                        <h3 className="font-semibold">{category?.name}</h3>
                       </div>
                     </div>
                     <div className="flex items-center justify-between mt-2">
                       <Link
                         to={ROUTES.MENU_MANAGEMENT}
-                        state={{ categoryIdFromState: category._id }}
+                        state={{ categoryIdFromState: category?._id }}
                         className="font-semibold hover:underline text-primary/80"
                       >
-                        No of items: {category.items.length}
+                        No of items: {category?.items.length}
                       </Link>
                       <Badge
-                        variant={category.isActive ? "default" : "outline"}
+                        variant={category?.isActive ? "default" : "outline"}
                         className={twMerge(
-                          category.isActive
+                          category?.isActive
                             ? "text-primary/80 border-primary bg-primary/10 hover:bg-primary/10 hover:text-primary/80 hover:border-primary group hover:font-semibold"
                             : "text-foreground"
                         )}
                       >
-                        {category.isActive ? "Available" : "Unavailable"}
+                        {category?.isActive ? "Available" : "Unavailable"}
                       </Badge>
                     </div>
                   </div>

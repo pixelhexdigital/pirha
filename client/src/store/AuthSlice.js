@@ -43,6 +43,12 @@ const AuthSlice = createSlice({
         state.onboardingState = action.payload.restaurant.onboardingState;
       }
     );
+    builder.addMatcher(authApi.endpoints.logOut.matchFulfilled, (state) => {
+      Object.assign(state, initialState);
+    });
+    builder.addMatcher(authApi.endpoints.logOut.matchRejected, (state) => {
+      Object.assign(state, initialState);
+    });
   },
 });
 

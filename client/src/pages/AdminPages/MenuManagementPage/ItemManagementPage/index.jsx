@@ -85,6 +85,8 @@ const ItemManagementPage = () => {
   const menuData = useSelector(selectMenuData);
   const categoriesData = useSelector(selectMenuCategoryData);
 
+  console.log("restaurantId", restaurantId);
+
   const [isFormVisible, setFormVisible] = useState(false);
   const [activeCategory, setActiveCategory] = useState();
   const [selectedDish, setSelectedDish] = useState(null);
@@ -131,17 +133,16 @@ const ItemManagementPage = () => {
       dispatch(
         addItemToCategory({
           categoryId: payload.categoryId,
-          newItem: data.data,
+          newItem: data,
         })
       );
-
       const imagePayload = {
         ...payload,
-        itemId: data.data._id,
+        itemId: data?._id,
       };
       changeItemImage({ data: imagePayload, isAddingItem: true });
     } catch (error) {
-      console.error(error);
+      errorToast({ error, message: "Failed to add item to menu" });
     }
   };
 
@@ -157,7 +158,7 @@ const ItemManagementPage = () => {
       );
       changeItemImage({ data: payload, isAddingItem: false });
     } catch (error) {
-      console.error(error);
+      errorToast({ error, message: "Failed to update item in menu" });
     }
   };
 
@@ -166,8 +167,6 @@ const ItemManagementPage = () => {
       categoryId: activeCategory,
       item: { ...data },
     };
-
-    console.log("payload", payload);
 
     if (selectedDish) {
       payload.itemId = selectedDish._id;
@@ -216,7 +215,7 @@ const ItemManagementPage = () => {
       setFormVisible(false);
       successToast({ message });
     } catch (error) {
-      console.error(error);
+      errorToast({ error, message: "Failed to update item image" });
     }
   };
 
@@ -230,8 +229,7 @@ const ItemManagementPage = () => {
       dispatch(removeItemFromCategoryById(payload));
       setDeleteItemData(DEFAULT_DELETE_ITEM_DATA);
     } catch (error) {
-      console.error(error);
-      errorToast({ error });
+      errorToast({ error, message: "Failed to delete item from category" });
     }
   };
 
@@ -406,13 +404,13 @@ const ItemManagementPage = () => {
               {selectedCategory &&
                 selectedCategory?.items?.map((item) => (
                   <Card
-                    key={item.id}
+                    key={item?._id}
                     className="overflow-hidden transition duration-300 ease-in-out delay-150 transform border rounded-lg shadow-sm hover:shadow-md border-primary/10 hover:border-primary/20 bg-white/100 hover:-translate-y-1 "
                   >
                     <div className="relative aspect-video">
                       <img
-                        src={item.image?.url || Placeholder}
-                        alt={item.name}
+                        src={item?.image?.url || Placeholder}
+                        alt={item?.name}
                         className="w-full h-full min-h-[22rem] "
                       />
                       <div className="absolute right-2 top-2">
@@ -438,10 +436,13 @@ const ItemManagementPage = () => {
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() =>
-                                updateItemAvailability(item._id, !item.isActive)
+                                updateItemAvailability(
+                                  item?._id,
+                                  !item?.isActive
+                                )
                               }
                             >
-                              {item.isActive
+                              {item?.isActive
                                 ? "Mark as Unavailable"
                                 : "Mark as Available"}
                             </DropdownMenuItem>
@@ -449,8 +450,8 @@ const ItemManagementPage = () => {
                             <DropdownMenuItem
                               onClick={() =>
                                 setDeleteItemData({
-                                  itemId: item._id,
-                                  itemName: item.title,
+                                  itemId: item?._id,
+                                  itemName: item?.title,
                                 })
                               }
                               className="text-red-600"
@@ -465,16 +466,16 @@ const ItemManagementPage = () => {
                     <div className="p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div>
-                          <h3 className="font-semibold">{item.title}</h3>
+                          <h3 className="font-semibold">{item?.title}</h3>
                           <p className="text-sm text-muted-foreground line-clamp-2">
-                            {item.description}
+                            {item?.description}
                           </p>
                         </div>
                         <div
                           className={twMerge(
                             "border p-[4px] w-fit",
                             FOOD_GROUP_BORDER_COLORS[
-                              item.foodGroup?.toLowerCase()
+                              item?.foodGroup?.toLowerCase()
                             ]
                           )}
                         >
@@ -482,7 +483,7 @@ const ItemManagementPage = () => {
                             className={twMerge(
                               "size-2.5 rounded-full",
                               FOOD_GROUP_BG_COLORS[
-                                item.foodGroup?.toLowerCase()
+                                item?.foodGroup?.toLowerCase()
                               ]
                             )}
                           />
@@ -493,14 +494,14 @@ const ItemManagementPage = () => {
                           ₹{item?.price?.toFixed(2)}
                         </p>
                         <Badge
-                          variant={item.isActive ? "default" : "outline"}
+                          variant={item?.isActive ? "default" : "outline"}
                           className={twMerge(
-                            item.isActive
+                            item?.isActive
                               ? "text-primary/80 border-primary bg-primary/10 hover:bg-primary/10 hover:text-primary/80 hover:border-primary group hover:font-semibold"
                               : "text-foreground"
                           )}
                         >
-                          {item.isActive ? "Available" : "Unavailable"}
+                          {item?.isActive ? "Available" : "Unavailable"}
                         </Badge>
                       </div>
                     </div>
