@@ -1,13 +1,13 @@
 export const subscriptionPlans = [
   {
     name: "Free",
-    description: "A free plan with basic features.",
-    price: 0,
-    dailyCustomerLimit: 10,
-    monthlyCustomerLimit: 80,
-    menuCategoryLimit: 2,
-    tableLimit: 10,
-    menuItemLimit: 8,
+    description: "A premium-plus plan with all features for trial.",
+    price: 1999,
+    dailyCustomerLimit: 5000,
+    monthlyCustomerLimit: 200000,
+    menuCategoryLimit: 100,
+    tableLimit: 10000,
+    menuItemLimit: 5000,
   },
   {
     name: "Bronze",
