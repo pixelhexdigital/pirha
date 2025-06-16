@@ -216,73 +216,83 @@ const fetchTableById = asyncHandler(async (req, res) => {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Generate and cache the background canvas
+const createBackgroundCanvas = () => {
+  const bgCanvas = createCanvas(512, 728);
+  const ctx = bgCanvas.getContext("2d");
+
+  // Gradient background
+  const gradient = ctx.createLinearGradient(0, 0, 512, 728);
+  gradient.addColorStop(0, "#1E3A8A");
+  gradient.addColorStop(1, "#2563EB");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 512, 728);
+
+  // Accent shapes
+  ctx.fillStyle = "#EC4899";
+  ctx.beginPath();
+  ctx.arc(480, 30, 150, 0, Math.PI * 3.5);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(20, 680, 150, 0, Math.PI * 3.5);
+  ctx.fill();
+
+  return bgCanvas;
+};
+
 const generateQRCode = async (tables, restaurant, baseURL) => {
-  baseURL = process.env.BASE_URL;
+  baseURL = process.env.BASE_URL || baseURL;
   const zip = new JSZip();
+  const bgCanvas = createBackgroundCanvas(); // Cached once
 
   for (const table of tables) {
-    const qrCodeText = `${baseURL}?tableId=${table._id}&restaurantId=${restaurant._id}`; // Generate the QR code text with the base URL, table ID, and restaurant ID
-    const canvas = createCanvas(512, 728); // Create a canvas with the specified dimensions
-    const ctx = canvas.getContext("2d"); // Get the 2D rendering context of the canvas
+    const canvas = createCanvas(512, 728);
+    const ctx = canvas.getContext("2d");
 
-    // Background with gradient
-    const gradient = ctx.createLinearGradient(0, 0, 512, 728); // Create a linear gradient for the background
-    gradient.addColorStop(0, "#1E3A8A"); // Set the first color stop of the gradient to dark blue
-    gradient.addColorStop(1, "#2563EB"); // Set the second color stop of the gradient to lighter blue
-    ctx.fillStyle = gradient; // Set the fill style of the context to the gradient
-    ctx.fillRect(0, 0, 512, 728); // Fill the entire canvas with the gradient
+    // Draw cached background
+    ctx.drawImage(bgCanvas, 0, 0);
 
-    // Add accent shapes
-    ctx.fillStyle = "#EC4899"; // Set the fill style of the context to a specific color
-    ctx.beginPath(); // Start a new path
-    ctx.arc(480, 30, 150, 0, Math.PI * 3.5); // Add an arc shape to the path
-    ctx.fill(); // Fill the path with the current fill style
-    ctx.beginPath(); // Start a new path
-    ctx.arc(20, 680, 150, 0, Math.PI * 3.5); // Add an arc shape to the path
-    ctx.fill(); // Fill the path with the current fill style/
-    ctx.beginPath(); // Start a new path
+    const qrCodeText = `${baseURL}?tableId=${table._id}&restaurantId=${restaurant._id}`;
 
     // Generate QR Code
-    const qrCanvas = createCanvas(200, 200); // Create a canvas for the QR code
+    const qrCanvas = createCanvas(200, 200);
     await QRCode.toCanvas(qrCanvas, qrCodeText, {
-      // Generate the QR code and draw it on the QR canvas
-      color: { dark: "#000", light: "#fff" }, // Set the color options for the QR code
-      width: 180, // Set the width of the QR code
-      margin: 5, // Set the margin of the QR code
-      errorCorrectionLevel: "H", // Set the error correction level of the QR code
-      scale: 10, // Set the scale of the QR code
+      color: { dark: "#000", light: "#fff" },
+      width: 180,
+      margin: 5,
+      errorCorrectionLevel: "H",
+      scale: 10,
     });
 
-    // Draw QR Code inside a rounded white card
-    ctx.fillStyle = "#fff"; // Set the fill style of the context to white
-    ctx.roundRect(106, 200, 300, 300, 25); // Draw a rounded rectangle on the canvas
-    ctx.fill(); // Fill the rounded rectangle with the current fill style
-    ctx.drawImage(qrCanvas, 116, 210, 280, 280); // Draw the QR code on the canvas
+    // Draw white card background
+    ctx.fillStyle = "#fff";
+    ctx.roundRect(106, 200, 300, 300, 25);
+    ctx.fill();
+    ctx.drawImage(qrCanvas, 116, 210, 280, 280);
 
-    // Restaurant logo
-    if (restaurant.avatar.url) {
-      // Check if the restaurant has an avatar URL
+    // Draw avatar if available
+    if (restaurant.avatar?.url) {
       try {
-        const avatarImage = await loadImage(restaurant.avatar.url); // Load the avatar image
-        ctx.save(); // Save the current context state
-        ctx.beginPath(); // Start a new path
-        ctx.arc(80, 145, 35, 0, Math.PI * 2); // Add an arc shape to the path
-        ctx.clip(); // Clip the context to the current path
-        ctx.fill(); // Fill the path with the current fill style
-        ctx.drawImage(avatarImage, 45, 110, 70, 70); // Draw the avatar image on the canvas
-        ctx.restore(); // Restore the saved context state
+        const avatarImage = await loadImage(restaurant.avatar.url);
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(80, 145, 35, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(avatarImage, 45, 110, 70, 70);
+        ctx.restore();
       } catch (error) {
-        console.error(`Failed to load avatar image: ${error.message}`); // Log an error message if the avatar image fails to load
+        console.error(`Failed to load avatar: ${error.message}`);
       }
     }
 
-    // Restaurant Name
-    ctx.font = "bold 32px Poppins"; // Set the font style of the context
-    ctx.fillStyle = "#fff"; // Set the fill style of the context to white
-    ctx.textAlign = "left"; // Set the text alignment of the context to left
-    const restaurantName = restaurant.restroName; // Get the restaurant name
-    const maxLineWidth = 370; // Maximum width for the text
-    const lineHeight = 32; // Line height for the text
+    // Draw restaurant name
+    ctx.font = "bold 32px Poppins, sans-serif";
+    ctx.fillStyle = "#fff";
+    ctx.textAlign = "left";
+    const restaurantName = restaurant.restroName || "";
+    const maxLineWidth = 370;
+    const lineHeight = 32;
     const lines = [];
     let line = "";
     const words = restaurantName.split(" ");
@@ -290,45 +300,38 @@ const generateQRCode = async (tables, restaurant, baseURL) => {
     for (let i = 0; i < words.length; i++) {
       const testLine = line + words[i] + " ";
       const metrics = ctx.measureText(testLine);
-      const testWidth = metrics.width;
-      if (testWidth > maxLineWidth && i > 0) {
+      if (metrics.width > maxLineWidth && i > 0) {
         lines.push(line);
-        line = words[i] ? words[i] + " " : "";
+        line = words[i] + " ";
       } else {
         line = testLine;
       }
     }
     lines.push(line);
 
-    const x = 125; // X position for the text
-    let y = 140; // Y position for the text
+    let y = 140;
     const limit = lines.length > 2 ? 2 : lines.length;
-    if (limit === 1) {
-      y += 16;
-    }
+    if (limit === 1) y += 16;
     for (let i = 0; i < limit; i++) {
-      const lineY = y + i * lineHeight;
-      ctx.fillText(lines[i], x, lineY); // Draw each line of the restaurant name on the canvas
+      ctx.fillText(lines[i], 125, y + i * lineHeight);
     }
 
-    // Table Title
-    ctx.font = "bold 40px Poppins"; // Set the font style of the context
-    ctx.textAlign = "center"; // Set the text alignment of the context to center
-    ctx.fillText(`${table.title.toUpperCase()}`, 256, 550); // Draw the table title on the canvas
+    // Table title
+    ctx.font = "bold 40px Poppins, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(`${table.title.toUpperCase()}`, 256, 550);
 
     // Subtitle
-    ctx.font = "22px Poppins"; // Set the font style of the context
-    ctx.fillStyle = "#e5e7eb"; // Set the fill style of the context to a specific color
-    ctx.fillText("Scan to view our menu", 256, 590); // Draw the subtitle on the canvas
+    ctx.font = "22px Poppins, sans-serif";
+    ctx.fillStyle = "#e5e7eb";
+    ctx.fillText("Scan to view our menu", 256, 590);
 
-    // Convert to buffer and send response
+    // Add PNG to ZIP
     const buffer = canvas.toBuffer("image/png");
     zip.file(`${table.title}.png`, buffer);
   }
 
-  // Generate ZIP file
-  const zipData = await zip.generateAsync({ type: "nodebuffer" });
-  return zipData;
+  return await zip.generateAsync({ type: "nodebuffer" });
 };
 
 const downloadTableQr = asyncHandler(async (req, res) => {
