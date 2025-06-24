@@ -10,7 +10,9 @@ import "./index.css";
 import store from "store/index.js";
 
 //  Disable console logs in production mode
-if (!import.meta.env.DEV) {
+if (import.meta.env.PROD) {
+  // Override console methods to disable logging
+  console.error = () => {};
   console.log = () => {};
   console.debug = () => {};
   console.info = () => {};
