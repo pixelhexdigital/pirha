@@ -59,20 +59,7 @@ const SignInTab = ({ onClick }) => {
   const navigate = useNavigate();
 
   // Hook to manage login mutation
-  const [login, { isLoading: isLoginLoading, isSuccess, data }] =
-    useLoginMutation();
-
-  // Navigate to onboarding or dashboard based on the response
-  useEffect(() => {
-    if (!isSuccess) return;
-
-    const { onboardingState } = data?.restaurant || {};
-    if (onboardingState === ONBOARDING_COMPLETE) {
-      navigate(ROUTES.DASHBOARD, { replace: true });
-    } else {
-      navigate(ROUTES.ONBOARDING, { replace: true });
-    }
-  }, [data, isSuccess, navigate]);
+  const [login, { isLoading: isLoginLoading }] = useLoginMutation();
 
   // useForm hook for managing form state and validation
   const {
@@ -93,6 +80,15 @@ const SignInTab = ({ onClick }) => {
     setValue("username", watchedUserName.toLowerCase());
   }, [watchedUserName, setValue]);
 
+  const handleRedirect = (data) => {
+    const { onboardingState } = data?.restaurant || {};
+    if (onboardingState === ONBOARDING_COMPLETE) {
+      navigate(ROUTES.DASHBOARD, { replace: true });
+    } else {
+      navigate(ROUTES.ONBOARDING, { replace: true });
+    }
+  };
+
   // Handle form submission for signing in
   const handleSignIn = async (data) => {
     const payload = {
@@ -103,8 +99,9 @@ const SignInTab = ({ onClick }) => {
     try {
       const response = await login(payload).unwrap();
       successToast({ data: response, message: "Logged in successfully" });
+      handleRedirect(response);
     } catch (error) {
-      console.error("error", error);
+      console.error("Login error:", error);
       errorToast({ error });
     }
   };
@@ -143,7 +140,12 @@ const SignInTab = ({ onClick }) => {
           </Button>
         </div>
 
-        <Button size="lg" type="submit" className="w-full mb-4">
+        <Button
+          size="lg"
+          type="submit"
+          disabled={isLoginLoading}
+          className="w-full mb-4"
+        >
           {isLoginLoading ? (
             <div className="ring-loader" />
           ) : (

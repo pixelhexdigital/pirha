@@ -64,7 +64,7 @@ const MyRoutes = () => {
     ? isOnboardingComplete
       ? ROUTES.DASHBOARD
       : ROUTES.ONBOARDING
-    : ROUTES.AUTH;
+    : ROUTES.ROOT;
 
   const router = createBrowserRouter(
     createRoutesFromElements(

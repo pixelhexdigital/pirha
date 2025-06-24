@@ -40,7 +40,7 @@ const CategoriesPage = () => {
   const { data, error, isLoading } = useGetMenuCategoryByRestaurantIdQuery(
     restaurantId,
     {
-      skip: !restaurantId,
+      skip: !restaurantId || restaurantId === "null",
     }
   );
   useGetRestaurantDetailsByIdQuery(restaurantId, { skip: !restaurantDetails });
@@ -50,6 +50,31 @@ const CategoriesPage = () => {
     data?.menu?.categories?.filter((category) =>
       category?.name?.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
     ) || [];
+
+  const isValidRestaurantId = restaurantId && restaurantId !== "null";
+  const isValidTableId = tableId && tableId !== "null";
+
+  if (!isValidRestaurantId || !isValidTableId) {
+    return (
+      <div className="container flex flex-col items-center justify-center h-screen">
+        <h2 className="text-red-500 text-lg text-center">
+          Invalid restaurant or table ID. Please select a valid restaurant and
+          table.
+        </h2>
+        <p className="text-gray-500 mt-2 text-center">
+          If you are seeing this message, please ensure that you have selected a
+          valid restaurant and table from the dashboard.
+        </p>
+        <p className="text-gray-500 mt-2 text-center">
+          If you are a restaurant owner, please{" "}
+          <Link to={ROUTES.AUTH} className="text-blue-500 hover:underline">
+            login
+          </Link>{" "}
+          to manage your restaurant.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="container flex flex-col gap-4">
