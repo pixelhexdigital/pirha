@@ -1,12 +1,20 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { authApi } from "api/authApi";
+import { customerApi } from "api/customerApi";
+
+const USER_ROLES = {
+  RESTAURANT_ADMIN: "RESTAURANT_ADMIN",
+  CUSTOMER: "CUSTOMER",
+};
 
 const initialState = {
   accessToken: "",
+  customerAccessToken: "",
   refreshToken: "",
   isAuthenticated: false,
   onboardingState: "",
   restaurantId: null,
+  userRole: null,
 };
 
 const AuthSlice = createSlice({
@@ -35,12 +43,20 @@ const AuthSlice = createSlice({
     builder.addMatcher(
       authApi.endpoints.login.matchFulfilled,
       (state, action) => {
-        console.log("action.payload: ", action.payload);
         state.isAuthenticated = true;
         state.accessToken = action.payload.accessToken;
         state.refreshToken = action.payload.refreshToken;
         state.restaurantId = action.payload.restaurant._id;
         state.onboardingState = action.payload.restaurant.onboardingState;
+        state.userRole = USER_ROLES.RESTAURANT_ADMIN; // Set userRole based on the authenticated user
+      }
+    );
+    builder.addMatcher(
+      customerApi.endpoints.loginCustomer.matchFulfilled,
+      (state, action) => {
+        state.isAuthenticated = true;
+        state.customerAccessToken = action.payload.accessToken;
+        state.userRole = USER_ROLES.CUSTOMER; // Set userRole for customer
       }
     );
     builder.addMatcher(authApi.endpoints.logOut.matchFulfilled, (state) => {
