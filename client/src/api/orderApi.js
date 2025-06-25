@@ -1,11 +1,22 @@
-import { createApi } from "@reduxjs/toolkit/query/react";
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import { BASE_URL } from "lib/constants";
-import { baseQueryWithReAuth } from "lib/baseQueryWithReAuth";
 
 export const ordersApi = createApi({
   reducerPath: "ordersApi",
-  baseQuery: baseQueryWithReAuth(`${BASE_URL}/api/v1/orders`),
+  baseQuery: fetchBaseQuery({
+    baseUrl: `${BASE_URL}/api/v1/orders`,
+    prepareHeaders: (headers, { getState }) => {
+      const token =
+        getState().Auth.customerAccessToken || getState().Auth.accessToken;
+      if (token) {
+        headers.set("authorization", `Bearer ${token}`);
+      }
+      return headers;
+    },
+    credentials: "include",
+    jsonContentType: "application/json",
+  }),
   endpoints: (builder) => ({
     createOrder: builder.mutation({
       query: ({ data, restaurantId }) => ({
