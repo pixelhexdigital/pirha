@@ -8,7 +8,7 @@ import Field from "components/Field";
 import { Button } from "components/ui/button";
 // import { resetPasswordAction } from "store/AuthSlice";
 
-const CLASS_INPUT = "bg-n-7 border-n-7 focus:bg-transparent";
+const CLASS_INPUT = "";
 const DEFAULT_VALUES = {
   otp: "",
   password: "",

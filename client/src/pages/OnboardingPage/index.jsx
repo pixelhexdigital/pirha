@@ -1,23 +1,25 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { twMerge } from "tailwind-merge";
+import { Check } from "lucide-react";
 
 import pirhaLogo from "assets/pirha_logo_white.png";
 
 import AddMenuPage from "./AddMenuPage";
 import CreateTablePage from "./CreateTablePage";
 import UpdateProfilePage from "./UpdateProfilePage";
-import { Progress } from "components/ui/progress";
 import { selectOnboardingState, setOnboardingState } from "store/AuthSlice";
 import { ROUTES } from "routes/RouterConfig";
 
-const NO_OF_STEPS = 3;
 const ONBOARDING_STATE = {
   NEW: "NEW",
   TABLE: "TABLE",
   MENU: "MENU",
   COMPLETED: "COMPLETED",
 };
+
+const STEP_LABELS = ["Profile", "Tables", "Menu"];
 
 const OnboardingPage = () => {
   const navigate = useNavigate();
@@ -48,9 +50,6 @@ const OnboardingPage = () => {
       dispatch(setOnboardingState(ONBOARDING_STATE.COMPLETED));
     }
   };
-  // const prevStep = () => setStep((prevStep) => prevStep - 1);
-
-  const progressValue = ((step - 1) / NO_OF_STEPS) * 100;
 
   const onboardingSteps = [
     {
@@ -70,7 +69,9 @@ const OnboardingPage = () => {
   return (
     <>
       <Header />
-      <Progress value={progressValue} className="w-full mb-6" />
+      <div className="w-full max-w-xl mx-auto px-4 mt-6 mb-4">
+        <StepIndicator currentStep={step} totalSteps={3} labels={STEP_LABELS} />
+      </div>
       <div className="container flex justify-center w-full max-w-xl mx-auto">
         {onboardingSteps.map(({ content, title }, index) => {
           if (index + 1 === step) {
@@ -90,9 +91,62 @@ const OnboardingPage = () => {
 
 const Header = () => {
   return (
-    <div className="flex flex-col items-center justify-between p-4 bg-white shadow-md">
+    <div className="flex flex-col items-center justify-between p-4 bg-card border-b shadow-sm">
       <img src={pirhaLogo} alt="Pirha Logo" className="w-auto h-12" />
-      <h1 className="text-xl font-semibold text-gray-800">Welcome!</h1>
+      <h1 className="text-xl font-semibold text-foreground mt-2">Welcome!</h1>
+    </div>
+  );
+};
+
+const StepIndicator = ({ currentStep, totalSteps, labels }) => {
+  return (
+    <div className="flex items-center justify-between">
+      {Array.from({ length: totalSteps }, (_, i) => {
+        const stepNum = i + 1;
+        const isCompleted = stepNum < currentStep;
+        const isActive = stepNum === currentStep;
+
+        return (
+          <div key={stepNum} className="flex items-center flex-1 last:flex-none">
+            <div className="flex flex-col items-center">
+              <div
+                className={twMerge(
+                  "flex items-center justify-center size-9 rounded-full border-2 text-sm font-semibold transition-colors",
+                  isCompleted &&
+                    "bg-primary border-primary text-primary-foreground",
+                  isActive &&
+                    "border-primary text-primary bg-primary/10",
+                  !isCompleted &&
+                    !isActive &&
+                    "border-muted-foreground/30 text-muted-foreground"
+                )}
+              >
+                {isCompleted ? <Check className="size-4" /> : stepNum}
+              </div>
+              <span
+                className={twMerge(
+                  "text-xs mt-1.5 font-medium",
+                  isActive
+                    ? "text-primary"
+                    : isCompleted
+                      ? "text-foreground"
+                      : "text-muted-foreground"
+                )}
+              >
+                {labels[i]}
+              </span>
+            </div>
+            {stepNum < totalSteps && (
+              <div
+                className={twMerge(
+                  "flex-1 h-0.5 mx-3 mt-[-1rem]",
+                  isCompleted ? "bg-primary" : "bg-muted-foreground/20"
+                )}
+              />
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 };

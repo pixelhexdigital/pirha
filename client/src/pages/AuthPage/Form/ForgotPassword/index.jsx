@@ -5,7 +5,7 @@ const ForgotPasswordPage = ({ onClick }) => {
   return (
     <>
       <button
-        className="flex items-center mb-8 text-lg dark:text-white text-n-5 group sm:h5 h6"
+        className="flex items-center mb-8 text-lg text-foreground group sm:h5 h6"
         onClick={onClick}
       >
         <Icon

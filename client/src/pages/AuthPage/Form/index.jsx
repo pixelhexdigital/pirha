@@ -1,8 +1,8 @@
 import { useEffect, useState, Suspense } from "react";
 import { useLocation } from "react-router-dom";
-import LOGO from "assets/pirha_logo_white.png";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "components/ui/tabs";
+import Spinner from "components/Spinner";
 import lazyLoad from "lazyLoad";
 
 const TAB_NAV = [
@@ -26,9 +26,22 @@ const Form = () => {
   }, [tab, randomTabId]);
 
   return (
-    <div className="w-full max-w-[31.5rem] mx-auto">
-      <img src={LOGO} alt="logo" className="mb-16" />
-      <Suspense fallback={<div>Loading...</div>}>
+    <div className="w-full">
+      <h1 className="text-2xl font-bold mb-2">
+        {forgotPassword
+          ? "Reset password"
+          : activeTab === "0"
+            ? "Welcome back"
+            : "Get started"}
+      </h1>
+      <p className="text-muted-foreground mb-6">
+        {forgotPassword
+          ? "Enter your email to reset your password"
+          : activeTab === "0"
+            ? "Sign in to your account to continue"
+            : "Create a new account to get started"}
+      </p>
+      <Suspense fallback={<Spinner className="py-12" />}>
         {forgotPassword ? (
           <ForgotPasswordPage onClick={() => setForgotPassword(false)} />
         ) : (
@@ -36,12 +49,10 @@ const Form = () => {
             value={activeTab}
             onValueChange={(value) => setActiveTab(value)}
           >
-            <TabsList className="flex p-1 mb-8 f bg-n-2 rounded-xl dark:bg-n-7">
+            <TabsList className="flex p-1 mb-8 rounded-lg w-full">
               {TAB_NAV.map(({ id, name }) => (
                 <TabsTrigger
-                  className={`flex basis-1/2 h-10 rounded-[0.625rem] base2 font-semibold text-n-4 transition-colors outline-none tap-highlight-color ${
-                    activeTab === id.toString() ? "bg-active-color" : ""
-                  }`}
+                  className="flex-1 h-9"
                   key={id}
                   value={id.toString()}
                 >

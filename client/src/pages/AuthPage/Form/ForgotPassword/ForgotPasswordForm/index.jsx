@@ -7,8 +7,7 @@ import { Button } from "components/ui/button";
 import { useForgotPasswordMutation } from "api/authApi";
 import { errorToast, successToast } from "lib/helper";
 
-const CLASS_INPUT =
-  "border-n-7 focus:bg-transparent dark:bg-n-7 dark:border-n-7 dark:focus:bg-transparent";
+const CLASS_INPUT = "";
 const FORGOT_PASSWORD_SCHEMA = object().shape({
   email: string().email("Email is invalid").required("Email is required"),
 });

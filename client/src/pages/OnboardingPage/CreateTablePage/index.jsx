@@ -12,12 +12,12 @@ import Field from "components/Field";
 import { Button } from "components/ui/button";
 import { Combobox } from "components/ui/Combobox";
 import { errorToast, successToast } from "lib/helper";
+import { ButtonSpinner } from "components/Spinner";
 
 const MAX_ALLOWED_TABLES = 5;
 
 // Constants for class names and placeholders
-const CLASS_INPUT =
-  "border-n-7 focus:bg-transparent dark:bg-n-7 dark:border-n-7 dark:focus:bg-transparent";
+const CLASS_INPUT = "";
 const PLACEHOLDERS = {
   PREFIX_OF_TABLES: "Prefix of tables",
   NUMBER_OF_TABLES: "Number of tables",
@@ -177,7 +177,7 @@ const CreateTablePage = ({ onNext }) => {
       onSubmit={handleSubmit(onSubmit)}
       className="w-full max-w-xl px-4 mx-auto"
     >
-      <p className="mb-4 font-semibold text-gray-800">
+      <p className="mb-4 font-semibold text-foreground">
         Create tables for your restaurant by generating QR codes for them here.
       </p>
       <Controller
@@ -210,7 +210,7 @@ const CreateTablePage = ({ onNext }) => {
       </div>
 
       <Button type="submit" size="lg" className="w-full">
-        {generatingQr ? <div className="ring-loader" /> : "Generate QR"}
+        {generatingQr ? <ButtonSpinner /> : "Generate QR"}
       </Button>
     </form>
   );

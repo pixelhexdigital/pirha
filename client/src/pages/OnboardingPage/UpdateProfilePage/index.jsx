@@ -13,10 +13,10 @@ import Field from "components/Field";
 import { Button } from "components/ui/button";
 import { errorToast } from "lib/helper";
 import { Combobox } from "components/ui/Combobox";
+import Spinner, { ButtonSpinner } from "components/Spinner";
 
 // Input class styles
-const CLASS_INPUT =
-  "border-n-7 focus:bg-transparent dark:bg-n-7 dark:border-n-7 dark:focus:bg-transparent";
+const CLASS_INPUT = "";
 
 // Default form values
 const DEFAULT_VALUES = {
@@ -165,7 +165,7 @@ const UpdateProfilePage = ({ nextStep }) => {
   if (isUserLoading) {
     return (
       <div className="flex items-center justify-center min-h-[70vh]">
-        <div className="ring-loader size-16 border-secondary" />
+        <Spinner size="lg" />
       </div>
     );
   }
@@ -177,7 +177,7 @@ const UpdateProfilePage = ({ nextStep }) => {
     >
       <div className="flex flex-col items-center justify-center gap-4 mb-8">
         <div className="relative">
-          <div className="flex items-center justify-center w-32 h-32 border-2 border-gray-300 border-dashed rounded-full bg-gray-50">
+          <div className="flex items-center justify-center w-32 h-32 border-2 border-muted-foreground/25 border-dashed rounded-full bg-muted">
             {image ? (
               <img
                 src={image || "/placeholder.svg"}
@@ -185,7 +185,7 @@ const UpdateProfilePage = ({ nextStep }) => {
                 className="object-cover w-full h-full rounded-full"
               />
             ) : (
-              <Upload className="w-8 h-8 text-gray-400" />
+              <Upload className="w-8 h-8 text-muted-foreground" />
             )}
           </div>
           <input
@@ -195,7 +195,7 @@ const UpdateProfilePage = ({ nextStep }) => {
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
         </div>
-        {isUploading && <p className="text-sm text-blue-500">Uploading...</p>}
+        {isUploading && <p className="text-sm text-info">Uploading...</p>}
       </div>
       <Field
         className="mb-4"
@@ -257,7 +257,7 @@ const UpdateProfilePage = ({ nextStep }) => {
         className="w-full mb-4"
         disabled={isUploading}
       >
-        {isUpdating ? <div className="ring-loader" /> : "Save and Continue"}
+        {isUpdating ? <ButtonSpinner /> : "Save and Continue"}
       </Button>
     </form>
   );

@@ -25,6 +25,7 @@ import {
 import { errorToast, numberToCurrency } from "lib/helper";
 import { Separator } from "components/ui/separator";
 import { useOnboardDoneMutation } from "api/adminApi";
+import { ButtonSpinner } from "components/Spinner";
 
 const ADD_CATEGORY_SCHEMA = object().shape({
   categoryName: string().required("Category name is required"),
@@ -180,7 +181,7 @@ const AddMenuPage = () => {
 
   return (
     <div className="w-full max-w-xl px-4 pb-4 mx-auto">
-      <h2 className="mb-4 font-semibold text-n-4/80">
+      <h2 className="mb-4 font-semibold text-muted-foreground">
         Add your menu categories and items to get started with your restaurant
         menu setup 🍔. You can always edit or add more items later.
       </h2>
@@ -190,7 +191,7 @@ const AddMenuPage = () => {
         categories?.map((category) => (
           <div
             key={category._id}
-            className="relative p-4 mb-4 space-y-4 rounded-md bg-slate-200"
+            className="relative p-4 mb-4 space-y-4 rounded-md bg-muted"
           >
             <h3 className="mb-2 text-lg font-semibold">{category.name}</h3>
             <ul className="p-0 space-y-2">
@@ -199,10 +200,10 @@ const AddMenuPage = () => {
                   <li key={item._id} className="flex justify-between">
                     <div>
                       <p className="mb-1">{item?.title}</p>
-                      <p className="text-sm text-n-4/50">{item?.description}</p>
+                      <p className="text-sm text-muted-foreground">{item?.description}</p>
                     </div>
                     <div>
-                      <p className="text-n-4/80">
+                      <p className="text-muted-foreground">
                         {numberToCurrency(item.price)}
                         {item?.discount > 0 && `(${item.discount} off)`}
                       </p>
@@ -268,7 +269,7 @@ const AddMenuPage = () => {
         disabled={categories.length === 0}
       >
         {onboardDoneLoading ? (
-          <div className="ring-loader" />
+          <ButtonSpinner />
         ) : (
           "Complete Onboarding 🚀"
         )}
@@ -294,7 +295,7 @@ const AddCategoryForm = ({
       className="pt-4 mb-4 border-t"
     >
       <h3 className="mb-2 text-lg font-semibold">Add Category</h3>
-      <p className="mb-4 text-n-4/50">
+      <p className="mb-4 text-muted-foreground">
         Choose from the predefined categories or enter a new category name
       </p>
 
@@ -307,7 +308,7 @@ const AddCategoryForm = ({
             <button
               key={category}
               type="button"
-              className={`px-4 py-2 rounded-full border ${selectedCategory === category ? "bg-secondary text-white" : "bg-gray-200 text-gray-800"}`}
+              className={`px-4 py-2 rounded-full border ${selectedCategory === category ? "bg-secondary text-secondary-foreground" : "bg-muted text-foreground"}`}
               onClick={() => handleSelectCategory(category)}
             >
               {category}
@@ -318,7 +319,7 @@ const AddCategoryForm = ({
         type="text"
         placeholder="Or enter new category name"
         className="w-full"
-        classInput="border-n-4/20 focus:bg-transparent dark:bg-n-7 dark:border-n-1 dark:focus:bg-transparent"
+        classInput=""
         error={errors.categoryName?.message}
         {...register("categoryName")}
       />

@@ -7,14 +7,14 @@ import { useNavigate } from "react-router-dom";
 import Field from "components/Field";
 import { ROUTES } from "routes/RouterConfig";
 import { Button } from "components/ui/button";
+import { ButtonSpinner } from "components/Spinner";
 import { useLoginMutation } from "api/authApi";
 import { errorToast, successToast } from "lib/helper";
 
 const ONBOARDING_COMPLETE = "COMPLETED";
 
 // Input class styles
-const CLASS_INPUT =
-  "border-n-7 focus:bg-transparent dark:bg-n-7 dark:border-n-7 dark:focus:bg-transparent";
+const CLASS_INPUT = "";
 
 // Password validation regex
 const PASSWORD_REGEX =
@@ -134,7 +134,7 @@ const SignInTab = ({ onClick }) => {
             variant="link"
             type="button"
             onClick={onClick}
-            className="text-black hover:text-primary/90"
+            className="text-foreground hover:text-primary/90"
           >
             {BUTTON_LABELS.FORGOT_PASSWORD}
           </Button>
@@ -147,7 +147,7 @@ const SignInTab = ({ onClick }) => {
           className="w-full mb-4"
         >
           {isLoginLoading ? (
-            <div className="ring-loader" />
+            <ButtonSpinner />
           ) : (
             BUTTON_LABELS.SIGN_IN
           )}

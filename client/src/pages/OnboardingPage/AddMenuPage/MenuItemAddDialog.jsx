@@ -29,8 +29,7 @@ const ADD_ITEM_SCHEMA = object().shape({
   foodGroup: string().required("Food group is required"),
 });
 
-const CLASS_INPUT =
-  "border-n-7 focus:bg-transparent dark:bg-n-7 dark:border-n-7 dark:focus:bg-transparent ";
+const CLASS_INPUT = "";
 
 const defaultValues = {
   itemName: "",
@@ -120,7 +119,7 @@ const MenuItemAddDialog = ({
                   </SelectContent>
                 </Select>
                 {errors.itemType?.message && (
-                  <div className="mt-2 text-red-600 caption1">
+                  <div className="mt-2 text-destructive caption1">
                     {errors.itemType?.message}
                   </div>
                 )}
@@ -150,7 +149,7 @@ const MenuItemAddDialog = ({
                   </SelectContent>
                 </Select>
                 {errors.foodGroup?.message && (
-                  <div className="mt-2 text-red-600 caption1">
+                  <div className="mt-2 text-destructive caption1">
                     {errors.foodGroup?.message}
                   </div>
                 )}

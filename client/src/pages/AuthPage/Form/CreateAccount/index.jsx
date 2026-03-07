@@ -8,12 +8,12 @@ import { nanoid } from "@reduxjs/toolkit";
 import Field from "components/Field";
 import { ROUTES } from "routes/RouterConfig";
 import { Button } from "components/ui/button";
+import { ButtonSpinner } from "components/Spinner";
 import { useRegisterMutation, useVerifyUserNameMutation } from "api/authApi";
 import { errorToast, successToast } from "lib/helper";
 
 // Input class styles
-const CLASS_INPUT =
-  "border-n-7 focus:bg-transparent dark:bg-n-7 dark:border-n-7 dark:focus:bg-transparent";
+const CLASS_INPUT = "";
 
 // Default form values
 const DEFAULT_VALUES = {
@@ -174,7 +174,7 @@ const CreateAccountTab = () => {
   };
 
   const verifyButtonText = isUsernameVerifying ? (
-    <div className="ring-loader" />
+    <ButtonSpinner />
   ) : isUsernameVerified ? (
     BUTTON_LABELS.VERIFIED
   ) : (
@@ -239,22 +239,22 @@ const CreateAccountTab = () => {
 
       <Button type="submit" size="lg" className="w-full mb-4">
         {isRegistering ? (
-          <div className="ring-loader" />
+          <ButtonSpinner />
         ) : (
           BUTTON_LABELS.SIGN_UP
         )}
       </Button>
-      <div className="mt-4 text-center caption1 text-n-4 dark:text-n-3">
+      <div className="mt-4 text-center caption1 text-muted-foreground">
         By creating an account, you agree to our{" "}
         <Link
-          className="transition-colors text-n-5 dark:hover:text-n-1 hover:underline dark:text-n-2"
+          className="transition-colors text-foreground hover:underline"
           to="/"
         >
           Terms of Service
         </Link>{" "}
         and{" "}
         <Link
-          className="transition-colors text-n-5 dark:hover:text-n-1 hover:underline dark:text-n-2"
+          className="transition-colors text-foreground hover:underline"
           to="/"
         >
           Privacy & Cookie Statement
