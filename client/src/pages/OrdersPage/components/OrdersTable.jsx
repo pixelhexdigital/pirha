@@ -11,6 +11,7 @@ import { twMerge } from "tailwind-merge";
 
 import StatusBadge from "components/StatusBadge";
 import EmptyState from "components/EmptyState";
+import { Skeleton } from "components/ui/skeleton";
 import { Button } from "components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "components/ui/card";
 import {
@@ -60,7 +61,7 @@ const STATUS_BORDER_COLORS = {
   billed: "border-l-indigo-500",
 };
 
-export function OrdersTable({ data, onAction }) {
+export function OrdersTable({ data, onAction, isLoading }) {
   const [expandedRows, setExpandedRows] = useState([]);
 
   const toggleRow = (orderId) => {
@@ -86,7 +87,21 @@ export function OrdersTable({ data, onAction }) {
         <CardTitle>Recent Orders</CardTitle>
       </CardHeader>
       <CardContent>
-        {data?.length === 0 ? (
+        {isLoading ? (
+          <div className="space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex items-center gap-4 py-2">
+                <Skeleton className="h-8 w-8 rounded" />
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-5 w-16 rounded-full" />
+                <Skeleton className="h-8 w-8 rounded ml-auto" />
+              </div>
+            ))}
+          </div>
+        ) : data?.length === 0 ? (
           <EmptyState
             title="No orders found"
             description="Try changing the filters or check back later."

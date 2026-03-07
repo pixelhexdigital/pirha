@@ -17,7 +17,6 @@ export default function FeatureComingSoon() {
     // Only HEAD request to check if file exists
     fetch(LOTTIE_IFRAME_URL_WITHOUT_EMBED, { method: "HEAD" })
       .then((res) => {
-        console.log("Response status:");
         if (res.ok) setIsLottieAvailable(true);
         else setIsLottieAvailable(false);
       })

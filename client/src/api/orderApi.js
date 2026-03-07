@@ -26,7 +26,15 @@ export const ordersApi = createApi({
       }),
       transformResponse: (response) => response.data,
     }),
+    getCustomerOrders: builder.query({
+      query: ({ page = 1, limit = 10 } = {}) => ({
+        url: "/",
+        params: { page, limit },
+      }),
+      providesTags: ["CustomerOrder"],
+      transformResponse: (response) => response.data,
+    }),
   }),
 });
 
-export const { useCreateOrderMutation } = ordersApi;
+export const { useCreateOrderMutation, useGetCustomerOrdersQuery } = ordersApi;

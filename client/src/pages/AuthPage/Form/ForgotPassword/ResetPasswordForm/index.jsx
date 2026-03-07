@@ -1,12 +1,11 @@
-import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { number, object, string } from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useDispatch } from "react-redux";
 
 import Field from "components/Field";
 import { Button } from "components/ui/button";
-// import { resetPasswordAction } from "store/AuthSlice";
+import { useResetPasswordMutation } from "api/authApi";
+import { errorToast, successToast } from "lib/helper";
 
 const CLASS_INPUT = "";
 const DEFAULT_VALUES = {
@@ -32,10 +31,8 @@ const RESET_PASSWORD_SCHEMA = object().shape({
     .required("Required"),
 });
 
-const ResetPasswordForm = ({ email, onClick }) => {
-  const dispatch = useDispatch();
-
-  const [isLoading, setIsLoading] = useState(false);
+const ResetPasswordForm = ({ email, resetToken, onClick }) => {
+  const [resetPassword, { isLoading }] = useResetPasswordMutation();
 
   const form = useForm({
     defaultValues: DEFAULT_VALUES,
@@ -48,16 +45,21 @@ const ResetPasswordForm = ({ email, onClick }) => {
     formState: { errors },
   } = form;
 
-  const onSubmit = (data) => {
-    const payload = {
-      email: email,
-      otp: data.otp,
-      password: data.password,
-    };
-    // dispatch(
-    //   resetPasswordAction({ payload, setIsLoading, onSuccess: onClick })
-    // );
+  const onSubmit = async (data) => {
+    try {
+      await resetPassword({
+        resetToken,
+        email,
+        otp: data.otp,
+        password: data.password,
+      }).unwrap();
+      successToast("Password reset successfully");
+      onClick?.();
+    } catch (error) {
+      errorToast({ error, message: "Failed to reset password" });
+    }
   };
+
   return (
     <form action="" onSubmit={handleSubmit(onSubmit)}>
       <Field

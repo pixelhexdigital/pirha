@@ -122,7 +122,7 @@ const UpdateProfilePage = ({ nextStep }) => {
         // Upload compressed file
         await uploadImageToServer(compressedFile);
       } catch (error) {
-        console.error("Image compression error:", error);
+        errorToast({ error, message: "Failed to compress image" });
       }
     }
   };
@@ -136,7 +136,6 @@ const UpdateProfilePage = ({ nextStep }) => {
         errorToast({ message: "Image upload failed" });
       }
     } catch (error) {
-      console.error("Image upload failed", error);
       errorToast({ error, message: "Image upload failed" });
     }
   };
@@ -154,7 +153,6 @@ const UpdateProfilePage = ({ nextStep }) => {
       if (response.success) {
         nextStep();
       } else {
-        console.error("Profile update failed:", response);
         errorToast({ message: "Profile update failed" });
       }
     } catch (error) {
@@ -255,7 +253,7 @@ const UpdateProfilePage = ({ nextStep }) => {
         type="submit"
         size="lg"
         className="w-full mb-4"
-        disabled={isUploading}
+        disabled={isUploading || isUpdating}
       >
         {isUpdating ? <ButtonSpinner /> : "Save and Continue"}
       </Button>

@@ -63,7 +63,6 @@ const ChangePasswordForm = () => {
       });
       reset();
     } catch (error) {
-      console.error("error", error);
       errorToast({ error });
     }
   };

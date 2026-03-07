@@ -8,7 +8,7 @@ const initialState = {
   totalTablesCount: 0,
 };
 
-const MenuSlice = createSlice({
+const TableSlice = createSlice({
   name: "Table",
   initialState,
   reducers: {
@@ -41,6 +41,6 @@ export const selectNextPage = (state) => state.Table.nextPage;
 export const selectHasNextPage = (state) => state.Table.hasNextPage;
 export const selectTotalTablesCount = (state) => state.Table.totalTablesCount;
 
-export const { deleteTableEntry, updateTableData } = MenuSlice.actions;
+export const { deleteTableEntry, updateTableData } = TableSlice.actions;
 
-export default MenuSlice.reducer;
+export default TableSlice.reducer;

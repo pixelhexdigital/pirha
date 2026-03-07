@@ -10,7 +10,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Circle, MoreHorizontal } from "lucide-react";
+import { ChevronDown, ChevronRight, Circle, Minus, MoreHorizontal } from "lucide-react";
 
 import { Button } from "components/ui/button";
 // import { Checkbox } from "@/components/ui/checkbox";
@@ -57,18 +57,22 @@ const columns = [
           paddingLeft: `${row.depth * 2}rem`,
         }}
       >
-        <div>
+        <div className="flex items-center gap-1">
           {row.getCanExpand() ? (
             <button
-              {...{
-                onClick: row.getToggleExpandedHandler(),
-                style: { cursor: "pointer" },
-              }}
+              onClick={row.getToggleExpandedHandler()}
+              className="p-0.5 rounded hover:bg-muted transition-colors"
+              aria-expanded={row.getIsExpanded()}
+              aria-label={row.getIsExpanded() ? "Collapse row" : "Expand row"}
             >
-              {row.getIsExpanded() ? "👇" : "👉"}
+              {row.getIsExpanded() ? (
+                <ChevronDown className="size-4" />
+              ) : (
+                <ChevronRight className="size-4" />
+              )}
             </button>
           ) : (
-            "🔵"
+            <Minus className="size-4 text-muted-foreground" />
           )}{" "}
           {row.getValue("_id")}
         </div>
@@ -184,8 +188,6 @@ const OrderDetailsPage = () => {
   const { orders } = ordersData || {};
 
   const tableData = orders ? orders : [];
-  console.log("tableData", tableData);
-
   const table = useReactTable({
     data: tableData,
     columns,

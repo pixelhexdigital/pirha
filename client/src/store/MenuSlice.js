@@ -28,7 +28,7 @@ const updateCategoryItems = (currentMenuData, categoryId, itemId, updateFn) => {
   );
 
   if (categoryIndex === -1) {
-    console.error(`Category with id ${categoryId} not found`);
+    // Category not found — no-op
     return currentMenuData;
   }
 
@@ -96,7 +96,7 @@ const MenuSlice = createSlice({
       );
 
       if (categoryIndex === -1) {
-        console.error(`Category with id ${categoryId} not found`);
+        // Category not found — no-op
         return;
       }
 
@@ -125,7 +125,7 @@ const MenuSlice = createSlice({
       );
 
       if (categoryIndex === -1) {
-        console.error(`Category with id ${categoryId} not found`);
+        // Category not found — no-op
         return;
       }
 
@@ -161,7 +161,7 @@ const MenuSlice = createSlice({
       );
 
       if (categoryIndex === -1) {
-        console.error(`Category with id ${categoryId} not found`);
+        // Category not found — no-op
         return;
       }
 
@@ -185,7 +185,7 @@ const MenuSlice = createSlice({
       );
 
       if (categoryIndex === -1) {
-        console.error(`Category with id ${categoryId} not found`);
+        // Category not found — no-op
         return;
       }
 
@@ -209,7 +209,7 @@ const MenuSlice = createSlice({
       );
 
       if (categoryIndex === -1) {
-        console.error(`Category with id ${categoryId} not found`);
+        // Category not found — no-op
         return;
       }
 

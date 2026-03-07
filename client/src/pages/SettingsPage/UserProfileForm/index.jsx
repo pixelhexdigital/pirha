@@ -132,7 +132,7 @@ const UserProfileForm = () => {
         // Upload compressed file
         await uploadImageToServer(compressedFile);
       } catch (error) {
-        console.error("Image compression error:", error);
+        errorToast({ error, message: "Failed to compress image" });
       }
     }
   };
@@ -146,7 +146,6 @@ const UserProfileForm = () => {
         errorToast({ message: "Image upload failed" });
       }
     } catch (error) {
-      console.error("Image upload failed", error);
       errorToast({ error, message: "Image upload failed" });
     }
   };
@@ -289,7 +288,7 @@ const UserProfileForm = () => {
             type="submit"
             size="lg"
             className="w-36 mb-4  mt-8"
-            disabled={isUploading}
+            disabled={isUploading || isUpdating}
           >
             {isUpdating ? <ButtonSpinner /> : "Update Profile"}
           </Button>

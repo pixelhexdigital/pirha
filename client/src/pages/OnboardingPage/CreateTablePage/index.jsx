@@ -2,11 +2,7 @@ import { Controller, useForm } from "react-hook-form";
 import { object, number, string } from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 
-import {
-  useDownloadQrMutation,
-  useGenerateTableQrMutation,
-  useGetMyTablesQuery,
-} from "api/tableApi";
+import { useGenerateTableQrMutation } from "api/tableApi";
 
 import Field from "components/Field";
 import { Button } from "components/ui/button";
@@ -42,8 +38,6 @@ const MESSAGES = {
   GENERATE_SUCCESS: "QR codes generated successfully",
   GENERATE_FAILURE:
     "Failed to generate QR codes for tables, please try again later",
-  DOWNLOAD_SUCCESS: "QR codes downloaded successfully",
-  DOWNLOAD_FAILURE: "Failed to download QR codes, please try again later",
 };
 
 // Helper function to generate alphabet options
@@ -56,9 +50,6 @@ const generateAlphabetOptions = () =>
 const CreateTablePage = ({ onNext }) => {
   const [generateTableQr, { isLoading: generatingQr }] =
     useGenerateTableQrMutation();
-  // const [downloadQr, { isLoading: downloadingQr }] = useDownloadQrMutation();
-  // const { data: tableData } = useGetMyTablesQuery();
-  // const qrDataSuccess = qrData?.success;
 
   const {
     handleSubmit,
@@ -95,82 +86,6 @@ const CreateTablePage = ({ onNext }) => {
       });
     }
   };
-
-  // const handleDownloadQr = async () => {
-  //   const tables = tableData?.data?.tables;
-
-  //   const payload = {
-  //     startTable: tables?.[0]?.title ?? "",
-  //     endTable: tables?.[tables.length - 1]?.title ?? "",
-  //   };
-
-  //   try {
-  //     const blob = await downloadQr(payload).unwrap();
-
-  //     if (!(blob instanceof Blob)) {
-  //       throw new Error("Invalid file response"); // Check if response is a Blob
-  //     }
-
-  //     // Create a URL for the file
-  //     const url = window.URL.createObjectURL(blob);
-
-  //     // Create a temporary anchor tag and trigger download
-  //     const link = document.createElement("a");
-  //     link.href = url;
-  //     link.setAttribute("download", "qr_codes.zip");
-  //     document.body.appendChild(link);
-  //     link.click();
-
-  //     link.remove();
-  //     window.URL.revokeObjectURL(url);
-
-  //     successToast({
-  //       message: "QR codes downloaded successfully!",
-  //     });
-  //   } catch (error) {
-  //     console.error("Error downloading QR codes:", error);
-  //     errorToast({
-  //       error,
-  //       message: "Failed to download QR codes.",
-  //     });
-  //   }
-  // };
-
-  // if (tableData?.success && tableData.data?.tables?.length) {
-  //   return (
-  //     <div className="w-full max-w-xl px-4 mx-auto">
-  //       <p className="mb-4 font-semibold text-4/80">
-  //         Tables created successfully. Download the QR codes for the tables
-  //         below.
-  //       </p>
-  //       <div className="grid grid-cols-3 gap-4 md:grid-cols-5 max-h-svh">
-  //         {tableData.data.tables.map((table) => {
-  //           return (
-  //             <p
-  //               className="p-4 text-center capitalize rounded-md bg-secondary min-w-min text-secondary-foreground"
-  //               key={table._id.toString()}
-  //             >
-  //               {table.title}
-  //             </p>
-  //           );
-  //         })}
-  //       </div>
-  //       <div className="flex flex-row gap-4 mt-4">
-  //         <Button
-  //           type="submit"
-  //           size="lg"
-  //           className="w-full"
-  //           onClick={handleDownloadQr}
-  //         >
-  //           {downloadingQr ? <div className="ring-loader" /> : "Download QR"}
-  //         </Button>
-  //         <Button type="" size="lg" className="w-full" onClick={onNext}>
-  //           Next
-  //         </Button>
-  //       </div>
-  //     </div>
-  //   );
-  // }
 
   return (
     <form
@@ -209,7 +124,7 @@ const CreateTablePage = ({ onNext }) => {
         />
       </div>
 
-      <Button type="submit" size="lg" className="w-full">
+      <Button type="submit" size="lg" className="w-full" disabled={generatingQr}>
         {generatingQr ? <ButtonSpinner /> : "Generate QR"}
       </Button>
     </form>

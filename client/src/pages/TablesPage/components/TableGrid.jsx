@@ -14,6 +14,8 @@ import { TableCard } from "./TableCard";
 import { BulkQRCodeModal } from "./BulkQRCodeModal";
 import { TableDetailsModal } from "./TableDetailsModal";
 import { Button } from "components/ui/button";
+import { Skeleton } from "components/ui/skeleton";
+import { Card } from "components/ui/card";
 import Spinner from "components/Spinner";
 import { errorToast, successToast } from "lib/helper";
 import { TableSummary } from "pages/TablesPage/components/TableSummary";
@@ -54,8 +56,6 @@ export function TableGrid() {
   const [getTableDetailsById, { isLoading: isGettingDetails }] =
     useGetTableDetailsByIdMutation();
   const [downloadQr, { isLoading: isDownloading }] = useDownloadQrMutation();
-
-  // console.log("tableData", tableData);
 
   const tableSummaryData = {
     totalTables: tableData?.data?.totalTables || 0,
@@ -181,19 +181,33 @@ export function TableGrid() {
           <Download className="mr-2 h-4 w-4" /> Download Bulk QR Codes
         </Button>
       </div>
-      <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-2.5">
-        {tables.map((table) => (
-          <TableCard
-            key={table._id}
-            table={table}
-            onClick={() => handleDetailsClick(table._id)}
-            onQuickAction={handleQuickAction}
-            onDelete={handleDelete}
-            onQrCodeDownload={handleDownloadQr}
-          />
-        ))}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-2.5">
+        {isLoading && !tables.length
+          ? [...Array(8)].map((_, i) => (
+              <Card key={i} className="p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-5 w-20" />
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </div>
+                <Skeleton className="h-4 w-24" />
+                <div className="flex gap-2 pt-2">
+                  <Skeleton className="h-8 flex-1 rounded-md" />
+                  <Skeleton className="h-8 w-8 rounded-md" />
+                </div>
+              </Card>
+            ))
+          : tables.map((table) => (
+              <TableCard
+                key={table._id}
+                table={table}
+                onClick={() => handleDetailsClick(table._id)}
+                onQuickAction={handleQuickAction}
+                onDelete={handleDelete}
+                onQrCodeDownload={handleDownloadQr}
+              />
+            ))}
       </div>
-      {isLoading && <Spinner size="lg" className="mt-4" />}
+      {isFetching && tables.length > 0 && <Spinner size="lg" className="mt-4" />}
 
       {/* This div acts as a trigger for infinite scroll */}
       {hasNextPage && <div ref={ref} className="h-10"></div>}

@@ -19,9 +19,6 @@ const CategoryFab = () => {
   //   { restaurantId: restaurantId || restaurantDetails?._id },
   //   { skip: !restaurantId && !restaurantDetails?._id }
 
-  console.log("categories", categories);
-  // );
-
   // Category icons mapping
   const categoryIcons = {
     Starter: <Utensils className="h-4 w-4" />,

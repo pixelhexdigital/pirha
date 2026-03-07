@@ -1,39 +1,15 @@
 import { toast } from "react-hot-toast";
-// import { logout } from "store/AuthSlice";
-
-// import { logout } from "store/AuthSlice";
 
 export const successToast = ({ data, message }) => {
   toast.success(data?.message || message);
 };
 
 export const errorToast = ({
-  dispatch,
   error,
   message,
   duration = 3000,
   style = {},
-}) => {
-  // console.error("error", error);
-
-  // if user is not authenticated then logout the user and redirect to login page
-  if (error?.response?.status === 401 && dispatch) {
-    toast.error("You have been logged out. Please login again.");
-    setTimeout(() => {
-      // dispatch(logout());
-    }, 1000);
-    return;
-  }
-
-  // if user's subscription has expired then redirect to subscription page
-  // if (error?.response?.status === 402) {
-  //   setTimeout(() => {
-  //     window.location.href = "/subscription";
-  //   }, 500);
-
-  //   return;
-  // }
-
+} = {}) => {
   toast.error(
     error?.data?.message ||
       message ||

@@ -31,8 +31,8 @@ export default function LeftSidebar({ children }) {
   const handleLogout = async () => {
     try {
       await logOutMutation().unwrap();
-    } catch (error) {
-      console.error("Logout failed:", error);
+    } catch {
+      // Logout failure is handled by the auth middleware
     }
   };
 

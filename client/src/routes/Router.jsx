@@ -35,6 +35,8 @@ const Table = lazy(() => import("pages/TablesPage"));
 const UserBillPage = lazy(() => import("pages/UserBillPage"));
 const UserOrderHistoryPage = lazy(() => import("pages/UserOrderHistoryPage"));
 const SettingPage = lazy(() => import("pages/SettingsPage"));
+const VerifyEmailPage = lazy(() => import("pages/VerifyEmailPage"));
+const ResetPasswordPage = lazy(() => import("pages/ResetPasswordPage"));
 
 const SuspenseWrapper = ({ children }) => (
   <Suspense
@@ -74,6 +76,14 @@ const UnauthenticatedRoutes = [
   {
     path: `/history/:tableId/:restaurantId`,
     element: <UserOrderHistoryPage />,
+  },
+  {
+    path: `/verify-email/:token`,
+    element: <VerifyEmailPage />,
+  },
+  {
+    path: `/reset-password/:resetToken`,
+    element: <ResetPasswordPage />,
   },
 ];
 

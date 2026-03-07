@@ -24,6 +24,7 @@ import {
 } from "store/MiscellaneousSlice";
 import { errorToast, numberToCurrency } from "lib/helper";
 import { Separator } from "components/ui/separator";
+import { Skeleton } from "components/ui/skeleton";
 import { useOnboardDoneMutation } from "api/adminApi";
 import { ButtonSpinner } from "components/Spinner";
 
@@ -119,7 +120,7 @@ const AddMenuPage = () => {
       setShowModal(false);
       resetForm();
     } catch (error) {
-      console.error("Failed to add item:", error);
+      errorToast({ error, message: "Failed to add item" });
     }
   };
 
@@ -186,7 +187,21 @@ const AddMenuPage = () => {
         menu setup 🍔. You can always edit or add more items later.
       </h2>
       {isLoading ? (
-        <div>Loading...</div>
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="p-4 rounded-md bg-muted space-y-3">
+              <Skeleton className="h-6 w-32" />
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <Skeleton className="h-4 w-40" />
+                  <Skeleton className="h-4 w-16" />
+                </div>
+                <Separator />
+              </div>
+              <Skeleton className="h-8 w-28 rounded-md" />
+            </div>
+          ))}
+        </div>
       ) : (
         categories?.map((category) => (
           <div
@@ -195,22 +210,19 @@ const AddMenuPage = () => {
           >
             <h3 className="mb-2 text-lg font-semibold">{category.name}</h3>
             <ul className="p-0 space-y-2">
-              {category?.items?.map((item) => (
-                <>
-                  <li key={item._id} className="flex justify-between">
-                    <div>
-                      <p className="mb-1">{item?.title}</p>
-                      <p className="text-sm text-muted-foreground">{item?.description}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">
-                        {numberToCurrency(item.price)}
-                        {item?.discount > 0 && `(${item.discount} off)`}
-                      </p>
-                    </div>
-                  </li>
-                  <Separator />
-                </>
+              {category?.items?.map((item, idx) => (
+                <li key={item._id || idx} className="flex justify-between pb-2 mb-2 border-b last:border-b-0">
+                  <div>
+                    <p className="mb-1">{item?.title}</p>
+                    <p className="text-sm text-muted-foreground">{item?.description}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">
+                      {numberToCurrency(item.price)}
+                      {item?.discount > 0 && `(${item.discount} off)`}
+                    </p>
+                  </div>
+                </li>
               ))}
             </ul>
             <Button

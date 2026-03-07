@@ -7,18 +7,6 @@ export const tableApi = createApi({
   reducerPath: "tableApi",
   baseQuery: baseQueryWithReAuth(`${BASE_URL}/api/v1/tables`),
   endpoints: (builder) => ({
-    // getMyTables: builder.query({
-    //   query: ({ page = 1, limit = 10 }) => ({
-    //     url: "",
-    //     params: { page, limit },
-    //   }),
-    //   providesTags: ["Table"],
-    //   transformErrorResponse: (response) => {
-    //     errorToast({ error: response });
-    //     return response;
-    //   },
-    // }),
-
     getMyTables: builder.query({
       query: ({ page = 1, limit = 10, ...otherPrams }) => ({
         url: "",
@@ -110,28 +98,21 @@ export const tableApi = createApi({
           const queryArgs = cacheEntries[activeQuery]?.originalArgs;
           if (!queryArgs) return; // Ensure we have valid query arguments
 
-          // console.log("Updating cache for:", queryArgs);
-
           // Optimistically update cache before API call
           dispatch(
             tableApi.util.updateQueryData("getMyTables", queryArgs, (draft) => {
               if (draft.data?.tables) {
-                // console.log("Before deletion:", draft.data.tables);
-
-                // Remove the table from cache
                 draft.data.tables = draft.data.tables.filter(
                   (table) => table._id !== id
                 );
-
-                // console.log("After deletion:", draft.data.tables);
               }
             })
           );
 
           // Wait for API response
           await queryFulfilled;
-        } catch (error) {
-          console.error("Failed to delete, rolling back:", error);
+        } catch {
+          // Rollback handled by RTK Query cache invalidation
         }
       },
     }),
@@ -156,8 +137,6 @@ export const tableApi = createApi({
           const queryArgs = cacheEntries[activeQuery]?.originalArgs;
           if (!queryArgs) return; // Ensure we have valid query arguments
 
-          console.log("Updating cache for:", queryArgs);
-
           // Optimistically update cache before API call
           dispatch(
             tableApi.util.updateQueryData("getMyTables", queryArgs, (draft) => {
@@ -167,28 +146,41 @@ export const tableApi = createApi({
                   table._id === data.tableId ? { ...table, ...data } : table
                 );
 
-                console.log("After update:", draft.data.tables);
               }
             })
           );
 
           // Wait for API response
           await queryFulfilled;
-        } catch (error) {
-          console.error("Failed to update, rolling back:", error);
+        } catch {
+          // Rollback handled by RTK Query cache invalidation
         }
       },
     }),
-
-    // getTableDetailsById: builder.query({
-    //   query: (tableId) => `/${tableId}`,
-    // }),
 
     getTableDetailsById: builder.mutation({
       query: (tableId) => ({
         method: "GET",
         url: `/${tableId}`,
       }),
+    }),
+
+    deleteTablesBatch: builder.mutation({
+      query: (data) => ({
+        url: "/delete-batch",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Table"],
+    }),
+
+    updateTablesBatch: builder.mutation({
+      query: (data) => ({
+        url: "/edit-batch",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Table"],
     }),
   }),
 });
@@ -200,4 +192,6 @@ export const {
   useDeleteTableByIdMutation,
   useUpdateTableByIdMutation,
   useGetTableDetailsByIdMutation,
+  useDeleteTablesBatchMutation,
+  useUpdateTablesBatchMutation,
 } = tableApi;

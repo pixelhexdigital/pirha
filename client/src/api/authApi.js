@@ -34,8 +34,8 @@ export const authApi = createApi({
       transformResponse: (response) => response.data,
     }),
     resetPassword: builder.mutation({
-      query: (data) => ({
-        url: "/reset-password",
+      query: ({ resetToken, ...data }) => ({
+        url: `/reset-password/${resetToken}`,
         method: "POST",
         body: data,
       }),
@@ -63,6 +63,20 @@ export const authApi = createApi({
       }),
       transformResponse: (response) => response.data,
     }),
+    resendEmailVerification: builder.mutation({
+      query: () => ({
+        url: "/resend-email-verification",
+        method: "POST",
+      }),
+      transformResponse: (response) => response.data,
+    }),
+    verifyEmail: builder.mutation({
+      query: (verificationToken) => ({
+        url: `/verify-email/${verificationToken}`,
+        method: "GET",
+      }),
+      transformResponse: (response) => response.data,
+    }),
     refreshToken: builder.mutation({
       query: ({ refreshToken }) => ({
         url: "/refresh-token",
@@ -82,4 +96,6 @@ export const {
   useResetPasswordMutation,
   useLogOutMutation,
   useForgotPasswordMutation,
+  useResendEmailVerificationMutation,
+  useVerifyEmailMutation,
 } = authApi;

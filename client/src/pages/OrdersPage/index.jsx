@@ -11,36 +11,16 @@ import {
 import Layout from "components/Layout";
 import PageHeader from "components/PageHeader";
 import RefreshButton from "components/RefreshButton";
-import Spinner from "components/Spinner";
+import { errorToast } from "lib/helper";
 import { OrderTabs } from "./components/OrderTabs";
 import { OrdersTable } from "./components/OrdersTable";
 
 const OrderStatuses = [
-  {
-    label: "New Order",
-    value: "New",
-    count: 6,
-  },
-  {
-    label: "Ready",
-    value: "Ready",
-    count: 2,
-  },
-  {
-    label: "Served",
-    value: "Served",
-    count: 3,
-  },
-  {
-    label: "Cancelled",
-    value: "Cancelled",
-    count: 1,
-  },
-  {
-    label: "Billed",
-    value: "Billed",
-    count: 4,
-  },
+  { label: "New Order", value: "New" },
+  { label: "Ready", value: "Ready" },
+  { label: "Served", value: "Served" },
+  { label: "Cancelled", value: "Cancelled" },
+  { label: "Billed", value: "Billed" },
 ];
 
 const PAGINATION_LIMIT = 20;
@@ -103,7 +83,7 @@ export default function OrdersPage() {
         )
       );
     } catch (err) {
-      console.error("Failed to update status:", err);
+      errorToast({ error: err, message: "Failed to update order status" });
     }
   };
 
@@ -131,8 +111,7 @@ export default function OrdersPage() {
             defaultValue={OrderStatuses[0].value}
             onStatusChange={handleStatusChange}
           />
-          <OrdersTable data={orders} onAction={handelAction} />
-          {isLoading && <Spinner size="lg" className="mt-4" />}
+          <OrdersTable data={orders} onAction={handelAction} isLoading={isLoading} />
           {hasNextPage && <div ref={ref} className="h-10"></div>}
         </div>
       </div>

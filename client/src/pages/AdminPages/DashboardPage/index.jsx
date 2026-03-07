@@ -11,6 +11,7 @@ import PageHeader from "components/PageHeader";
 import StatusBadge from "components/StatusBadge";
 import EmptyState from "components/EmptyState";
 import { Card, CardContent, CardHeader, CardTitle } from "components/ui/card";
+import { Skeleton } from "components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -27,8 +28,9 @@ const CARD_COLORS = [
 ];
 
 const DashboardPage = () => {
-  const { data: dashboardData } = useGetDashBoardDataQuery();
-  const { data: orderData } = useGetOrderListQuery({
+  const { data: dashboardData, isLoading: isDashboardLoading } =
+    useGetDashBoardDataQuery();
+  const { data: orderData, isLoading: isOrdersLoading } = useGetOrderListQuery({
     page: 1,
     limit: 5,
   });
@@ -55,27 +57,38 @@ const DashboardPage = () => {
     <Layout>
       <PageHeader title="Dashboard" />
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-        {DASHBOARD_CARD_DATA.map((item, index) => {
-          const colors = CARD_COLORS[index % CARD_COLORS.length];
-          return (
-            <Card
-              key={index}
-              className={`border-l-4 ${colors.border}`}
-            >
-              <CardContent className="flex items-center gap-4 p-5">
-                <div
-                  className={`flex items-center justify-center size-12 rounded-xl ${colors.bg} ${colors.text}`}
-                >
-                  {item.icon}
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{item.value}</p>
-                  <p className="text-sm text-muted-foreground">{item.title}</p>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+        {isDashboardLoading
+          ? CARD_COLORS.map((colors, index) => (
+              <Card key={index} className={`border-l-4 ${colors.border}`}>
+                <CardContent className="flex items-center gap-4 p-5">
+                  <Skeleton className="size-12 rounded-xl" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-7 w-16" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          : DASHBOARD_CARD_DATA.map((item, index) => {
+              const colors = CARD_COLORS[index % CARD_COLORS.length];
+              return (
+                <Card key={index} className={`border-l-4 ${colors.border}`}>
+                  <CardContent className="flex items-center gap-4 p-5">
+                    <div
+                      className={`flex items-center justify-center size-12 rounded-xl ${colors.bg} ${colors.text}`}
+                    >
+                      {item.icon}
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">{item.value}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {item.title}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
       </section>
       <Card className="border-0">
         <CardHeader className="py-4 flex flex-row items-center justify-between">
@@ -89,7 +102,21 @@ const DashboardPage = () => {
           </Link>
         </CardHeader>
         <CardContent>
-          {orderData?.length === 0 ? (
+          {isOrdersLoading ? (
+            <div className="space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-4 w-24 hidden sm:block" />
+                  <Skeleton className="h-4 w-32 flex-1 hidden md:block" />
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                  <Skeleton className="h-4 w-28 hidden lg:block" />
+                </div>
+              ))}
+            </div>
+          ) : !orderData?.data?.orders?.length ? (
             <EmptyState
               title="No orders found"
               description="Start taking orders to see them here."

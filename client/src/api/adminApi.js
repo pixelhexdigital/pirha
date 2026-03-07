@@ -20,8 +20,8 @@ export const adminApi = createApi({
         const formData = new FormData();
         formData.append("coverImage", file);
         return {
-          url: "/update-cover-image",
-          method: "POST",
+          url: "/cover-image",
+          method: "PATCH",
           body: formData,
         };
       },
@@ -48,8 +48,10 @@ export const adminApi = createApi({
       transformResponse: (response) => response.data,
     }),
     onboardDone: builder.mutation({
-      query: () => "/onboard-done",
-      method: "GET",
+      query: () => ({
+        url: "/onboard-done",
+        method: "GET",
+      }),
       transformResponse: (response) => response,
     }),
 
@@ -108,9 +110,38 @@ export const adminApi = createApi({
         method: "PATCH",
         body: { status },
       }),
-      // invalidatesTags: (result, error, { orderId }) => [
-      //   { type: "Order", id: orderId },
-      // ],
+      invalidatesTags: (result, error, { orderId }) => [
+        { type: "Order", id: orderId },
+      ],
+    }),
+
+    generateCustomerBill: builder.mutation({
+      query: (customerId) => ({
+        url: `/bills/${customerId}`,
+        method: "PATCH",
+      }),
+    }),
+
+    getTaxes: builder.query({
+      query: () => "/taxes",
+      providesTags: ["Tax"],
+      transformResponse: (response) => response.data,
+    }),
+    createTax: builder.mutation({
+      query: (data) => ({
+        url: "/taxes",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Tax"],
+    }),
+    updateTax: builder.mutation({
+      query: (data) => ({
+        url: "/taxes",
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["Tax"],
     }),
   }),
 });
@@ -124,4 +155,8 @@ export const {
   useOnboardDoneMutation,
   useGetOrderListQuery,
   useUpdateOrderStatusMutation,
+  useGenerateCustomerBillMutation,
+  useGetTaxesQuery,
+  useCreateTaxMutation,
+  useUpdateTaxMutation,
 } = adminApi;

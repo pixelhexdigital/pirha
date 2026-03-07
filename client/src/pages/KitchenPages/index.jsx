@@ -8,8 +8,7 @@ import {
 import Layout from "components/Layout";
 import PageHeader from "components/PageHeader";
 import RefreshButton from "components/RefreshButton";
-import Spinner from "components/Spinner";
-
+import { errorToast } from "lib/helper";
 import { KitchenOrdersView } from "./components/KitchenOrdersView";
 
 const PAGINATION_LIMIT = 20;
@@ -55,7 +54,7 @@ export default function KitchenPage() {
         )
       );
     } catch (err) {
-      console.error("Failed to update status:", err);
+      errorToast({ error: err, message: "Failed to update order status" });
     }
   };
 
@@ -81,8 +80,8 @@ export default function KitchenPage() {
           <KitchenOrdersView
             orders={orders}
             onStatusChange={handleUpdateOrderStatus}
+            isLoading={isLoading}
           />
-          {isLoading && <Spinner size="lg" className="mt-4" />}
           {hasNextPage && <div ref={ref} className="h-10"></div>}
         </div>
       </div>

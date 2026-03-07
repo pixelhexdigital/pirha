@@ -66,6 +66,7 @@ export const menuApi = createApi({
         url: `/categories/${categoryId}/items/${itemId}/${isActive ? "activate" : "deactivate"}`,
         method: "PATCH",
       }),
+      invalidatesTags: ["Menu"],
     }),
 
     deleteItemFromCategory: builder.mutation({
@@ -73,6 +74,7 @@ export const menuApi = createApi({
         url: `categories/${categoryId}/items/${itemId}`,
         method: "DELETE",
       }),
+      invalidatesTags: ["Menu"],
     }),
 
     addMenuCategory: builder.mutation({
@@ -81,7 +83,7 @@ export const menuApi = createApi({
         method: "POST",
         body: category,
       }),
-      // invalidatesTags: ["Menu"],
+      invalidatesTags: ["Menu"],
     }),
 
     updateMenuCategory: builder.mutation({
@@ -90,6 +92,7 @@ export const menuApi = createApi({
         method: "PATCH",
         body: category,
       }),
+      invalidatesTags: ["Menu"],
     }),
 
     updateImageOfCategory: builder.mutation({
@@ -114,6 +117,7 @@ export const menuApi = createApi({
         url: `/categories/${categoryId}/${isActive ? "activate" : "deactivate"}`,
         method: "PATCH",
       }),
+      invalidatesTags: ["Menu"],
     }),
 
     deleteMenuCategory: builder.mutation({
@@ -121,6 +125,7 @@ export const menuApi = createApi({
         url: `/categories/${categoryId}`,
         method: "DELETE",
       }),
+      invalidatesTags: ["Menu"],
     }),
   }),
 });

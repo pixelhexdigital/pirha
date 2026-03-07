@@ -1,19 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useSelector } from "react-redux";
 import {
   ArrowLeft,
   Calendar,
-  ChevronDown,
   Clock,
-  Construction,
-  Filter,
-  Search,
   UtensilsCrossed,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import {
   Accordion,
@@ -21,104 +15,24 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { selectRestaurantDetails } from "store/MiscellaneousSlice";
 import { numberToCurrency } from "lib/helper";
-import FeatureComingSoon from "components/FeatureComingSoon";
-
-// Mock data for order history
-const mockOrderHistory = [
-  {
-    id: "order-001",
-    date: "2025-05-07",
-    time: "13:45",
-    status: "completed",
-    total: 560,
-    items: [
-      { id: "item-1", name: "Peanut Masala", quantity: 2, price: 110 },
-      { id: "item-2", name: "Boil Egg", quantity: 3, price: 20 },
-      { id: "item-3", name: "Chicken Biryani", quantity: 1, price: 280 },
-    ],
-  },
-  {
-    id: "order-002",
-    date: "2025-05-06",
-    time: "19:30",
-    status: "completed",
-    total: 420,
-    items: [
-      { id: "item-4", name: "Paneer Tikka", quantity: 1, price: 180 },
-      { id: "item-5", name: "Butter Naan", quantity: 4, price: 30 },
-      { id: "item-6", name: "Dal Makhani", quantity: 1, price: 120 },
-    ],
-  },
-  {
-    id: "order-003",
-    date: "2025-05-05",
-    time: "12:15",
-    status: "completed",
-    total: 350,
-    items: [
-      { id: "item-7", name: "Veg Pulao", quantity: 1, price: 150 },
-      { id: "item-8", name: "Raita", quantity: 1, price: 50 },
-      { id: "item-9", name: "Gulab Jamun", quantity: 3, price: 50 },
-    ],
-  },
-];
+import { useGetCustomerOrdersQuery } from "api/orderApi";
+import { Skeleton } from "@/components/ui/skeleton";
+import StatusBadge from "components/StatusBadge";
+import EmptyState from "components/EmptyState";
 
 const UserOrderHistoryPage = () => {
   const navigate = useNavigate();
   const { tableId, restaurantId } = useParams();
+  const [page, setPage] = useState(1);
 
-  const restaurantDetails = useSelector(selectRestaurantDetails);
+  const { data, isLoading, isError } = useGetCustomerOrdersQuery({
+    page,
+    limit: 20,
+  });
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterPeriod, setFilterPeriod] = useState("all");
-  const [orders, setOrders] = useState([]);
-
-  useEffect(() => {
-    // Simulate API call to fetch order history
-    const fetchOrderHistory = () => {
-      // Filter by period
-      let filteredOrders = [...mockOrderHistory];
-
-      if (filterPeriod === "today") {
-        const today = new Date().toISOString().split("T")[0];
-        filteredOrders = filteredOrders.filter((order) => order.date === today);
-      } else if (filterPeriod === "week") {
-        const oneWeekAgo = new Date();
-        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-        const oneWeekAgoStr = oneWeekAgo.toISOString().split("T")[0];
-        filteredOrders = filteredOrders.filter(
-          (order) => order.date >= oneWeekAgoStr
-        );
-      } else if (filterPeriod === "month") {
-        const oneMonthAgo = new Date();
-        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-        const oneMonthAgoStr = oneMonthAgo.toISOString().split("T")[0];
-        filteredOrders = filteredOrders.filter(
-          (order) => order.date >= oneMonthAgoStr
-        );
-      }
-
-      // Filter by search query
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        filteredOrders = filteredOrders.filter((order) =>
-          order.items.some((item) => item.name.toLowerCase().includes(query))
-        );
-      }
-
-      setOrders(filteredOrders);
-    };
-
-    fetchOrderHistory();
-  }, [filterPeriod, searchQuery]);
+  const orders = data?.orders || [];
+  const hasNextPage = data?.hasNextPage || false;
 
   const handleBack = () => {
     navigate(-1);
@@ -133,165 +47,151 @@ const UserOrderHistoryPage = () => {
     });
   };
 
-  return <FeatureComingSoon />;
+  const formatTime = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleTimeString("en-IN", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
-  // return (
-  //   <div className="min-h-screen bg-gray-50">
-  //     <div className="sticky top-0 z-10 bg-white border-b shadow-sm">
-  //       <div className="container flex items-center h-16 px-4">
-  //         <Button
-  //           variant="ghost"
-  //           size="icon"
-  //           onClick={handleBack}
-  //           className="mr-4"
-  //         >
-  //           <ArrowLeft className="w-5 h-5" />
-  //           <span className="sr-only">Back</span>
-  //         </Button>
-  //         <h1 className="text-xl font-semibold">Order History</h1>
-  //       </div>
-  //     </div>
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="sticky top-0 z-10 bg-background border-b shadow-sm">
+        <div className="container flex items-center h-16 px-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleBack}
+            className="mr-4"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span className="sr-only">Back</span>
+          </Button>
+          <h1 className="text-xl font-semibold">Order History</h1>
+        </div>
+      </div>
 
-  //     <main className="container max-w-md mx-auto px-4 py-6">
-  //       <div className="flex items-center justify-between mb-6">
-  //         <div className="relative flex-1">
-  //           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-  //           <Input
-  //             type="search"
-  //             placeholder="Search orders..."
-  //             value={searchQuery}
-  //             onChange={(e) => setSearchQuery(e.target.value)}
-  //             className="pl-10"
-  //           />
-  //         </div>
+      <main className="container max-w-md mx-auto px-4 py-6">
+        {isLoading ? (
+          <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="border rounded-lg bg-card shadow-sm p-4 space-y-3">
+                <div className="flex justify-between items-center">
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-32" />
+                    <Skeleton className="h-3 w-40" />
+                  </div>
+                  <div className="text-right space-y-2">
+                    <Skeleton className="h-5 w-16 ml-auto" />
+                    <Skeleton className="h-3 w-12 ml-auto" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : isError || orders.length === 0 ? (
+          <EmptyState
+            icon={UtensilsCrossed}
+            title="No orders yet"
+            description="Your order history will appear here"
+          />
+        ) : (
+          <div className="space-y-4">
+            {orders.map((order) => (
+              <Accordion type="single" collapsible key={order._id}>
+                <AccordionItem
+                  value={order._id}
+                  className="border rounded-lg bg-card shadow-sm"
+                >
+                  <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                    <div className="flex flex-1 justify-between items-center">
+                      <div className="text-left">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">
+                            Order #{order._id.slice(-6)}
+                          </p>
+                          <StatusBadge status={order.status} />
+                        </div>
+                        <div className="flex items-center text-sm text-muted-foreground mt-1">
+                          <Calendar className="mr-1 h-3 w-3" />
+                          <span>{formatDate(order.createdAt)}</span>
+                          <Clock className="ml-3 mr-1 h-3 w-3" />
+                          <span>{formatTime(order.createdAt)}</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium">
+                          {numberToCurrency(order.totalAmount, "INR", 0)}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {order.items?.length}{" "}
+                          {order.items?.length === 1 ? "item" : "items"}
+                        </p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pb-4">
+                    <Separator className="mb-3" />
+                    <div className="space-y-2">
+                      {order.items?.map((item, idx) => (
+                        <div
+                          key={item._id || idx}
+                          className="flex justify-between text-sm"
+                        >
+                          <div>
+                            <span>{item.title || item.name}</span>
+                            <span className="text-muted-foreground">
+                              {" "}
+                              x {item.quantity}
+                            </span>
+                          </div>
+                          <p>
+                            {numberToCurrency(
+                              (item.price || 0) * item.quantity,
+                              "INR",
+                              0
+                            )}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                    <Separator className="my-3" />
+                    <div className="flex justify-between font-medium">
+                      <p>Total</p>
+                      <p>{numberToCurrency(order.totalAmount, "INR", 0)}</p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full mt-4"
+                      onClick={() =>
+                        navigate(
+                          `/bill/${tableId}/${restaurantId}?orderId=${order._id}`
+                        )
+                      }
+                    >
+                      View Bill Details
+                    </Button>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            ))}
 
-  //         <DropdownMenu>
-  //           <DropdownMenuTrigger asChild className="h-9">
-  //             <Button variant="outline" size="sm" className="ml-2">
-  //               <Filter className="mr-2 h-4 w-4" />
-  //               {filterPeriod === "all"
-  //                 ? "All Time"
-  //                 : filterPeriod === "today"
-  //                   ? "Today"
-  //                   : filterPeriod === "week"
-  //                     ? "This Week"
-  //                     : "This Month"}
-  //               <ChevronDown className="ml-2 h-4 w-4" />
-  //             </Button>
-  //           </DropdownMenuTrigger>
-  //           <DropdownMenuContent align="end">
-  //             <DropdownMenuItem onClick={() => setFilterPeriod("all")}>
-  //               All Time
-  //             </DropdownMenuItem>
-  //             <DropdownMenuItem onClick={() => setFilterPeriod("today")}>
-  //               Today
-  //             </DropdownMenuItem>
-  //             <DropdownMenuItem onClick={() => setFilterPeriod("week")}>
-  //               This Week
-  //             </DropdownMenuItem>
-  //             <DropdownMenuItem onClick={() => setFilterPeriod("month")}>
-  //               This Month
-  //             </DropdownMenuItem>
-  //           </DropdownMenuContent>
-  //         </DropdownMenu>
-  //       </div>
-
-  //       {orders.length === 0 ? (
-  //         <div className="text-center py-10">
-  //           <p className="text-muted-foreground">No orders found</p>
-  //           {searchQuery && (
-  //             <Button
-  //               variant="outline"
-  //               className="mt-4"
-  //               onClick={() => setSearchQuery("")}
-  //             >
-  //               Clear Search
-  //             </Button>
-  //           )}
-  //         </div>
-  //       ) : (
-  //         <div className="space-y-4">
-  //           {orders.map((order) => (
-  //             <Accordion type="single" collapsible key={order.id}>
-  //               <AccordionItem
-  //                 value={order.id}
-  //                 className="border rounded-lg bg-white shadow-sm"
-  //               >
-  //                 <AccordionTrigger className="px-4 py-3 hover:no-underline">
-  //                   <div className="flex flex-1 justify-between items-center">
-  //                     <div>
-  //                       <p className="font-medium text-left">
-  //                         Order #{order.id.split("-")[1]}
-  //                       </p>
-  //                       <div className="flex items-center text-sm text-muted-foreground mt-1">
-  //                         <Calendar className="mr-1 h-3 w-3" />
-  //                         <span>{formatDate(order.date)}</span>
-  //                         <Clock className="ml-3 mr-1 h-3 w-3" />
-  //                         <span>{order.time}</span>
-  //                       </div>
-  //                     </div>
-  //                     <div className="text-right">
-  //                       <p className="font-medium">
-  //                         {numberToCurrency(order.total, "INR", 0)}
-  //                       </p>
-  //                       <p className="text-xs text-muted-foreground mt-1">
-  //                         {order.items.length}{" "}
-  //                         {order.items.length === 1 ? "item" : "items"}
-  //                       </p>
-  //                     </div>
-  //                   </div>
-  //                 </AccordionTrigger>
-  //                 <AccordionContent className="px-4 pb-4">
-  //                   <Separator className="mb-3" />
-  //                   <div className="space-y-2">
-  //                     {order.items.map((item) => (
-  //                       <div
-  //                         key={item.id}
-  //                         className="flex justify-between text-sm"
-  //                       >
-  //                         <div>
-  //                           <span>{item.name}</span>
-  //                           <span className="text-muted-foreground">
-  //                             {" "}
-  //                             × {item.quantity}
-  //                           </span>
-  //                         </div>
-  //                         <p>
-  //                           {numberToCurrency(
-  //                             item.price * item.quantity,
-  //                             "INR",
-  //                             0
-  //                           )}
-  //                         </p>
-  //                       </div>
-  //                     ))}
-  //                   </div>
-  //                   <Separator className="my-3" />
-  //                   <div className="flex justify-between font-medium">
-  //                     <p>Total</p>
-  //                     <p>{numberToCurrency(order.total, "INR", 0)}</p>
-  //                   </div>
-  //                   <Button
-  //                     variant="outline"
-  //                     size="sm"
-  //                     className="w-full mt-4"
-  //                     onClick={() =>
-  //                       navigate(
-  //                         `/bill/${tableId}/${restaurantId}?orderId=${order.id}`
-  //                       )
-  //                     }
-  //                   >
-  //                     View Bill Details
-  //                   </Button>
-  //                 </AccordionContent>
-  //               </AccordionItem>
-  //             </Accordion>
-  //           ))}
-  //         </div>
-  //       )}
-  //     </main>
-  //   </div>
-  // );
+            {hasNextPage && (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Load More
+              </Button>
+            )}
+          </div>
+        )}
+      </main>
+    </div>
+  );
 };
 
 export default UserOrderHistoryPage;

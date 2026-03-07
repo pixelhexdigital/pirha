@@ -6,11 +6,9 @@ import Layout from "components/Layout";
 import OrderListTable from "./OrderListTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "components/ui/tabs";
 import { selectOrders } from "store/OrderSlice";
-import { useGetOrderListQuery, useGetOrdersDataQuery } from "api/adminApi";
+import { useGetOrderListQuery } from "api/adminApi";
 import { Button } from "components/ui/button";
 import Spinner from "components/Spinner";
-
-import { useInView } from "react-intersection-observer";
 
 // CONSTANTS FOR STATUS COLORS AND TEXT
 const FILTER_BUTTONS = [
@@ -37,27 +35,15 @@ const FILTER_BUTTONS = [
 ];
 
 const PAGINATION_LIMIT = 20;
-const DEBOUNCE_TIME = 500;
 
 const OrderListPage = () => {
   const ordersData = useSelector(selectOrders);
   const [activeFilter, setActiveFilter] = useState(FILTER_BUTTONS[0].value);
-  const [pageNo, setPageNo] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
-
-  // console.log("ordersData", ordersData);
 
   const { orders } = ordersData || {};
 
-  const { ref, inView } = useInView({ threshold: 1 });
-
-  // const { isLoading, isFetching, refetch } = useGetOrdersDataQuery(
-  //   { pageNo, status: activeFilter },
-  //   { refetchOnMountOrArgChange: true }
-  // );
-
   const {
-    data: ordersDataResponse,
     isLoading,
     isFetching,
     refetch,
@@ -66,8 +52,6 @@ const OrderListPage = () => {
     limit: PAGINATION_LIMIT,
     status: activeFilter,
   });
-  console.log("ordersDataResponse", ordersDataResponse);
-
   const tableData = orders?.filter((order) => order.status === activeFilter);
 
   return (
@@ -78,12 +62,7 @@ const OrderListPage = () => {
 
           <Button
             variant="outline"
-            onClick={() =>
-              refetch({
-                pageNo: pageNo,
-                status: activeFilter,
-              })
-            }
+            onClick={() => refetch()}
             className="h-9"
           >
             {isFetching ? (

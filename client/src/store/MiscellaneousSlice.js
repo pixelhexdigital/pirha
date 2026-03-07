@@ -1,7 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { miscApi } from "api/miscApi";
-import localStorage from "redux-persist/es/storage";
-
 const initialState = {
   isSidebarExpanded: true,
   restaurantDetails: {},
@@ -39,20 +37,17 @@ const MiscellaneousSlice = createSlice({
       miscApi.endpoints.getRestaurantDetailsById.matchFulfilled,
       (state, action) => {
         state.restaurantDetails = action.payload;
-        localStorage.setItem("restaurantDetails", action.payload);
       }
     );
     builder.addMatcher(
       miscApi.endpoints.getTableDetailsById.matchFulfilled,
       (state, action) => {
         state.tableDetailById = action.payload;
-        localStorage.setItem("tableDetailById", action.payload);
       }
     );
     builder.addMatcher(
       miscApi.endpoints.getEnumValues.matchFulfilled,
       (state, action) => {
-        console.log("action.payload: ", action.payload);
         // state.foodGroups = action.payload.foodGroup?.map((group) => ({
         //   label: group,
         //   value: group,

@@ -17,20 +17,29 @@ const Field = forwardRef((props, ref) => {
     required,
     icon,
     error,
+    id,
     ...otherProps
   } = props;
+
+  const fieldId = id || `field-${(label || placeholder || "")?.replace(/\s+/g, "-").toLowerCase()}`;
+  const errorId = error ? `${fieldId}-error` : undefined;
+  const ariaLabel = label || placeholder;
 
   return (
     <div className={`${className}`}>
       <div className="">
         {label && (
-          <div className="flex mb-2 text-sm font-medium text-foreground">
+          <label
+            htmlFor={fieldId}
+            className="flex mb-2 text-sm font-medium text-foreground"
+          >
             {label}
-          </div>
+          </label>
         )}
         <div className="relative">
           {textarea ? (
             <textarea
+              id={fieldId}
               className={twMerge(
                 "w-full h-24 px-3.5 py-3 bg-background border border-input rounded-lg text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring resize-none",
                 icon && "pl-[3.125rem]",
@@ -42,10 +51,14 @@ const Field = forwardRef((props, ref) => {
               ref={ref}
               placeholder={placeholder}
               required={required}
+              aria-label={!label ? ariaLabel : undefined}
+              aria-invalid={!!error}
+              aria-describedby={errorId}
               {...otherProps}
             />
           ) : (
             <input
+              id={fieldId}
               className={twMerge(
                 "w-full h-12 px-3.5 py-3 bg-background border border-input rounded-lg text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring",
                 icon && "pl-[3.125rem]",
@@ -58,6 +71,9 @@ const Field = forwardRef((props, ref) => {
               onChange={onChange}
               placeholder={placeholder}
               required={required}
+              aria-label={!label ? ariaLabel : undefined}
+              aria-invalid={!!error}
+              aria-describedby={errorId}
               {...otherProps}
             />
           )}
@@ -72,7 +88,7 @@ const Field = forwardRef((props, ref) => {
           <div className="mt-2 text-sm text-muted-foreground">{note}</div>
         )}
         {error && (
-          <div className="mt-2 text-destructive text-xs font-medium">
+          <div id={errorId} role="alert" className="mt-2 text-destructive text-xs font-medium">
             {error}
           </div>
         )}

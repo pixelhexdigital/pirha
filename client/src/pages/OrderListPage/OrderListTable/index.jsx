@@ -7,7 +7,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Circle } from "lucide-react";
+import { ChevronDown, ChevronRight, Circle, Minus } from "lucide-react";
 
 import {
   Table,
@@ -50,19 +50,22 @@ const columns = [
           paddingLeft: `${row.depth * 2}rem`,
         }}
       >
-        {console.log("row", row)}
-        <div>
+        <div className="flex items-center gap-1">
           {row.getCanExpand() ? (
             <button
-              {...{
-                onClick: row.getToggleExpandedHandler(),
-                style: { cursor: "pointer" },
-              }}
+              onClick={row.getToggleExpandedHandler()}
+              className="p-0.5 rounded hover:bg-muted transition-colors"
+              aria-expanded={row.getIsExpanded()}
+              aria-label={row.getIsExpanded() ? "Collapse row" : "Expand row"}
             >
-              {row.getIsExpanded() ? "👇" : "👉"}
+              {row.getIsExpanded() ? (
+                <ChevronDown className="size-4" />
+              ) : (
+                <ChevronRight className="size-4" />
+              )}
             </button>
           ) : (
-            "🔵"
+            <Minus className="size-4 text-muted-foreground" />
           )}{" "}
           {row.getValue("_id")}
         </div>
@@ -137,8 +140,6 @@ const OrderListTable = ({ data }) => {
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
   const [expanded, setExpanded] = useState({});
-
-  console.log("data", data);
 
   const tableData = Array.isArray(data) ? data : [];
 

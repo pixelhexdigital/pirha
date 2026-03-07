@@ -101,7 +101,6 @@ const SignInTab = ({ onClick }) => {
       successToast({ data: response, message: "Logged in successfully" });
       handleRedirect(response);
     } catch (error) {
-      console.error("Login error:", error);
       errorToast({ error });
     }
   };

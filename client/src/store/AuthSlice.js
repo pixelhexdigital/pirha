@@ -75,6 +75,9 @@ export const selectRestaurantId = (state) => state.Auth.restaurantId;
 export const selectOnboardingState = (state) => state.Auth.onboardingState;
 export const selectIsOnboardingComplete = (state) =>
   state.Auth.onboardingState?.toLowerCase() === "completed";
+export const selectUserRole = (state) => state.Auth.userRole;
+export const selectCustomerAccessToken = (state) =>
+  state.Auth.customerAccessToken;
 
 export const { setCredentials, loggedOut, setOnboardingState } =
   AuthSlice.actions;

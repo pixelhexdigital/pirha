@@ -174,7 +174,7 @@ const ItemManagementPage = () => {
       await toggleItemAvailabilityMutationFn(payload);
       dispatch(toggleItemAvailability(payload));
     } catch (error) {
-      console.error(error);
+      errorToast({ error, message: "Failed to update availability" });
     }
   };
 
@@ -278,7 +278,7 @@ const ItemManagementPage = () => {
             )}
           />
         </div>
-        <div className="grid gap-4 p-4 lg:grid-cols-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 p-4 lg:grid-cols-3 sm:grid-cols-2">
           {isLoading ? (
             [...Array(6)].map((_, index) => (
               <Skeleton key={index} className="w-full h-[350px] rounded-lg" />

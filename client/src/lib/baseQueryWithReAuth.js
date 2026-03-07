@@ -30,8 +30,6 @@ const handleReAuthentication = async (api, extraOptions, args, baseQuery) => {
     api,
     extraOptions
   );
-  console.log("Refresh result: ", refreshResult);
-
   if (refreshResult.data) {
     api.dispatch(setCredentials(refreshResult.data));
     return await baseQuery(args, api, extraOptions);
@@ -47,7 +45,6 @@ export const baseQueryWithReAuth =
     let result = await baseQuery(args, api, extraOptions);
 
     if (result.error) {
-      console.log("status Code =>", result.error.status);
       if (result.error.status === 401) {
         result = await handleReAuthentication(
           api,
@@ -55,8 +52,6 @@ export const baseQueryWithReAuth =
           args,
           baseQuery
         );
-      } else {
-        console.error(`Error ${result.error.status}: `, result.error.data);
       }
     }
 
