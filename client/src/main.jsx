@@ -8,6 +8,7 @@ import { Toaster } from "react-hot-toast";
 import App from "./App.jsx";
 import "./index.css";
 import store from "store/index.js";
+import { ThemeProvider } from "components/ThemeProvider";
 
 //  Disable console logs in production mode
 if (import.meta.env.PROD) {
@@ -52,6 +53,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
+        <ThemeProvider defaultTheme="light" storageKey="pirha-theme">
         <App />
         <Toaster
           containerStyle={{ bottom: 40, left: 20, right: 20 }}
@@ -59,6 +61,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           gutter={10}
           toastOptions={toastOptions}
         />
+        </ThemeProvider>
       </PersistGate>
     </Provider>
   </React.StrictMode>
