@@ -19,38 +19,26 @@ const Field = forwardRef((props, ref) => {
     error,
     ...otherProps
   } = props;
-  // const handleKeyDown = (event) => {
-  //   const remainingChars = 880 - value.length;
-  //   if (remainingChars <= 0 && event.key !== "Backspace") {
-  //     event.preventDefault();
-  //   }
-  // };
-
-  // const remainingChars = 880 - value.length;
 
   return (
     <div className={`${className}`}>
       <div className="">
         {label && (
-          <div className="flex mb-2 font-semibold base2">
+          <div className="flex mb-2 text-sm font-medium text-foreground">
             {label}
-            {/* {textarea && (
-              <span className="pl-4 ml-auto text-n-4/50">{remainingChars}</span>
-            )} */}
           </div>
         )}
         <div className="relative">
           {textarea ? (
             <textarea
               className={twMerge(
-                "w-full h-24 px-3.5 py-3 bg-n-8 border-2 border-n-2 rounded-xl base2  text-n-7 outline-none transition-colors placeholder:text-n-4/50 focus:bg-transparent resize-none dark:bg-n-6 dark:border-n-6 dark:text-n-3 dark:focus:bg-transparent",
+                "w-full h-24 px-3.5 py-3 bg-background border border-input rounded-lg text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring resize-none",
                 icon && "pl-[3.125rem]",
-                value !== "" && "bg-transparent border-n-3/50",
+                value !== "" && "border-input/80",
                 classInput
               )}
               value={value}
               onChange={onChange}
-              // onKeyDown={handleKeyDown}
               ref={ref}
               placeholder={placeholder}
               required={required}
@@ -59,9 +47,9 @@ const Field = forwardRef((props, ref) => {
           ) : (
             <input
               className={twMerge(
-                "w-full h-12 px-3.5 py-3 bg-n-8 border-2 border-n-2 rounded-xl base2  text-n-7 outline-none transition-colors placeholder:text-n-4/50 focus:bg-transparent dark:bg-n-6 dark:border-n-6 dark:text-n-3 dark:focus:bg-transparent",
+                "w-full h-12 px-3.5 py-3 bg-background border border-input rounded-lg text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring",
                 icon && "pl-[3.125rem]",
-                value !== "" && "bg-transparent border-n-3/50",
+                value !== "" && "border-input/80",
                 classInput
               )}
               ref={ref}
@@ -74,14 +62,20 @@ const Field = forwardRef((props, ref) => {
             />
           )}
           <Icon
-            className={`absolute top-3.5 left-4 fill-n-4/50 pointer-events-none transition-colors ${
-              value !== "" && "fill-n-4"
+            className={`absolute top-3.5 left-4 fill-muted-foreground pointer-events-none transition-colors ${
+              value !== "" && "fill-foreground"
             }`}
             name={icon}
           />
         </div>
-        {note && <div className="mt-2 base2 text-n-4/50">{note}</div>}
-        {error && <div className="mt-2 text-red-600 caption1">{error}</div>}
+        {note && (
+          <div className="mt-2 text-sm text-muted-foreground">{note}</div>
+        )}
+        {error && (
+          <div className="mt-2 text-destructive text-xs font-medium">
+            {error}
+          </div>
+        )}
       </div>
     </div>
   );

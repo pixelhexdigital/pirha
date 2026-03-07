@@ -54,6 +54,18 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          foreground: "hsl(var(--info-foreground))",
+        },
         n: {
           1: "#FFFFFF",
           2: "#F3F5F7",
@@ -106,7 +118,7 @@ export default {
           "@apply text-[1rem]": {},
         },
         body: {
-          "@apply bg-n-7 text-[1rem] leading-6 -tracking-[.01em] text-n-7 antialiased md:bg-n-1 dark:text-n-1 dark:md:bg-n-6":
+          "@apply bg-background text-foreground text-[1rem] leading-6 -tracking-[.01em] antialiased":
             {},
         },
       });
@@ -152,10 +164,10 @@ export default {
           "@apply text-[0.6875rem] leading-4 font-medium -tracking-[.01em]": {},
         },
         ".shadow-ring-lg": {
-          "@apply shadow-lg ring-2 ring-black/5 ring-opacity-20": {},
+          "@apply shadow-lg ring-2 ring-border/50": {},
         },
         ".shadow-ring": {
-          "@apply shadow ring  ring-black/5 ring-opacity-20": {},
+          "@apply shadow ring ring-border/50": {},
         },
         ".ring-loader": {
           "@apply border-t-2 border-b-2 rounded-full size-7 animate-spin": {},
