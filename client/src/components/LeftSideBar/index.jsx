@@ -9,6 +9,13 @@ import {
 } from "store/MiscellaneousSlice";
 import { IMAGES } from "lib/constants";
 import { useLogOutMutation } from "api/authApi";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "components/ui/tooltip";
+import ThemeToggle from "components/ThemeToggle";
 
 export default function LeftSidebar({ children }) {
   const isExpanded = useSelector(selectIsSidebarExtended);
@@ -21,12 +28,6 @@ export default function LeftSidebar({ children }) {
   const [logOutMutation, { isLoading: isLoggingOut } = {}] =
     useLogOutMutation();
 
-  // useEffect(() => {
-  //   if (isDesktop) {
-  //     setExpanded(false);
-  //   }
-  // }, [isDesktop]);
-
   const handleLogout = async () => {
     try {
       await logOutMutation().unwrap();
@@ -36,80 +37,101 @@ export default function LeftSidebar({ children }) {
   };
 
   return (
-    <aside className="fixed top-0 left-0 z-20 h-screen overflow-x-hidden overflow-y-auto bg-white border-r shadow-sm drop-shadow-2xl bg-background scrollbar-none">
-      <nav className="inline-flex flex-col h-full px-2">
-        <div className="flex items-center justify-between h-20 p-2 ">
-          {isExpanded && (
-            <Link to="/" className="flex items-center">
-              <img src={IMAGES.LOGO_WHITE} alt="logo" className="h-8" />
-              <span className="ml-2 text-lg font-semibold text-primary"></span>
-            </Link>
-          )}
-          <button
-            onClick={() => setExpanded(!isExpanded)}
-            className="p-1.5 rounded-lg bg-gray-50 hover:bg-gray-100"
-          >
-            {isExpanded ? <ChevronFirst /> : <ChevronLast />}
-          </button>
-        </div>
-        <ul className="flex-1">
-          {children}
-          <button
-            onClick={handleLogout}
-            disabled={isLoggingOut}
-            type="button"
-            aria-label="Logout"
-            className="relative  my-1.5 font-medium cursor-pointer group"
-          >
-            <div
+    <TooltipProvider delayDuration={0}>
+      <aside
+        className={twMerge(
+          "fixed top-0 left-0 z-20 h-screen overflow-x-hidden overflow-y-auto border-r bg-card transition-all duration-200 scrollbar-none",
+          isExpanded ? "w-[16rem]" : "w-[4.5rem]"
+        )}
+      >
+        <nav className="flex flex-col h-full">
+          <div className="flex items-center justify-between h-16 px-3 border-b">
+            {isExpanded && (
+              <Link to="/" className="flex items-center">
+                <img src={IMAGES.LOGO_WHITE} alt="logo" className="h-7" />
+              </Link>
+            )}
+            <button
+              onClick={() => setExpanded(!isExpanded)}
               className={twMerge(
-                "flex items-center justify-center pl-2 py-2.5 transition-all border-l-[0.25rem] text-black/70 border-transparent bg-transparent ml-4 w-[85%] mr-auto rounded-tr-md rounded-br-md hove:text-primary hover:bg-primary/10 hover:border-primary",
-                !isExpanded &&
-                  "w-full rounded-none border-r-[0.25rem] border-l-0 mx-auto"
+                "p-1.5 rounded-lg bg-accent hover:bg-accent/80 transition-colors",
+                !isExpanded && "mx-auto"
               )}
             >
-              <LogOutIcon />
-              <span
-                className={`overflow-hidden transition-all ${
-                  isExpanded ? " ml-3" : ""
-                }`}
-              >
-                {isExpanded ? "Logout" : ""}
-              </span>
-              {!isExpanded && (
-                <div
+              {isExpanded ? (
+                <ChevronFirst className="size-4 text-muted-foreground" />
+              ) : (
+                <ChevronLast className="size-4 text-muted-foreground" />
+              )}
+            </button>
+          </div>
+
+          {isExpanded && (
+            <div className="px-3 pt-4 pb-2">
+              <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-muted-foreground/60 px-2">
+                Main
+              </p>
+            </div>
+          )}
+
+          <ul className="flex-1 px-2 py-2 space-y-1">{children}</ul>
+
+          <div className="px-2 pb-2 space-y-1">
+            <ThemeToggle collapsed={!isExpanded} />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                  type="button"
+                  aria-label="Logout"
                   className={twMerge(
-                    "absolute left-full px-2 py-1 ml-6 text-primary text-sm invisible opacity-20 -translate-x-3 transition-all group-hover:visible group-hover:opacity-100 group-hover:translate-x-0"
+                    "flex items-center w-full gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors",
+                    !isExpanded && "justify-center px-0"
                   )}
                 >
-                  Logout
-                </div>
+                  <LogOutIcon className="size-5 shrink-0" />
+                  {isExpanded && <span>Logout</span>}
+                </button>
+              </TooltipTrigger>
+              {!isExpanded && (
+                <TooltipContent side="right">Logout</TooltipContent>
               )}
-            </div>
-          </button>
-        </ul>
+            </Tooltip>
+          </div>
 
-        <div className="h-px w-full bg-gray-200 my-2" />
-        <div className="flex flex-col items-center justify-center p-2">
-          <p className="text-sm text-gray-500">
-            {isExpanded ? `@ ${new Date().getFullYear()}` : ""}
-
-            <a
-              href="https://pixelhexdigital.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="ml-1 text-primary hover:underline"
-            >
-              {isExpanded ? "PixelHex Digital" : "PH"}
-            </a>
-          </p>
-
-          <p className="text-sm text-gray-500">
-            {isExpanded ? "Version 1.0.0" : "v1.0.0"}
-          </p>
-        </div>
-      </nav>
-    </aside>
+          <div className="border-t px-3 py-3">
+            <p className="text-xs text-muted-foreground text-center">
+              {isExpanded ? (
+                <>
+                  &copy; {new Date().getFullYear()}{" "}
+                  <a
+                    href="https://pixelhexdigital.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    PixelHex Digital
+                  </a>
+                </>
+              ) : (
+                <a
+                  href="https://pixelhexdigital.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  PH
+                </a>
+              )}
+            </p>
+            <p className="text-[0.65rem] text-muted-foreground/60 text-center mt-0.5">
+              {isExpanded ? "Version 1.0.0" : "v1"}
+            </p>
+          </div>
+        </nav>
+      </aside>
+    </TooltipProvider>
   );
 }
 
@@ -117,39 +139,28 @@ export function SidebarItem({ icon, name, url }) {
   const isExpanded = useSelector(selectIsSidebarExtended);
 
   return (
-    <NavLink
-      className="relative flex flex-col my-1.5 font-medium cursor-pointer group"
-      to={url}
-    >
-      {({ isActive }) => (
-        <div
-          className={twMerge(
-            "flex items-center justify-center pl-2 py-2.5 transition-all border-l-[0.25rem] text-black/70 border-transparent bg-transparent ml-4 w-[85%] mr-auto rounded-tr-md rounded-br-md hove:text-primary hover:bg-primary/10 hover:border-primary",
-            isActive && "text-primary/80 border-primary bg-primary/10",
-            !isExpanded &&
-              "w-full rounded-none border-r-[0.25rem] border-l-0 mx-auto"
-          )}
-        >
-          {icon}
-          <span
-            className={`overflow-hidden transition-all ${
-              isExpanded ? "w-44 ml-3" : "w-2"
-            }`}
-          >
-            {isExpanded ? name : ""}
-          </span>
-          {!isExpanded && (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <NavLink className="block" to={url}>
+          {({ isActive }) => (
             <div
               className={twMerge(
-                "absolute left-full px-2 py-1 ml-6 text-sm invisible opacity-20 -translate-x-3 transition-all group-hover:visible group-hover:opacity-100 group-hover:translate-x-0",
-                isActive ? "text-primary" : "text-secondary"
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                isActive
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent",
+                !isExpanded && "justify-center px-0"
               )}
             >
-              {name}
+              <span className="shrink-0">{icon}</span>
+              {isExpanded && <span>{name}</span>}
             </div>
           )}
-        </div>
+        </NavLink>
+      </TooltipTrigger>
+      {!isExpanded && (
+        <TooltipContent side="right">{name}</TooltipContent>
       )}
-    </NavLink>
+    </Tooltip>
   );
 }

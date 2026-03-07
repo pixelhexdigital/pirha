@@ -12,12 +12,14 @@ import { useSelector, useDispatch } from "react-redux";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import ThemeToggleButton from "components/ThemeToggle/ThemeToggleButton";
 import {
   selectIsVegOnly,
   selectIsNonVegOnly,
@@ -79,7 +81,7 @@ const TopNavBar = ({
   };
 
   return (
-    <header className="sticky top-0 z-10 w-full bg-white border-b shadow-sm">
+    <header className="sticky top-0 z-10 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
       <div className="container flex items-center justify-between h-16 px-4">
         <div className="flex items-center gap-3">
           {showBackButton && (
@@ -96,17 +98,16 @@ const TopNavBar = ({
 
           {!isSearchVisible && (
             <div className="flex items-center gap-2">
-              {restaurantAvatar ? (
-                <img
+              <Avatar className="size-8">
+                <AvatarImage
                   src={restaurantAvatar}
                   alt="Restaurant logo"
-                  className="w-8 h-8 rounded-full object-contain"
+                  className="object-contain"
                 />
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex">
-                  <Utensils className="w-4 text-gray-600 m-auto" />
-                </div>
-              )}
+                <AvatarFallback className="bg-muted">
+                  <Utensils className="size-4 text-muted-foreground" />
+                </AvatarFallback>
+              </Avatar>
               <h1 className="text-xl font-semibold">
                 {title || "Restaurant Menu"}
               </h1>
@@ -172,6 +173,8 @@ const TopNavBar = ({
             <History className="w-5 h-5" />
             <span className="sr-only">Order History</span>
           </Button>
+
+          <ThemeToggleButton />
         </div>
       </div>
     </header>
