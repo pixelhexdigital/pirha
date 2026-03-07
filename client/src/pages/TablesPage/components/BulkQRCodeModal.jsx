@@ -10,6 +10,7 @@ import {
 import { Button } from "components/ui/button";
 import { Checkbox } from "components/ui/checkbox";
 import { ScrollArea } from "components/ui/scroll-area";
+import { ButtonSpinner } from "components/Spinner";
 
 export function BulkQRCodeModal({
   isOpen,
@@ -87,7 +88,7 @@ export function BulkQRCodeModal({
             disabled={selectedTables.length === 0}
           >
             {isDownloading ? (
-              <div className="ring-loader" />
+              <ButtonSpinner />
             ) : (
               "Download Selected QR Codes"
             )}

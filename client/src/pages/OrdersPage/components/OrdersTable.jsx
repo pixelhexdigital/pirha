@@ -1,16 +1,16 @@
 import { useState, Fragment } from "react";
 import {
   ChevronDown,
-  // Clock,
   MoreHorizontal,
   Receipt,
   XCircle,
   Check,
-  // AlertTriangle,
 } from "lucide-react";
 import { format } from "date-fns";
+import { twMerge } from "tailwind-merge";
 
-import { Badge } from "components/ui/badge";
+import StatusBadge from "components/StatusBadge";
+import EmptyState from "components/EmptyState";
 import { Button } from "components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "components/ui/card";
 import {
@@ -28,18 +28,8 @@ import {
   TableRow,
 } from "components/ui/table";
 
-const statusStyles = {
-  new: "bg-blue-100 text-blue-800",
-  preparing: "bg-yellow-100 text-yellow-800",
-  ready: "bg-green-100 text-green-800",
-  served: "bg-purple-100 text-purple-800",
-  cancelled: "bg-red-100 text-red-800",
-  billed: "bg-indigo-100 text-indigo-800",
-};
-
 const getActionItems = (status, paymentStatus) => {
   const actions = [];
-  // if (status === "new") actions.push({ label: "Start Preparing", icon: Clock });
   if (status === "new") actions.push({ label: "Mark as Ready", icon: Check });
   if (status === "ready")
     actions.push({ label: "Mark as Served", icon: Check });
@@ -50,8 +40,6 @@ const getActionItems = (status, paymentStatus) => {
   if (status !== "billed" && status !== "cancelled")
     actions.push({ label: "Cancel Order", icon: XCircle, danger: true });
 
-  // actions.push({ label: "Report Issue", icon: AlertTriangle });
-
   return actions;
 };
 
@@ -60,8 +48,16 @@ const statusMap = {
   "Mark as Ready": "Ready",
   "Mark as Served": "Served",
   "Generate Bill": "Billed",
-  // "Record Payment": "paid",
   "Cancel Order": "Cancelled",
+};
+
+const STATUS_BORDER_COLORS = {
+  new: "border-l-info",
+  preparing: "border-l-warning",
+  ready: "border-l-success",
+  served: "border-l-purple-500",
+  cancelled: "border-l-destructive",
+  billed: "border-l-indigo-500",
 };
 
 export function OrdersTable({ data, onAction }) {
@@ -91,12 +87,10 @@ export function OrdersTable({ data, onAction }) {
       </CardHeader>
       <CardContent>
         {data?.length === 0 ? (
-          <div className="p-4 text-center text-muted-foreground">
-            <p className="text-sm">No orders found</p>
-            <p className="text-xs">
-              Try changing the filters or check back later.
-            </p>
-          </div>
+          <EmptyState
+            title="No orders found"
+            description="Try changing the filters or check back later."
+          />
         ) : (
           <Table>
             <TableHeader>
@@ -121,7 +115,12 @@ export function OrdersTable({ data, onAction }) {
 
                 return (
                   <Fragment key={order._id}>
-                    <TableRow>
+                    <TableRow
+                      className={twMerge(
+                        "hover:bg-muted/50 border-l-4",
+                        STATUS_BORDER_COLORS[orderStatus] || "border-l-transparent"
+                      )}
+                    >
                       <TableCell>
                         <Button
                           variant="ghost"
@@ -145,20 +144,12 @@ export function OrdersTable({ data, onAction }) {
                         {order?.table}
                       </TableCell>
                       <TableCell>
-                        {/* {format(new Date(order.createdAt), "dd MMM yyyy HH:mm")} */}
-                        {/* // first show date and and after that show time in 12
-                        hour format */}
                         {format(new Date(order.createdAt), "dd MMM yyyy")}{" "}
                         {format(new Date(order.createdAt), "hh:mm aa")}
                       </TableCell>
-                      <TableCell>₹{totalAmount?.toFixed(2)}</TableCell>
+                      <TableCell>{"\u20B9"}{totalAmount?.toFixed(2)}</TableCell>
                       <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={statusStyles[orderStatus] || ""}
-                        >
-                          {order.status}
-                        </Badge>
+                        <StatusBadge status={order.status} />
                       </TableCell>
                       {orderStatus?.toLowerCase() !== "billed" &&
                         orderStatus?.toLowerCase() !== "cancelled" && (
@@ -174,7 +165,9 @@ export function OrdersTable({ data, onAction }) {
                                   ({ label, icon: Icon, danger }, idx) => (
                                     <DropdownMenuItem
                                       key={idx}
-                                      className={danger ? "text-red-600" : ""}
+                                      className={
+                                        danger ? "text-destructive" : ""
+                                      }
                                       onClick={() => handleAction(label, order)}
                                     >
                                       <Icon className="w-4 h-4 mr-2" />
@@ -189,45 +182,49 @@ export function OrdersTable({ data, onAction }) {
                     </TableRow>
                     {expandedRows.includes(order._id) && (
                       <TableRow>
-                        <TableCell colSpan={8} className="p-4">
-                          <div className="grid gap-4 md:grid-cols-2">
-                            <div>
-                              <h4 className="mb-2 font-semibold">
-                                Order Details
-                              </h4>
-                              <div className="text-sm">
-                                <p>
-                                  <span className="text-muted-foreground">
-                                    Customer:
-                                  </span>{" "}
-                                  {order?.customer?.firstName}
-                                </p>
-                                <p>
-                                  <span className="text-muted-foreground">
-                                    Phone:
-                                  </span>{" "}
-                                  {order?.customer?.number}
-                                </p>
+                        <TableCell colSpan={8} className="p-0">
+                          <div className="bg-muted/30 p-5 mx-1 my-1 rounded-lg">
+                            <div className="grid gap-6 md:grid-cols-2">
+                              <div>
+                                <h4 className="mb-3 font-semibold text-sm">
+                                  Order Details
+                                </h4>
+                                <div className="text-sm space-y-1.5">
+                                  <p>
+                                    <span className="text-muted-foreground">
+                                      Customer:
+                                    </span>{" "}
+                                    {order?.customer?.firstName}
+                                  </p>
+                                  <p>
+                                    <span className="text-muted-foreground">
+                                      Phone:
+                                    </span>{" "}
+                                    {order?.customer?.number}
+                                  </p>
+                                </div>
                               </div>
-                            </div>
-                            <div>
-                              <h4 className="mb-2 font-semibold">Items</h4>
-                              <div className="space-y-2">
-                                {order?.items?.map((item, index) => (
-                                  <div
-                                    key={index}
-                                    className="flex justify-between text-sm"
-                                  >
-                                    <span>
-                                      {item?.quantity}x {item?.title}
-                                    </span>
-                                    <span>₹{item.price?.toFixed(2)}</span>
-                                  </div>
-                                ))}
-                                <div className="pt-2 mt-2 font-medium border-t">
-                                  <div className="flex justify-between">
-                                    <span>Total</span>
-                                    <span>₹{totalAmount?.toFixed(2)}</span>
+                              <div>
+                                <h4 className="mb-3 font-semibold text-sm">
+                                  Items
+                                </h4>
+                                <div className="space-y-2">
+                                  {order?.items?.map((item, index) => (
+                                    <div
+                                      key={index}
+                                      className="flex justify-between text-sm"
+                                    >
+                                      <span>
+                                        {item?.quantity}x {item?.title}
+                                      </span>
+                                      <span>{"\u20B9"}{item.price?.toFixed(2)}</span>
+                                    </div>
+                                  ))}
+                                  <div className="pt-2 mt-2 font-medium border-t">
+                                    <div className="flex justify-between">
+                                      <span>Total</span>
+                                      <span>{"\u20B9"}{totalAmount?.toFixed(2)}</span>
+                                    </div>
                                   </div>
                                 </div>
                               </div>

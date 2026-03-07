@@ -14,8 +14,8 @@ import { Input } from "components/ui/input";
 import { Label } from "components/ui/label";
 
 const statusStyles = {
-  Free: "bg-green-100 text-green-800",
-  Occupied: "bg-red-100 text-red-800",
+  Free: "bg-success/10 text-success",
+  Occupied: "bg-destructive/10 text-destructive",
 };
 
 export function TableDetailsModal({ isOpen, onClose, table, onTableUpdate }) {

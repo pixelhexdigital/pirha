@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "components/ui/tabs";
 import { selectOrders } from "store/OrderSlice";
 import { useGetOrderListQuery, useGetOrdersDataQuery } from "api/adminApi";
 import { Button } from "components/ui/button";
+import Spinner from "components/Spinner";
 
 import { useInView } from "react-intersection-observer";
 
@@ -92,7 +93,7 @@ const OrderListPage = () => {
             )}
           </Button>
         </div>
-        <div className="w-full p-4 space-y-4 bg-white rounded-md shadow-md ring-1 ring-black/5">
+        <div className="w-full p-4 space-y-4 bg-card rounded-md shadow-md ring-1 ring-border">
           <Tabs defaultValue={FILTER_BUTTONS[0].value} className="space-y-4">
             <TabsList className="gap-4">
               {FILTER_BUTTONS.map((filter) => {
@@ -111,7 +112,7 @@ const OrderListPage = () => {
               return (
                 <TabsContent key={filter.value} value={filter.value}>
                   {isLoading ? (
-                    <div className="flex mx-auto my-20 ring-loader border-primary" />
+                    <Spinner size="lg" className="my-20" />
                   ) : (
                     <OrderListTable data={tableData} />
                   )}

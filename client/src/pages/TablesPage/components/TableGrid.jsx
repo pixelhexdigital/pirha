@@ -14,6 +14,7 @@ import { TableCard } from "./TableCard";
 import { BulkQRCodeModal } from "./BulkQRCodeModal";
 import { TableDetailsModal } from "./TableDetailsModal";
 import { Button } from "components/ui/button";
+import Spinner from "components/Spinner";
 import { errorToast, successToast } from "lib/helper";
 import { TableSummary } from "pages/TablesPage/components/TableSummary";
 import { TableFilters } from "pages/TablesPage/components/TableFilters";
@@ -192,11 +193,7 @@ export function TableGrid() {
           />
         ))}
       </div>
-      {isLoading && (
-        <div className="flex justify-center items-center mt-4">
-          <div className="ring-loader border-secondary size-10" />
-        </div>
-      )}
+      {isLoading && <Spinner size="lg" className="mt-4" />}
 
       {/* This div acts as a trigger for infinite scroll */}
       {hasNextPage && <div ref={ref} className="h-10"></div>}

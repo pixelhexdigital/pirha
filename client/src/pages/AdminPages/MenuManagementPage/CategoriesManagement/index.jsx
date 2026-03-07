@@ -13,6 +13,7 @@ import Placeholder from "assets/placeholder.svg";
 
 import CategoriesForm from "./CategoriesForm";
 import Layout from "components/Layout";
+import { ButtonSpinner } from "components/Spinner";
 import { Skeleton } from "components/ui/skeleton";
 import { Button } from "components/ui/button";
 import { Card } from "components/ui/card";
@@ -210,7 +211,7 @@ const CategoriesManagementPage = () => {
           Manage Menu Items
         </Button>
       </div>
-      <div className="space-y-4 w-[98%] mx-auto bg-white rounded-md shadow-md ring-1 ring-black/5">
+      <div className="space-y-4 w-[98%] mx-auto bg-card rounded-md shadow-md ring-1 ring-border">
         <div className="grid gap-4 p-4 lg:grid-cols-3 sm:grid-cols-2">
           {isLoading ? (
             [...Array(6)].map((_, index) => (
@@ -223,34 +224,31 @@ const CategoriesManagementPage = () => {
                   setFormVisible(true);
                   setSelectedCategory(null);
                 }}
-                className="flex flex-col items-center justify-center w-full p-4 transition ease-in-out delay-150 duration-300 border border-dotted rounded-lg scale-[0.98] shadow-sm border-primary hover:scale-100 hover:text-primary/90 hover:border-primary min-h-80 group"
+                className="flex flex-col items-center justify-center w-full p-4 transition duration-200 border-2 border-dashed rounded-lg border-muted-foreground/25 hover:border-primary/50 hover:bg-primary/5 min-h-80 group"
               >
                 {!isAddingCategory ? (
                   <>
-                    <h3 className="text-3xl transition duration-300 delay-200 group-hover:-translate-y-1 text-primary group-hover:animate-pulse group-hover:text-primary/90 group-hover:font-semibold ">
-                      +
-                    </h3>
-                    <h3 className="font-semibold text-primary">
-                      Add New
-                      <br />
-                      Category
-                    </h3>
+                    <div className="flex items-center justify-center size-14 rounded-full bg-primary/10 mb-3 group-hover:bg-primary/20 transition-colors">
+                      <span className="text-2xl text-primary font-light">+</span>
+                    </div>
+                    <h3 className="font-semibold text-foreground">Add New Category</h3>
+                    <p className="text-xs text-muted-foreground mt-1">Click to add a category</p>
                   </>
                 ) : (
-                  <div className="ring-loader border-primary/80" />
+                  <ButtonSpinner />
                 )}
               </button>
 
               {menuData?.map((category) => (
                 <Card
                   key={category?._id}
-                  className="overflow-hidden transition-all duration-300 ease-in-out delay-150 border rounded-lg shadow-sm hover:shadow-md border-primary/10 hover:border-primary/20 bg-white/100 hover:-translate-y-1 "
+                  className="overflow-hidden transition-all duration-300 ease-in-out delay-150 border rounded-lg shadow-sm hover:shadow-md border-primary/10 hover:border-primary/20 bg-card hover:-translate-y-1 "
                 >
                   <div className="relative aspect-video">
                     <img
                       src={category?.image?.url || Placeholder}
                       alt={category?.name}
-                      className="w-full h-full min-h-[22rem] "
+                      className="w-full h-full min-h-[22rem] aspect-square object-cover"
                     />
                     <div className="absolute right-2 top-2">
                       <DropdownMenu>
@@ -258,9 +256,9 @@ const CategoriesManagementPage = () => {
                           <Button
                             variant="outline"
                             size="icon"
-                            className="w-8 h-8 bg-white"
+                            className="w-8 h-8 bg-card"
                           >
-                            <MoreVerticalIcon className="w-4 h-4 text-black" />
+                            <MoreVerticalIcon className="w-4 h-4 text-foreground" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
@@ -293,7 +291,7 @@ const CategoriesManagementPage = () => {
                                 categoryName: category?.name,
                               })
                             }
-                            className="text-red-600"
+                            className="text-destructive"
                           >
                             <Trash2 className="w-4 h-4 mr-2" />
                             Delete Item
@@ -360,7 +358,7 @@ const CategoriesManagementPage = () => {
             <AlertDialogCancel className="w-24 mt-0">Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={deleteCategory} className="w-24">
               {isDeletingCategory ? (
-                <div className="ring-loader" />
+                <ButtonSpinner />
               ) : (
                 "Continue"
               )}

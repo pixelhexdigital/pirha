@@ -4,6 +4,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { object, string, number } from "yup";
 import { Upload, Pencil } from "lucide-react";
 
+import { ButtonSpinner } from "components/Spinner";
 import { Button } from "components/ui/button";
 import {
   Dialog,
@@ -23,8 +24,7 @@ import {
 } from "components/ui/select";
 import Field from "components/Field";
 
-const CLASS_INPUT =
-  "border-n-7 focus:bg-transparent dark:bg-n-7 dark:border-n-7 dark:focus:bg-transparent ";
+const CLASS_INPUT = "";
 
 const DEFAULT_VALUES = {
   title: "",
@@ -136,11 +136,11 @@ const DishForm = ({
               <img
                 src={imageUrl || ""}
                 alt="Avatar"
-                className="border border-gray-300 size-[12.5rem] rounded-xl object-cover cursor-default shadow-md"
+                className="border border-input size-[12.5rem] rounded-xl object-cover cursor-default shadow-md"
               />
             ) : (
-              <div className="flex flex-col items-center justify-center gap-2 bg-gray-200 border border-gray-300 rounded-xl size-[12.5rem] shadow-md">
-                <span className="text-gray-500">Upload Image</span>
+              <div className="flex flex-col items-center justify-center gap-2 bg-muted border border-input rounded-xl size-[12.5rem] shadow-md">
+                <span className="text-muted-foreground">Upload Image</span>
               </div>
             )}
             <input
@@ -154,7 +154,7 @@ const DishForm = ({
             <button
               type="button"
               onClick={() => imageRef.current.click()}
-              className="absolute flex items-center justify-center transition-all duration-300 ease-in-out transform right-[0.60rem] bottom-2 size-10 bg-primary hover:scale-105 hover:bg-primary/90 hover:text-white rounded-br-lg rounded-tl-lg shadow-md"
+              className="absolute flex items-center justify-center transition-all duration-300 ease-in-out transform right-[0.60rem] bottom-2 size-10 bg-primary hover:scale-105 hover:bg-primary/90 hover:text-primary-foreground rounded-br-lg rounded-tl-lg shadow-md"
             >
               {imageUrl ? (
                 <Pencil size={22} color="white" />
@@ -221,7 +221,7 @@ const DishForm = ({
                     </SelectContent>
                   </Select>
                   {errors.itemType?.message && (
-                    <div className="mt-2 text-red-600 caption1">
+                    <div className="mt-2 text-destructive caption1">
                       {errors.itemType?.message}
                     </div>
                   )}
@@ -251,7 +251,7 @@ const DishForm = ({
                     </SelectContent>
                   </Select>
                   {errors.foodGroup?.message && (
-                    <div className="mt-2 text-red-600 caption1">
+                    <div className="mt-2 text-destructive caption1">
                       {errors.foodGroup?.message}
                     </div>
                   )}
@@ -262,7 +262,7 @@ const DishForm = ({
 
           <DialogFooter className="flex flex-row justify-end gap-10 mt-5">
             <Button type="submit" className="items-center min-w-24">
-              {loader ? <div className="ring-loader size-6" /> : title}
+              {loader ? <ButtonSpinner /> : title}
             </Button>
             <DialogClose>Cancel</DialogClose>
           </DialogFooter>

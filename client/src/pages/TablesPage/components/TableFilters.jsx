@@ -34,8 +34,8 @@ export function TableFilters({
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6 mt-2">
-      <div>
+    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4 mb-6">
+      <div className="space-y-1.5">
         <Label htmlFor="search-filter">Search</Label>
         <Input
           id="search-filter"
@@ -44,7 +44,7 @@ export function TableFilters({
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
-      <div>
+      <div className="space-y-1.5">
         <Label htmlFor="status-filter">Status</Label>
         <Select value={status} onValueChange={setStatus}>
           <SelectTrigger id="status-filter">
@@ -57,7 +57,7 @@ export function TableFilters({
           </SelectContent>
         </Select>
       </div>
-      <div>
+      <div className="space-y-1.5">
         <Label htmlFor="capacity-filter">Minimum Capacity</Label>
         <Input
           id="capacity-filter"

@@ -13,6 +13,7 @@ import { useCurrentUserQuery } from "api/userApi";
 import Field from "components/Field";
 import { Button } from "components/ui/button";
 import { Combobox } from "components/ui/Combobox";
+import { Avatar, AvatarFallback, AvatarImage } from "components/ui/avatar";
 import {
   Card,
   CardContent,
@@ -21,10 +22,11 @@ import {
   CardTitle,
 } from "components/ui/card";
 import { errorToast } from "lib/helper";
+import Spinner from "components/Spinner";
+import { ButtonSpinner } from "components/Spinner";
 
 // Input class styles
-const CLASS_INPUT =
-  "border-n-7 focus:bg-transparent dark:bg-n-7 dark:border-n-7 dark:focus:bg-transparent";
+const CLASS_INPUT = "";
 
 // Default form values
 const DEFAULT_VALUES = {
@@ -184,7 +186,7 @@ const UserProfileForm = () => {
   if (isUserLoading) {
     return (
       <div className="flex items-center justify-center min-h-[70vh]">
-        <div className="ring-loader size-16 border-secondary" />
+        <Spinner size="lg" />
       </div>
     );
   }
@@ -204,17 +206,19 @@ const UserProfileForm = () => {
           className="w-full mx-auto"
         >
           <div className="flex flex-col items-center justify-center gap-4 mb-8">
-            <div className="relative">
-              <div className="flex items-center justify-center w-32 h-32 border-2 border-gray-300 border-dashed rounded-full bg-gray-50">
-                {image ? (
-                  <img
-                    src={image || "/placeholder.svg"}
-                    alt="Restaurant logo"
-                    className="object-contain w-full h-full rounded-full"
-                  />
-                ) : (
-                  <Upload className="w-8 h-8 text-gray-400" />
-                )}
+            <div className="relative group cursor-pointer">
+              <Avatar className="size-32 border-2 border-dashed border-muted-foreground/25 group-hover:border-primary/50 transition-colors">
+                <AvatarImage
+                  src={image}
+                  alt="Restaurant logo"
+                  className="object-contain"
+                />
+                <AvatarFallback className="bg-muted">
+                  <Upload className="size-8 text-muted-foreground" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Upload className="size-6 text-white" />
               </div>
               <input
                 type="file"
@@ -224,7 +228,7 @@ const UserProfileForm = () => {
               />
             </div>
             {isUploading && (
-              <p className="text-sm text-blue-500">Uploading...</p>
+              <p className="text-sm text-info">Uploading...</p>
             )}
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -287,7 +291,7 @@ const UserProfileForm = () => {
             className="w-36 mb-4  mt-8"
             disabled={isUploading}
           >
-            {isUpdating ? <div className="ring-loader" /> : "Update Profile"}
+            {isUpdating ? <ButtonSpinner /> : "Update Profile"}
           </Button>
         </form>
       </CardContent>

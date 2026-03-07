@@ -1,4 +1,3 @@
-import { RefreshCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 
@@ -7,7 +6,9 @@ import {
   useUpdateOrderStatusMutation,
 } from "api/adminApi";
 import Layout from "components/Layout";
-import { Button } from "components/ui/button";
+import PageHeader from "components/PageHeader";
+import RefreshButton from "components/RefreshButton";
+import Spinner from "components/Spinner";
 
 import { KitchenOrdersView } from "./components/KitchenOrdersView";
 
@@ -66,40 +67,22 @@ export default function KitchenPage() {
   return (
     <Layout>
       <div className="flex flex-col h-full">
-        <div className="flex sm:items-center justify-between p-4 border-b sm:flex-row flex-col gap-4">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-2xl font-bold tracking-tight">
-              Kitchen Orders
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Manage and track orders for kitchen preparation
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-2 max-w-fit px-4 self-end"
+        <PageHeader
+          title="Kitchen Orders"
+          description="Manage and track orders for kitchen preparation"
+        >
+          <RefreshButton
             onClick={handleRefresh}
-            disabled={isLoading}
-          >
-            {isFetching ? (
-              <RefreshCcw className="w-4 h-4 animate-spin" />
-            ) : (
-              <RefreshCcw className="w-4 h-4" />
-            )}
-            Refresh
-          </Button>
-        </div>
+            isLoading={isLoading}
+            isFetching={isFetching}
+          />
+        </PageHeader>
         <div className="flex-1 p-4 space-y-4">
           <KitchenOrdersView
             orders={orders}
             onStatusChange={handleUpdateOrderStatus}
           />
-          {isLoading && (
-            <div className="flex justify-center items-center mt-4">
-              <div className="ring-loader border-secondary size-10" />
-            </div>
-          )}
+          {isLoading && <Spinner size="lg" className="mt-4" />}
           {hasNextPage && <div ref={ref} className="h-10"></div>}
         </div>
       </div>

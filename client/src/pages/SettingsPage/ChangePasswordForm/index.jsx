@@ -13,10 +13,10 @@ import {
 } from "components/ui/card";
 import { useChangePasswordMutation } from "api/authApi";
 import { errorToast, successToast } from "lib/helper";
+import { ButtonSpinner } from "components/Spinner";
 
 // Input class styles
-const CLASS_INPUT =
-  "border-n-7 focus:bg-transparent dark:bg-n-7 dark:border-n-7 dark:focus:bg-transparent";
+const CLASS_INPUT = "";
 
 // Default form values
 const DEFAULT_VALUES = {
@@ -110,13 +110,13 @@ const ChangePasswordForm = () => {
             disabled={isLoadingChangePassword}
           >
             {isLoadingChangePassword ? (
-              <div className="ring-loader" />
+              <ButtonSpinner />
             ) : (
               "Change Password"
             )}
           </Button>
 
-          <p className="text-sm text-gray-500 mt-4">
+          <p className="text-sm text-muted-foreground mt-4">
             If you forget your password, you can reset it using the &quot;Forgot
             Password&quot; link on the login page.
           </p>

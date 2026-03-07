@@ -3,11 +3,13 @@ import { Clock, CheckCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { twMerge } from "tailwind-merge";
 
 const statusStyles = {
-  new: "bg-blue-100 text-blue-800 capitalize",
-  preparing: "bg-yellow-100 text-yellow-800 capitalize",
-  ready: "bg-green-100 text-green-800 capitalize",
+  new: "bg-info/10 text-info border-info/20",
+  preparing: "bg-warning/10 text-warning border-warning/20",
+  ready: "bg-success/10 text-success border-success/20",
 };
 
 export function KitchenOrdersView({ orders, onStatusChange }) {
@@ -20,10 +22,27 @@ export function KitchenOrdersView({ orders, onStatusChange }) {
 
     if (days > 0) return `${days} day${days > 1 ? "s" : ""} ago`;
     if (hours > 0)
-      return `${hours} hour${hours > 1 ? "s" : ""} ${hoursAndMinutes} minute${hoursAndMinutes > 1 ? "s" : ""}
-     ago`;
-    if (minutes > 0) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+      return `${hours}h ${hoursAndMinutes}m ago`;
+    if (minutes > 0) return `${minutes} min ago`;
     return "Just now";
+  };
+
+  const getUrgencyStyle = (orderTime) => {
+    const diff = new Date().getTime() - new Date(orderTime).getTime();
+    const minutes = Math.floor(diff / 60000);
+
+    if (minutes > 15) return "border-l-4 border-l-destructive";
+    if (minutes > 5) return "border-l-4 border-l-warning";
+    return "border-l-4 border-l-success";
+  };
+
+  const getTimeColor = (orderTime) => {
+    const diff = new Date().getTime() - new Date(orderTime).getTime();
+    const minutes = Math.floor(diff / 60000);
+
+    if (minutes > 15) return "text-destructive animate-pulse";
+    if (minutes > 5) return "text-warning";
+    return "text-muted-foreground";
   };
 
   return (
@@ -31,22 +50,39 @@ export function KitchenOrdersView({ orders, onStatusChange }) {
       {orders?.map((order) => (
         <Card
           key={order._id}
-          className="flex flex-col hover:shadow-md hover:-translate-y-1 transition-all duration-300 ease-in-out delay-75 border-primary/5 hover:border-primary/20 shadow-sm"
+          className={twMerge(
+            "flex flex-col hover:shadow-md transition-shadow duration-200",
+            getUrgencyStyle(order?.createdAt)
+          )}
         >
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 flex-wrap gap-2 mb-2">
-            <CardTitle className="text-sm font-medium capitalize">
-              Table {order?.table} - Order #{order._id?.slice(-4)}
-            </CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between pb-3 space-y-0 flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-sm font-medium capitalize">
+                Table {order?.table} - #{order._id?.slice(-4)}
+              </CardTitle>
+              <Badge variant="secondary" className="text-xs px-1.5 py-0">
+                {order?.items?.length} items
+              </Badge>
+            </div>
             <Badge
-              variant="secondary"
-              className={statusStyles[order?.status?.toLowerCase()]}
+              variant="outline"
+              className={twMerge(
+                "capitalize",
+                statusStyles[order?.status?.toLowerCase()]
+              )}
             >
               {order?.status}
             </Badge>
           </CardHeader>
-          <CardContent>
-            <div className="flex items-center mb-4 text-sm text-muted-foreground">
-              <Clock className="w-4 h-4 mr-1" />
+          <Separator />
+          <CardContent className="pt-4">
+            <div
+              className={twMerge(
+                "flex items-center mb-4 text-sm",
+                getTimeColor(order?.createdAt)
+              )}
+            >
+              <Clock className="w-4 h-4 mr-1.5" />
               {getTimeDifference(order?.createdAt)}
             </div>
             <ul className="space-y-2">
@@ -62,28 +98,16 @@ export function KitchenOrdersView({ orders, onStatusChange }) {
               ))}
             </ul>
             <div className="flex justify-end mt-4 space-x-2">
-              {/* {order?.status?.toLowerCase() === "new" && (
-                <Button
-                  size="sm"
-                  onClick={() => onStatusChange(order?._id, "Preparing")}
-                >
-                  <Clock className="w-4 h-4 mr-1" />
-                  Start Preparing
-                </Button>
-              )} */}
               {order?.status?.toLowerCase() === "new" && (
                 <Button
-                  size="sm"
+                  size="lg"
                   onClick={() => onStatusChange(order?._id, "Ready")}
+                  className="w-full"
                 >
-                  <CheckCircle className="w-4 h-4 mr-1" />
+                  <CheckCircle className="w-4 h-4 mr-2" />
                   Mark as Ready
                 </Button>
               )}
-              {/* <Button size="sm" variant="outline">
-                <AlertCircle className="w-4 h-4 mr-1" />
-                Issue
-              </Button> */}
             </div>
           </CardContent>
         </Card>

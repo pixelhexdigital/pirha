@@ -213,7 +213,7 @@ const OrderDetailsPage = () => {
     <Layout>
       <div className="space-y-4 w-[98%] mx-auto">
         <h2 className="h4">Orders</h2>
-        <div className="w-full p-4 space-y-4 bg-white rounded-md shadow-md ring-1 ring-black/5">
+        <div className="w-full p-4 space-y-4 bg-card rounded-md shadow-md ring-1 ring-border">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (

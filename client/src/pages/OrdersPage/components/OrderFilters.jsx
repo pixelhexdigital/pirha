@@ -29,11 +29,11 @@ export function OrderFilters() {
             <Input
               type="search"
               placeholder="Search orders..."
-              className="h-10 bg-white px-3.5 py-3 pl-8"
+              className="h-10 bg-card px-3.5 py-3 pl-8"
             />
           </div>
           {/* <Select defaultValue="all">
-            <SelectTrigger className="bg-white">
+            <SelectTrigger className="bg-card">
               <SelectValue placeholder="Order Status" />
             </SelectTrigger>
             <SelectContent>
@@ -45,7 +45,7 @@ export function OrderFilters() {
             </SelectContent>
           </Select> */}
           <Select defaultValue="all">
-            <SelectTrigger className="bg-white">
+            <SelectTrigger className="bg-card">
               <SelectValue placeholder="Payment Status" />
             </SelectTrigger>
             <SelectContent>
@@ -56,7 +56,7 @@ export function OrderFilters() {
               ))}
             </SelectContent>
           </Select>
-          <Input type="date" className="bg-white" />
+          <Input type="date" className="bg-card" />
           <div className="flex items-center justify-end gap-2">
             <Button variant="outline" size="sm">
               Export

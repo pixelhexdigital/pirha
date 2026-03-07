@@ -1,18 +1,15 @@
 import { Fragment } from "react";
 import { format } from "date-fns";
-import {
-  // IndianRupee,
-  Users,
-  ChefHat,
-  ScanText,
-  // ArrowDown,
-  // ArrowUp,
-} from "lucide-react";
+import { Users, ChefHat, ScanText, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import { useGetDashBoardDataQuery, useGetOrderListQuery } from "api/adminApi";
+import { ROUTES } from "routes/RouterConfig";
 
 import Layout from "components/Layout";
-import { Badge } from "components/ui/badge";
+import PageHeader from "components/PageHeader";
+import StatusBadge from "components/StatusBadge";
+import EmptyState from "components/EmptyState";
 import { Card, CardContent, CardHeader, CardTitle } from "components/ui/card";
 import {
   Table,
@@ -22,18 +19,12 @@ import {
   TableHeader,
   TableRow,
 } from "components/ui/table";
-// import { numberToCurrency } from "lib/helper";
 
-const ICON_COLOR = "rgba(234,42,136,0.6)";
-const ICON_SIZE = 22;
-const statusStyles = {
-  new: "bg-blue-100 text-blue-800",
-  preparing: "bg-yellow-100 text-yellow-800",
-  ready: "bg-green-100 text-green-800",
-  served: "bg-purple-100 text-purple-800",
-  cancelled: "bg-red-100 text-red-800",
-  billed: "bg-indigo-100 text-indigo-800",
-};
+const CARD_COLORS = [
+  { border: "border-l-primary", bg: "bg-primary/10", text: "text-primary" },
+  { border: "border-l-info", bg: "bg-info/10", text: "text-info" },
+  { border: "border-l-success", bg: "bg-success/10", text: "text-success" },
+];
 
 const DashboardPage = () => {
   const { data: dashboardData } = useGetDashBoardDataQuery();
@@ -43,79 +34,66 @@ const DashboardPage = () => {
   });
 
   const DASHBOARD_CARD_DATA = [
-    // {
-    //   title: "Total Revenue",
-    //   value: numberToCurrency(30000),
-    //   changes: 10,
-    //   icon: <IndianRupee size={ICON_SIZE} color={ICON_COLOR} />,
-    // },
     {
       title: "Total Orders",
       value: dashboardData?.totalOrders ?? 0,
-      changes: -10,
-      icon: <ScanText size={ICON_SIZE} color={ICON_COLOR} />,
+      icon: <ScanText className="size-5" />,
     },
     {
       title: "Total Menu",
       value: dashboardData?.totalMenus ?? 0,
-      changes: 10,
-      icon: <ChefHat size={ICON_SIZE} color={ICON_COLOR} />,
+      icon: <ChefHat className="size-5" />,
     },
     {
       title: "Total Customers",
       value: dashboardData?.totalCustomers ?? 0,
-      changes: 10,
-      icon: <Users size={ICON_SIZE} color={ICON_COLOR} />,
+      icon: <Users className="size-5" />,
     },
   ];
 
   return (
     <Layout>
-      <h2 className="mb-2 h4">Dashboard</h2>
-      <section className="flex flex-wrap">
+      <PageHeader title="Dashboard" />
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
         {DASHBOARD_CARD_DATA.map((item, index) => {
-          const { title, value, changes, icon } = item;
-          const changeColor = changes > 0 ? "text-green-500" : "text-red-500";
+          const colors = CARD_COLORS[index % CARD_COLORS.length];
           return (
-            <article key={index} className="w-64 py-4 pr-4 min-w-fit">
-              <div className="flex flex-col gap-2 p-4 bg-white rounded-lg shadow-sm">
-                <div className="flex items-center">
-                  <div className="p-3 mr-4 rounded-lg bg-primary-foreground">
-                    {icon}
-                  </div>
-                  {/* <p className={`text-muted-foreground mr-2 ${changeColor}`}>
-                    {changes}%
-                  </p> */}
-
-                  {/* {changes > 0 ? (
-                    <div className="p-1 bg-green-100 rounded-full">
-                      <ArrowUp size={18} color="#50D1AA" />
-                    </div>
-                  ) : (
-                    <div className="p-1 bg-red-100 rounded-full">
-                      <ArrowDown size={18} color="red" />
-                    </div>
-                  )} */}
+            <Card
+              key={index}
+              className={`border-l-4 ${colors.border}`}
+            >
+              <CardContent className="flex items-center gap-4 p-5">
+                <div
+                  className={`flex items-center justify-center size-12 rounded-xl ${colors.bg} ${colors.text}`}
+                >
+                  {item.icon}
                 </div>
-                <h3 className="mt-2 text-xl font-semibold">{value}</h3>
                 <div>
-                  <h3 className="font-light">{title}</h3>
+                  <p className="text-2xl font-bold">{item.value}</p>
+                  <p className="text-sm text-muted-foreground">{item.title}</p>
                 </div>
-              </div>
-            </article>
+              </CardContent>
+            </Card>
           );
         })}
       </section>
       <Card className="border-0">
-        <CardHeader className="py-4">
+        <CardHeader className="py-4 flex flex-row items-center justify-between">
           <CardTitle>Recent Orders</CardTitle>
+          <Link
+            to={ROUTES.ORDER}
+            className="text-sm text-primary hover:underline flex items-center gap-1"
+          >
+            View All Orders
+            <ArrowRight className="size-3.5" />
+          </Link>
         </CardHeader>
         <CardContent>
           {orderData?.length === 0 ? (
-            <div className="p-4 text-center text-muted-foreground">
-              <p className="text-sm">No orders found</p>
-              <p className="text-xs">Start taking orders to see them here.</p>
-            </div>
+            <EmptyState
+              title="No orders found"
+              description="Start taking orders to see them here."
+            />
           ) : (
             <Table>
               <TableHeader>
@@ -135,11 +113,10 @@ const DashboardPage = () => {
                     (sum, item) => sum + item.price * item.quantity,
                     0
                   );
-                  const orderStatus = order.status?.toLowerCase();
 
                   return (
                     <Fragment key={order._id}>
-                      <TableRow>
+                      <TableRow className="hover:bg-muted/50">
                         <TableCell className="font-medium">
                           {order._id?.slice(-8)}
                         </TableCell>
@@ -161,14 +138,9 @@ const DashboardPage = () => {
                             </span>
                           ))}
                         </TableCell>
-                        <TableCell>₹{totalAmount?.toFixed(2)}</TableCell>
+                        <TableCell>{"\u20B9"}{totalAmount?.toFixed(2)}</TableCell>
                         <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={statusStyles[orderStatus] || ""}
-                          >
-                            {order.status}
-                          </Badge>
+                          <StatusBadge status={order.status} />
                         </TableCell>
                         <TableCell>
                           {format(new Date(order.createdAt), "dd MMM yyyy")} ,{" "}

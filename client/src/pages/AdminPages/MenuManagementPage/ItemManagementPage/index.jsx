@@ -12,6 +12,9 @@ import Placeholder from "assets/placeholder.svg";
 
 import DishForm from "./DishForm";
 import Layout from "components/Layout";
+import { ButtonSpinner } from "components/Spinner";
+import PageHeader from "components/PageHeader";
+import FoodGroupIndicator from "components/FoodGroupIndicator";
 import { Button } from "components/ui/button";
 import { Skeleton } from "components/ui/skeleton";
 import {
@@ -63,20 +66,6 @@ const DEFAULT_DELETE_ITEM_DATA = {
   itemName: null,
 };
 
-const FOOD_GROUP_BG_COLORS = {
-  veg: "bg-green-500",
-  "non-veg": "bg-red-500",
-  egg: "bg-yellow-500",
-  vegan: "bg-blue-500",
-};
-
-const FOOD_GROUP_BORDER_COLORS = {
-  veg: "border-green-500",
-  "non-veg": "border-red-500",
-  egg: "border-yellow-500",
-  vegan: "border-blue-500",
-};
-
 const ItemManagementPage = () => {
   const dispatch = useDispatch();
   const restaurantId = useSelector(selectRestaurantId);
@@ -84,8 +73,6 @@ const ItemManagementPage = () => {
   const foodGroup = useSelector(selectFoodGroups);
   const menuData = useSelector(selectMenuData);
   const categoriesData = useSelector(selectMenuCategoryData);
-
-  console.log("restaurantId", restaurantId);
 
   const [isFormVisible, setFormVisible] = useState(false);
   const [activeCategory, setActiveCategory] = useState();
@@ -244,19 +231,16 @@ const ItemManagementPage = () => {
 
   return (
     <Layout>
-      <div className="flex sm:items-center justify-between p-4 border-b sm:flex-row flex-col gap-4 mb-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-bold tracking-tight">Menu Items</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage your restaurant menu items and categories
-          </p>
-        </div>
+      <PageHeader
+        title="Menu Items"
+        description="Manage your restaurant menu items and categories"
+      >
         <Button variant="outline" onClick={navigateToCategory} className="h-9">
           <SlidersVertical className="mr-3 size-4" />
           Manage Categories
         </Button>
-      </div>
-      <div className="space-y-4 w-[98%] mx-auto bg-white rounded-md shadow-md ring-1 ring-black/5">
+      </PageHeader>
+      <div className="space-y-4 w-[98%] mx-auto bg-card rounded-md shadow-md ring-1 ring-border">
         <div className="w-full p-4 ">
           <section className="flex w-full p-2 pb-4 overflow-x-scroll gap-x-7">
             {isLoading
@@ -289,7 +273,7 @@ const ItemManagementPage = () => {
 
           <div
             className={twMerge(
-              "w-full h-px ml-2 -mt-[1.35rem] bg-black/10",
+              "w-full h-px ml-2 -mt-[1.35rem] bg-border",
               isLoading && "-mt-0"
             )}
           />
@@ -306,112 +290,31 @@ const ItemManagementPage = () => {
                   setFormVisible(true);
                   setSelectedDish(null);
                 }}
-                className="flex flex-col items-center justify-center w-full p-4 transition ease-in-out delay-150 duration-300 border border-dotted rounded-lg scale-[0.98] shadow-sm border-primary hover:scale-100 hover:text-primary/90 hover:border-primary min-h-80 group"
+                className="flex flex-col items-center justify-center w-full p-4 transition duration-200 border-2 border-dashed rounded-lg border-muted-foreground/25 hover:border-primary/50 hover:bg-primary/5 min-h-80 group"
               >
                 {!isAddingItem ? (
                   <>
-                    <h3 className="text-3xl transition duration-300 delay-200 group-hover:-translate-y-1 text-primary group-hover:animate-pulse group-hover:text-primary/90 group-hover:font-semibold ">
-                      +
-                    </h3>
-                    <h3 className="font-semibold text-primary">Add New Dish</h3>
+                    <div className="flex items-center justify-center size-14 rounded-full bg-primary/10 mb-3 group-hover:bg-primary/20 transition-colors">
+                      <span className="text-2xl text-primary font-light">+</span>
+                    </div>
+                    <h3 className="font-semibold text-foreground">Add New Dish</h3>
+                    <p className="text-xs text-muted-foreground mt-1">Click to add a menu item</p>
                   </>
                 ) : (
-                  <div className="ring-loader border-primary/80" />
+                  <ButtonSpinner />
                 )}
               </button>
-              {/* {selectedCategory &&
-                selectedCategory?.items?.map((item) => (
-                  <article
-                    key={item._id}
-                    className="w-full gap-4 pt-4 transition ease-in-out delay-150 transform scale-[0.98] border rounded-lg shadow-sm hover:shadow-md border-primary/10 hover:border-primary/20 hover:scale-100 bg-white/100 hover:-translate-y-1 duration-300 flex flex-col  justify-between group"
-                  >
-                    <div className="flex flex-col justify-end ">
-                      <div className="flex items-center justify-between px-4 pb-2 mb-4 border-b border-primary/10">
-                        <button
-                          onClick={() =>
-                            setDeleteItemData({
-                              itemId: item._id,
-                              itemName: item.title,
-                            })
-                          }
-                        >
-                          <Trash2
-                            size={22}
-                            color="red"
-                            className="transition-all duration-300 ease-in-out transform cursor-pointer hover:scale-110 hover:text-red-500"
-                          />
-                        </button>
-                        <div className="flex items-center justify-end gap-4">
-                          <div
-                            className={twMerge(
-                              "border p-[4px] w-fit",
-                              FOOD_GROUP_BORDER_COLORS[
-                                item.foodGroup?.toLowerCase()
-                              ]
-                            )}
-                          >
-                            <div
-                              className={twMerge(
-                                "size-2.5 rounded-full",
-                                FOOD_GROUP_BG_COLORS[
-                                  item.foodGroup?.toLowerCase()
-                                ]
-                              )}
-                            />
-                          </div>
-                          <Switch
-                            checked={item.isActive}
-                            onCheckedChange={(isActive) =>
-                              updateItemAvailability(item._id, isActive)
-                            }
-                          />
-                        </div>
-                      </div>
-                      <div className="flex flex-col items-center w-full">
-                        <img
-                          src={item.image?.url}
-                          alt={item.title}
-                          className="rounded-md aspect-square size-44 md:size-48 lg:size-52"
-                        />
-                        <h3 className="mt-4 font-semibold">{item?.title}</h3>
-                        <p className="text-sm opacity-70">
-                          {item?.description}
-                        </p>
-                        <p className="font-semibold"></p>
-                        <p className="mt-2 text-primary">
-                          <span>&#8377;</span>
-                          {item.price}
-                          <span className="text-sm text-red-500">
-                            {item?.discount ? `(${item?.discount}% off)` : ""}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => {
-                        setFormVisible(true);
-                        setSelectedDish(item);
-                      }}
-                      className="flex items-center justify-center w-full p-4 text-primary/80 border-primary bg-primary/10 rounded-br-md hover:bg-primary/20 hover:text-primary/90 hover:border-primary group hover:font-semibold"
-                    >
-                      <PencilLine className="mr-2 transition-all size-5 group-hover:size-6" />
-                      Edit Dish
-                    </button>
-                  </article>
-                ))} */}
-
               {selectedCategory &&
                 selectedCategory?.items?.map((item) => (
                   <Card
                     key={item?._id}
-                    className="overflow-hidden transition duration-300 ease-in-out delay-150 transform border rounded-lg shadow-sm hover:shadow-md border-primary/10 hover:border-primary/20 bg-white/100 hover:-translate-y-1 "
+                    className="overflow-hidden transition duration-300 ease-in-out delay-150 transform border rounded-lg shadow-sm hover:shadow-md border-primary/10 hover:border-primary/20 bg-card hover:-translate-y-1 "
                   >
                     <div className="relative aspect-video">
                       <img
                         src={item?.image?.url || Placeholder}
                         alt={item?.name}
-                        className="w-full h-full min-h-[22rem] "
+                        className="w-full h-full min-h-[22rem] aspect-square object-cover"
                       />
                       <div className="absolute right-2 top-2">
                         <DropdownMenu>
@@ -419,9 +322,9 @@ const ItemManagementPage = () => {
                             <Button
                               variant="outline"
                               size="icon"
-                              className="w-8 h-8 bg-white"
+                              className="w-8 h-8 bg-card"
                             >
-                              <MoreVerticalIcon className="w-4 h-4 text-black" />
+                              <MoreVerticalIcon className="w-4 h-4 text-foreground" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
@@ -454,7 +357,7 @@ const ItemManagementPage = () => {
                                   itemName: item?.title,
                                 })
                               }
-                              className="text-red-600"
+                              className="text-destructive"
                             >
                               <Trash2 className="w-4 h-4 mr-2" />
                               Delete Item
@@ -471,23 +374,10 @@ const ItemManagementPage = () => {
                             {item?.description}
                           </p>
                         </div>
-                        <div
-                          className={twMerge(
-                            "border p-[4px] w-fit",
-                            FOOD_GROUP_BORDER_COLORS[
-                              item?.foodGroup?.toLowerCase()
-                            ]
-                          )}
-                        >
-                          <div
-                            className={twMerge(
-                              "size-2.5 rounded-full",
-                              FOOD_GROUP_BG_COLORS[
-                                item?.foodGroup?.toLowerCase()
-                              ]
-                            )}
-                          />
-                        </div>
+                        <FoodGroupIndicator
+                          foodGroup={item?.foodGroup}
+                          className="p-[4px]"
+                        />
                       </div>
                       <div className="flex items-center justify-between mt-4">
                         <p className="font-semibold">
@@ -541,7 +431,7 @@ const ItemManagementPage = () => {
               onClick={deleteItemFromCategory}
               className="w-24"
             >
-              {isDeletingItem ? <div className="ring-loader" /> : "Continue"}
+              {isDeletingItem ? <ButtonSpinner /> : "Continue"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

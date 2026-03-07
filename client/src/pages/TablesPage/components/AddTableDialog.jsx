@@ -27,6 +27,7 @@ import {
 import { Input } from "components/ui/input";
 import { Switch } from "components/ui/switch";
 import { errorToast, successToast } from "lib/helper";
+import { ButtonSpinner } from "components/Spinner";
 
 const formSchema = z
   .object({
@@ -220,7 +221,7 @@ export function AddTableDialog({ children }) {
                 className="min-w-32"
               >
                 {generatingQr ? (
-                  <div className="ring-loader size-5" />
+                  <ButtonSpinner />
                 ) : (
                   "Add Table(s)"
                 )}
