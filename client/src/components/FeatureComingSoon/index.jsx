@@ -28,7 +28,7 @@ export default function FeatureComingSoon() {
   if (checking) return null; // or a loader if you prefer
 
   return (
-    <div className="flex flex-col text-center px-4 animate-fadeIn bg-white min-h-screen pt-10 pb-6 gap-4 max-w-2xl mx-auto">
+    <div className="flex flex-col text-center px-4 animate-fadeIn bg-background min-h-screen pt-10 pb-6 gap-4 max-w-2xl mx-auto">
       {isLottieAvailable ? (
         <iframe
           src={LOTTIE_IFRAME_URL}
@@ -43,10 +43,10 @@ export default function FeatureComingSoon() {
         <div className="text-6xl mb-4 animate-bounce">👨‍🍳</div>
       )}
 
-      <h2 className="text-3xl font-semibold text-gray-800 mt-6">
+      <h2 className="text-3xl font-semibold text-foreground mt-6">
         Chef’s Special in Progress!
       </h2>
-      <p className="text-gray-500 max-w-md mb-6">
+      <p className="text-muted-foreground max-w-md mb-6">
         We're preparing something delicious for you. This feature will be served
         hot and fresh very soon!
       </p>

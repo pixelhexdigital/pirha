@@ -2,10 +2,11 @@ import { useMemo, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { ImageIcon, Search, SlidersHorizontal } from "lucide-react";
-import { twMerge } from "tailwind-merge";
 import { useDebounce } from "hooks/useDebounce";
 
 import TopNavBar from "components/TopNavBar";
+import FoodGroupIndicator from "components/FoodGroupIndicator";
+import EmptyState from "components/EmptyState";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,44 +20,25 @@ import {
 import { addToCart } from "store/CartSlice";
 import { selectIsNonVegOnly, selectIsVegOnly } from "store/MiscellaneousSlice";
 
-const FOOD_GROUP_BG_COLORS = {
-  veg: "bg-green-500",
-  "non-veg": "bg-red-500",
-  egg: "bg-yellow-500",
-  vegan: "bg-blue-500",
-};
-
-const FOOD_GROUP_BORDER_COLORS = {
-  veg: "border-green-500",
-  "non-veg": "border-red-500",
-  egg: "border-yellow-500",
-  vegan: "border-blue-500",
-};
-
-const DEBOUNCE_DELAY = 500; // milliseconds
+const DEBOUNCE_DELAY = 500;
 
 const MenuPage = () => {
-  // Redux selectors for filtering options
   const dispatch = useDispatch();
   const isVegOnly = useSelector(selectIsVegOnly);
   const isNonVegOnly = useSelector(selectIsNonVegOnly);
 
-  // React Router hooks for route parameters and state
   const { categoryName } = useParams();
   const { state } = useLocation();
   const { items: data } = state || {};
 
-  // Local state for search and sorting
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortOption, setSortOption] = useState("default"); // default, price-asc, price-desc
+  const [sortOption, setSortOption] = useState("default");
 
   const debouncedSearchQuery = useDebounce(searchQuery, DEBOUNCE_DELAY);
 
-  // Memoized filtered and sorted data based on user's preferences
   const processedData = useMemo(() => {
     if (!data) return [];
 
-    // First filter by veg/non-veg preference
     let result = [...data]?.filter((item) => item.isActive);
 
     if (isVegOnly) {
@@ -67,7 +49,6 @@ const MenuPage = () => {
       );
     }
 
-    // Then filter by search query
     if (debouncedSearchQuery) {
       const query = debouncedSearchQuery.toLowerCase();
       result = result.filter(
@@ -77,7 +58,6 @@ const MenuPage = () => {
       );
     }
 
-    // Finally sort according to selected option
     if (sortOption === "price-asc") {
       result.sort((a, b) => a.price - b.price);
     } else if (sortOption === "price-desc") {
@@ -94,13 +74,13 @@ const MenuPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <TopNavBar title={categoryName} />
 
       <main className="container max-w-4xl mx-auto px-4 py-6 pb-28">
         <div className="flex items-center justify-between mb-6">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               type="search"
               placeholder="Search menu items..."
@@ -149,48 +129,29 @@ const MenuPage = () => {
         </div>
 
         {processedData.length === 0 ? (
-          <div className="text-center py-10">
-            <p className="text-muted-foreground">No menu items found</p>
+          <EmptyState title="No menu items found">
             {debouncedSearchQuery && (
-              <Button
-                variant="outline"
-                className="mt-4"
-                onClick={() => setSearchQuery("")}
-              >
+              <Button variant="outline" onClick={() => setSearchQuery("")}>
                 Clear Search
               </Button>
             )}
-          </div>
+          </EmptyState>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {processedData.map((menu) => {
               return (
                 <div
                   key={menu._id}
-                  className="flex bg-white border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+                  className="flex bg-card border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
                 >
                   <div className="flex-1 p-4">
                     <div className="flex items-center gap-2 mb-1">
-                      <div
-                        className={twMerge(
-                          "border p-[2px]",
-                          FOOD_GROUP_BORDER_COLORS[
-                            menu.foodGroup?.toLowerCase()
-                          ]
-                        )}
-                      >
-                        <div
-                          className={twMerge(
-                            "size-2.5 rounded-full",
-                            FOOD_GROUP_BG_COLORS[menu.foodGroup?.toLowerCase()]
-                          )}
-                        />
-                      </div>
+                      <FoodGroupIndicator foodGroup={menu.foodGroup} />
                     </div>
 
                     <h3 className="font-semibold text-lg">{menu.title}</h3>
 
-                    <p className="font-medium text-lg mt-1">₹{menu.price}</p>
+                    <p className="font-medium text-lg mt-1">{"\u20B9"}{menu.price}</p>
 
                     {menu.description && (
                       <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
@@ -212,14 +173,14 @@ const MenuPage = () => {
                       <img
                         src={menu.image.url || "/placeholder.svg"}
                         alt={menu.title}
-                        className="h-full w-full object-cover p-1 rounded-r-lg max-h-52"
+                        className="h-full w-full object-cover p-1 rounded-r-xl max-h-52"
                       />
                     ) : (
-                      <div className="h-full w-full bg-muted flex flex-col gap-2 items-center justify-center">
-                        <span className="text-muted-foreground text-xs">
-                          No Image Available
+                      <div className="h-full w-full bg-muted flex flex-col gap-2 items-center justify-center rounded-r-xl">
+                        <ImageIcon className="size-8 text-muted-foreground/40" />
+                        <span className="text-muted-foreground/60 text-xs">
+                          No Image
                         </span>
-                        <ImageIcon className="h-6 w-6 text-muted-foreground" />
                       </div>
                     )}
                   </div>

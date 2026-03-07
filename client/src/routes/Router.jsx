@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import {
   Route,
   Navigate,
@@ -14,29 +15,49 @@ import {
 } from "store/AuthSlice";
 
 import ProtectedRoute from "components/ProtectedRoute";
-import AuthPage from "pages/AuthPage";
-import CategoriesPage from "pages/MenuPages/CategoriesPage";
-import MenuPage from "pages/MenuPages/MenuPage";
-import OrderDetailsPage from "pages/AdminPages/OrderDetailsPage";
-import OnboardingPage from "pages/OnboardingPage";
-import DashboardPage from "pages/AdminPages/DashboardPage";
-import CategoriesManagementPage from "pages/AdminPages/MenuManagementPage/CategoriesManagement";
-import ItemManagementPage from "pages/AdminPages/MenuManagementPage/ItemManagementPage";
-import KitchenPage from "pages/KitchenPages";
-import OrdersPage from "pages/OrdersPage";
-import Table from "pages/TablesPage";
-import UserBillPage from "pages/UserBillPage";
-import UserOrderHistoryPage from "pages/UserOrderHistoryPage";
-import SettingPage from "pages/SettingsPage";
+import Spinner from "components/Spinner";
+
+const AuthPage = lazy(() => import("pages/AuthPage"));
+const CategoriesPage = lazy(() => import("pages/MenuPages/CategoriesPage"));
+const MenuPage = lazy(() => import("pages/MenuPages/MenuPage"));
+const OrderDetailsPage = lazy(() => import("pages/AdminPages/OrderDetailsPage"));
+const OnboardingPage = lazy(() => import("pages/OnboardingPage"));
+const DashboardPage = lazy(() => import("pages/AdminPages/DashboardPage"));
+const CategoriesManagementPage = lazy(() =>
+  import("pages/AdminPages/MenuManagementPage/CategoriesManagement")
+);
+const ItemManagementPage = lazy(() =>
+  import("pages/AdminPages/MenuManagementPage/ItemManagementPage")
+);
+const KitchenPage = lazy(() => import("pages/KitchenPages"));
+const OrdersPage = lazy(() => import("pages/OrdersPage"));
+const Table = lazy(() => import("pages/TablesPage"));
+const UserBillPage = lazy(() => import("pages/UserBillPage"));
+const UserOrderHistoryPage = lazy(() => import("pages/UserOrderHistoryPage"));
+const SettingPage = lazy(() => import("pages/SettingsPage"));
+
+const SuspenseWrapper = ({ children }) => (
+  <Suspense
+    fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <Spinner size="lg" />
+      </div>
+    }
+  >
+    {children}
+  </Suspense>
+);
 
 const AuthenticatedRoutes = [
   { path: ROUTES.DASHBOARD, element: <DashboardPage /> },
   { path: ROUTES.ORDER, element: <OrdersPage /> },
-  // { path: ROUTES.ORDER_LIST, element: <OrderListPage /> },
   { path: ROUTES.ORDER_DETAILS, element: <OrderDetailsPage /> },
   { path: ROUTES.ONBOARDING, element: <OnboardingPage /> },
   { path: ROUTES.MENU_MANAGEMENT, element: <ItemManagementPage /> },
-  { path: ROUTES.CATEGORIES_MANAGEMENT, element: <CategoriesManagementPage /> },
+  {
+    path: ROUTES.CATEGORIES_MANAGEMENT,
+    element: <CategoriesManagementPage />,
+  },
   { path: ROUTES.TABLES, element: <Table /> },
   { path: ROUTES.KITCHEN, element: <KitchenPage /> },
   { path: ROUTES.SETTINGS, element: <SettingPage /> },
@@ -75,17 +96,23 @@ const MyRoutes = () => {
             key={index}
             element={<ProtectedRoute isAuthenticated={isAuthenticated} />}
           >
-            <Route {...route} />
+            <Route
+              path={route.path}
+              element={<SuspenseWrapper>{route.element}</SuspenseWrapper>}
+            />
           </Route>
         ))}
         {UnauthenticatedRoutes.map((route, index) => (
-          <Route key={index} {...route} />
+          <Route
+            key={index}
+            path={route.path}
+            element={<SuspenseWrapper>{route.element}</SuspenseWrapper>}
+          />
         ))}
       </Route>
     )
   );
 
-  // return <RouterProvider router={router} />;
   return <RouterProvider router={router} />;
 };
 

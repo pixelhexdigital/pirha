@@ -82,7 +82,7 @@ export function Combobox({
           </CommandList>
         </Command>
       </PopoverContent>
-      {error && <div className="mt-2 text-red-600 caption1">{error}</div>}
+      {error && <div className="mt-2 text-destructive caption1">{error}</div>}
     </Popover>
   );
 }

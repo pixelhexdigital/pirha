@@ -41,8 +41,7 @@ import {
 } from "store/MiscellaneousSlice";
 import { errorToast, successToast, numberToCurrency } from "lib/helper";
 
-const CLASS_INPUT =
-  "border-n-7 focus:bg-transparent dark:bg-n-7 dark:border-n-7 dark:focus:bg-transparent";
+const CLASS_INPUT = "";
 
 const FORM_SCHEMA = object().shape({
   userName: string().required("Name is required"),
@@ -125,14 +124,14 @@ const Cart = () => {
 
       <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-between items-center p-4 bg-primary text-primary-foreground shadow-lg">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center bg-white rounded-full w-10 h-10">
+          <div className="flex items-center justify-center bg-primary-foreground rounded-full w-10 h-10">
             <ShoppingBag size={18} className="text-primary" />
           </div>
           <div>
-            <p className="font-semibold text-white">
+            <p className="font-semibold text-primary-foreground">
               {numberToCurrency(total, "INR", 0)}
             </p>
-            <p className="text-xs text-white">
+            <p className="text-xs text-primary-foreground/80">
               {totalItems} {totalItems > 1 ? "Items" : "Item"}
             </p>
           </div>
@@ -141,7 +140,7 @@ const Cart = () => {
           <Button
             variant="outline"
             size="sm"
-            className="font-medium text-secondary bg-white "
+            className="font-medium text-secondary bg-primary-foreground"
           >
             View Order
           </Button>
