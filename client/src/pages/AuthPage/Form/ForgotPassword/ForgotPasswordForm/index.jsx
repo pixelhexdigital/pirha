@@ -7,7 +7,6 @@ import { Button } from "components/ui/button";
 import { useForgotPasswordMutation } from "api/authApi";
 import { errorToast, successToast } from "lib/helper";
 
-const CLASS_INPUT = "";
 const FORGOT_PASSWORD_SCHEMA = object().shape({
   email: string().email("Email is invalid").required("Email is required"),
 });
@@ -37,28 +36,37 @@ const ForgotPasswordForm = ({ onSuccess }) => {
       const response = await forgotPasswordMutation(payload).unwrap();
       successToast({
         data: response,
-        message: "Password reset link sent to your email",
+        message: "If that email exists, we've sent a reset link.",
       });
       onSuccess();
     } catch (error) {
       errorToast({
-        data: error,
+        error,
         message: "Failed to send password reset link",
       });
     }
   };
 
   return (
-    <form action="" onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onSubmit)}>
       <Field
+        autoFocus
         className="mb-4"
-        placeholder="Username or email"
+        type="email"
+        label="Email"
+        placeholder="you@restaurant.com"
+        icon="email"
+        autoComplete="email"
         error={errors.email?.message}
-        classInput={CLASS_INPUT}
         {...register("email")}
       />
-      <Button type="submit" size="lg" className="w-full mb-6 ">
-        {isForgotPasswordLoading ? "Sending..." : "Send Reset Link"}
+      <Button
+        type="submit"
+        size="lg"
+        disabled={isForgotPasswordLoading}
+        className="w-full mb-6"
+      >
+        {isForgotPasswordLoading ? "Sending..." : "Send reset link"}
       </Button>
     </form>
   );

@@ -7,7 +7,7 @@ import {
   selectIsSidebarExtended,
   setSidebarExtended,
 } from "store/MiscellaneousSlice";
-import { IMAGES } from "lib/constants";
+import Wordmark from "components/Wordmark";
 import { useLogOutMutation } from "api/authApi";
 import {
   Tooltip,
@@ -48,7 +48,7 @@ export default function LeftSidebar({ children }) {
           <div className="flex items-center justify-between h-16 px-3 border-b">
             {isExpanded && (
               <Link to="/" className="flex items-center">
-                <img src={IMAGES.LOGO_WHITE} alt="logo" className="h-7" />
+                <Wordmark className="text-xl text-foreground" />
               </Link>
             )}
             <button

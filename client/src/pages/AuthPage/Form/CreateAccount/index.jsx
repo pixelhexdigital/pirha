@@ -1,21 +1,19 @@
 import { useState, useEffect } from "react";
-import { object, string } from "yup";
+import { object, ref, string } from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { nanoid } from "@reduxjs/toolkit";
 
 import Field from "components/Field";
+import PasswordRequirements from "components/PasswordRequirements";
 import { ROUTES } from "routes/RouterConfig";
 import { Button } from "components/ui/button";
 import { ButtonSpinner } from "components/Spinner";
 import { useRegisterMutation, useVerifyUserNameMutation } from "api/authApi";
 import { errorToast, successToast } from "lib/helper";
+import { PASSWORD_REGEX, PASSWORD_WEAK_MESSAGE } from "lib/authConstants";
 
-// Input class styles
-const CLASS_INPUT = "";
-
-// Default form values
 const DEFAULT_VALUES = {
   userName: "",
   email: "",
@@ -23,78 +21,45 @@ const DEFAULT_VALUES = {
   confirmPassword: "",
 };
 
-// Regex for password validation
-const PASSWORD_REGEX =
-  /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+])(?=.*[a-zA-Z]).{8,}$/;
-
-// Button labels
 const BUTTON_LABELS = {
   VERIFY: "Verify",
   VERIFIED: "Verified",
-  SIGN_UP: "Sign Up",
+  SIGN_UP: "Create account",
 };
 
-// Error messages
 const ERROR_MESSAGES = {
-  USERNAME_REQUIRED: "Username is required",
   USERNAME_MIN_LENGTH: "Username must be at least 5 characters",
-  EMAIL_INVALID: "Email is invalid",
-  EMAIL_REQUIRED: "Email is required",
-  PASSWORD_REQUIRED: "Password is required",
-  PASSWORD_WEAK:
-    "Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special case character",
-  PASSWORDS_MATCH: "Passwords must match",
-  VERIFY_USERNAME: "Please verify username",
-  USERNAME_EXISTS: "Username already exists",
+  VERIFY_USERNAME: "Please verify your username",
+  USERNAME_EXISTS: "That username is taken",
 };
 
-// Input placeholders
-const PLACEHOLDERS = {
-  USERNAME: "Username",
-  EMAIL: "Email",
-  PASSWORD: "Password",
-  CONFIRM_PASSWORD: "Re-enter Password",
-};
-
-// Yup schema for form validation
 const REGISTER_FORM_SCHEMA = object().shape({
   userName: string()
-    .required(ERROR_MESSAGES.USERNAME_REQUIRED)
+    .required("Username is required")
     .min(5, ERROR_MESSAGES.USERNAME_MIN_LENGTH),
-  email: string()
-    .email(ERROR_MESSAGES.EMAIL_INVALID)
-    .required(ERROR_MESSAGES.EMAIL_REQUIRED),
+  email: string().email("Email is invalid").required("Email is required"),
   password: string()
-    .required(ERROR_MESSAGES.PASSWORD_REQUIRED)
-    .test("password", ERROR_MESSAGES.PASSWORD_WEAK, (value) =>
-      PASSWORD_REGEX.test(value)
-    ),
+    .required("Password is required")
+    .matches(PASSWORD_REGEX, PASSWORD_WEAK_MESSAGE),
   confirmPassword: string()
-    .required("Required")
-    .test("passwords-match", ERROR_MESSAGES.PASSWORDS_MATCH, function (value) {
-      // `this.options.context` gives you access to the sibling fields
-      const { password } = this.parent;
-      return password === value;
-    }),
+    .required("Please confirm your password")
+    .oneOf([ref("password")], "Passwords must match"),
 });
 
 const CreateAccountTab = () => {
   const navigate = useNavigate();
   const [isUsernameVerified, setIsUsernameVerified] = useState(false);
 
-  // Hooks for API mutations
   const [verifyUserName, { isLoading: isUsernameVerifying }] =
     useVerifyUserNameMutation();
   const [registerUser, { isLoading: isRegistering }] = useRegisterMutation();
 
-  // Navigate to login tab with a random tab ID to force re-render
   const navigateToLoginTab = () => {
     navigate(ROUTES.AUTH, {
       state: { tab: 0, randomTabId: nanoid() },
     });
   };
 
-  // useForm hook for form handling
   const {
     handleSubmit,
     register,
@@ -102,24 +67,22 @@ const CreateAccountTab = () => {
     setError,
     watch,
     getValues,
-    setValue,
   } = useForm({
     defaultValues: DEFAULT_VALUES,
     resolver: yupResolver(REGISTER_FORM_SCHEMA),
   });
 
   const watchedUserName = watch("userName");
+  const watchedPassword = watch("password");
 
-  // Lowercase the username and reset username verification on username change
+  // Any username change invalidates a prior verification.
   useEffect(() => {
     setIsUsernameVerified(false);
-    setValue("userName", watchedUserName.toLowerCase());
-  }, [watchedUserName, setValue]);
+  }, [watchedUserName]);
 
-  // Function to verify username on button click
   const handleVerifyUsername = async () => {
-    const userName = getValues("userName");
-    if (userName?.length < 5) {
+    const userName = getValues("userName").trim().toLowerCase();
+    if (userName.length < 5) {
       setError("userName", {
         type: "manual",
         message: ERROR_MESSAGES.USERNAME_MIN_LENGTH,
@@ -128,14 +91,10 @@ const CreateAccountTab = () => {
     }
 
     try {
-      const response = await verifyUserName({ username: userName }).unwrap();
-      const { success } = response;
+      const { success } = await verifyUserName({ username: userName }).unwrap();
       if (success) {
         setIsUsernameVerified(true);
-        setError("userName", {
-          type: "manual",
-          message: "",
-        });
+        setError("userName", { type: "manual", message: "" });
       }
     } catch (error) {
       setError("userName", {
@@ -145,7 +104,6 @@ const CreateAccountTab = () => {
     }
   };
 
-  // Function to handle registration on form submit
   const handleRegistration = async (data) => {
     if (!isUsernameVerified) {
       setError("userName", {
@@ -155,17 +113,15 @@ const CreateAccountTab = () => {
       return;
     }
 
-    const payload = {
-      email: data.email,
-      username: data.userName,
-      password: data.password,
-    };
-
     try {
-      const response = await registerUser(payload).unwrap();
+      const response = await registerUser({
+        email: data.email.trim(),
+        username: data.userName.trim().toLowerCase(),
+        password: data.password,
+      }).unwrap();
       successToast({
         data: response,
-        message: "Account created successfully",
+        message: "Account created — check your inbox to verify your email.",
       });
       navigateToLoginTab();
     } catch (error) {
@@ -183,84 +139,79 @@ const CreateAccountTab = () => {
 
   return (
     <form onSubmit={handleSubmit(handleRegistration)}>
-      <div className="flex gap-4 mb-4">
-        <Field
-          placeholder={PLACEHOLDERS.USERNAME}
-          className="w-full lowercase"
-          icon="profile"
-          autoComplete="off"
-          error={errors.userName?.message}
-          classInput={CLASS_INPUT}
-          {...register("userName")}
-        />
-        <Button
-          type="button"
-          size="lg"
-          variant="outline"
-          className="h-12"
-          disabled={
-            isUsernameVerified || isUsernameVerifying || !dirtyFields.userName
-          }
-          onClick={handleVerifyUsername}
+      <div className="mb-4">
+        <label
+          htmlFor="register-username"
+          className="flex mb-2 text-sm font-medium text-foreground"
         >
-          {verifyButtonText}
-        </Button>
+          Username
+        </label>
+        <div className="flex items-start gap-3">
+          <Field
+            autoFocus
+            id="register-username"
+            placeholder="Choose a username"
+            className="w-full"
+            icon="profile"
+            autoComplete="username"
+            error={errors.userName?.message}
+            {...register("userName")}
+          />
+          <Button
+            type="button"
+            size="lg"
+            variant={isUsernameVerified ? "secondary" : "outline"}
+            className="h-12 shrink-0"
+            disabled={
+              isUsernameVerified || isUsernameVerifying || !dirtyFields.userName
+            }
+            onClick={handleVerifyUsername}
+          >
+            {verifyButtonText}
+          </Button>
+        </div>
       </div>
       <Field
         className="mb-4"
         type="email"
-        placeholder={PLACEHOLDERS.EMAIL}
+        label="Email"
+        placeholder="you@restaurant.com"
         icon="email"
-        autoComplete="off"
-        classInput={CLASS_INPUT}
+        autoComplete="email"
         error={errors.email?.message}
         {...register("email")}
       />
+      <div className="mb-4">
+        <Field
+          type="password"
+          label="Password"
+          placeholder="Create a password"
+          icon="lock"
+          autoComplete="new-password"
+          error={errors.password?.message}
+          {...register("password")}
+        />
+        <PasswordRequirements value={watchedPassword} />
+      </div>
       <Field
         className="mb-4"
         type="password"
-        placeholder={PLACEHOLDERS.PASSWORD}
+        label="Confirm password"
+        placeholder="Re-enter your password"
         icon="lock"
-        autoComplete="off"
-        classInput={CLASS_INPUT}
-        error={errors.password?.message}
-        {...register("password")}
-      />
-      <Field
-        className="mb-4"
-        type="password"
-        placeholder={PLACEHOLDERS.CONFIRM_PASSWORD}
-        icon="lock"
-        autoComplete="off"
-        classInput={CLASS_INPUT}
+        autoComplete="new-password"
         error={errors.confirmPassword?.message}
         {...register("confirmPassword")}
       />
 
       <Button type="submit" size="lg" className="w-full mb-4">
-        {isRegistering ? (
-          <ButtonSpinner />
-        ) : (
-          BUTTON_LABELS.SIGN_UP
-        )}
+        {isRegistering ? <ButtonSpinner /> : BUTTON_LABELS.SIGN_UP}
       </Button>
-      <div className="mt-4 text-center caption1 text-muted-foreground">
+      <p className="mt-4 text-xs text-center text-muted-foreground">
         By creating an account, you agree to our{" "}
-        <Link
-          className="transition-colors text-foreground hover:underline"
-          to="/"
-        >
-          Terms of Service
-        </Link>{" "}
-        and{" "}
-        <Link
-          className="transition-colors text-foreground hover:underline"
-          to="/"
-        >
-          Privacy & Cookie Statement
-        </Link>
-        .
-      </div>
+        <span className="font-medium text-foreground">Terms of Service</span> and{" "}
+        <span className="font-medium text-foreground">Privacy Policy</span>.
+      </p>
     </form>
   );
 };

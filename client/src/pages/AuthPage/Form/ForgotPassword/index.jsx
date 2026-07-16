@@ -9,7 +9,7 @@ const ForgotPasswordPage = ({ onClick }) => {
         onClick={onClick}
       >
         <Icon
-          className="mr-3 transition-transform sm:mr-4 group-hover:-translate-x-1 dark:fill-n-1 file:n-5"
+          className="mr-3 transition-transform sm:mr-4 fill-foreground group-hover:-translate-x-1"
           name="arrow-prev"
         />
         Reset your password
@@ -19,5 +19,5 @@ const ForgotPasswordPage = ({ onClick }) => {
     </>
   );
 };
-``;
+
 export default ForgotPasswordPage;

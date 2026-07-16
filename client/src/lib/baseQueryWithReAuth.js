@@ -1,5 +1,6 @@
 import { fetchBaseQuery } from "@reduxjs/toolkit/query";
 import { BASE_URL } from "lib/constants";
+import { errorToast } from "lib/helper";
 import { loggedOut, setCredentials } from "store/AuthSlice";
 
 const createDynamicBaseQuery = (baseUrl) => {
@@ -33,10 +34,15 @@ const handleReAuthentication = async (api, extraOptions, args, baseQuery) => {
   if (refreshResult.data) {
     api.dispatch(setCredentials(refreshResult.data));
     return await baseQuery(args, api, extraOptions);
-  } else {
-    api.dispatch(loggedOut());
-    return refreshResult;
   }
+
+  // Refresh failed → the session is genuinely over. Tell the user (only if they
+  // believed they were signed in) before clearing auth state.
+  if (api.getState().Auth?.isAuthenticated) {
+    errorToast({ message: "Your session has expired. Please sign in again." });
+  }
+  api.dispatch(loggedOut());
+  return refreshResult;
 };
 
 export const baseQueryWithReAuth =

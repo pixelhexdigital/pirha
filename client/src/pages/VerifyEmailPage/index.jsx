@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import Wordmark from "components/Wordmark";
 import { useVerifyEmailMutation } from "api/authApi";
 import { ROUTES } from "routes/RouterConfig";
 
@@ -19,43 +20,54 @@ const VerifyEmailPage = () => {
   }, [token, verifyEmail]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
-      <div className="max-w-md w-full mx-auto p-8 text-center">
+    <div className="flex items-center justify-center min-h-screen p-4 bg-background">
+      <div className="w-full max-w-md duration-500 animate-in fade-in slide-in-from-bottom-2">
+        <div className="mb-4 text-center">
+          <Wordmark className="text-xl text-foreground" />
+        </div>
+        <div
+          role="status"
+          aria-live="polite"
+          className="w-full p-6 text-center border shadow-sm bg-card rounded-xl sm:p-8"
+        >
         {isLoading && (
           <>
-            <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-foreground">
-              Verifying your email...
-            </h2>
+            <Loader2 className="w-12 h-12 mx-auto mb-4 animate-spin text-primary" />
+            <h1 className="text-xl font-semibold text-foreground">
+              Verifying your email…
+            </h1>
           </>
         )}
         {isSuccess && (
           <>
-            <CheckCircle className="h-12 w-12 text-success mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-foreground mb-2">
-              Email Verified
-            </h2>
-            <p className="text-muted-foreground mb-6">
-              Your email has been successfully verified. You can now log in.
+            <CheckCircle className="w-12 h-12 mx-auto mb-4 text-success" />
+            <h1 className="mb-2 text-xl font-semibold text-foreground">
+              Email verified
+            </h1>
+            <p className="mb-6 text-muted-foreground">
+              Your email has been verified. You&apos;re all set.
             </p>
-            <Button onClick={() => navigate(ROUTES.AUTH)}>Go to Login</Button>
+            <Button size="lg" onClick={() => navigate(ROUTES.AUTH)}>
+              Go to sign in
+            </Button>
           </>
         )}
         {isError && (
           <>
-            <XCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-foreground mb-2">
-              Verification Failed
-            </h2>
-            <p className="text-muted-foreground mb-6">
+            <XCircle className="w-12 h-12 mx-auto mb-4 text-destructive" />
+            <h1 className="mb-2 text-xl font-semibold text-foreground">
+              Verification failed
+            </h1>
+            <p className="mb-6 text-muted-foreground">
               {error?.data?.message ||
-                "The verification link is invalid or has expired."}
+                "This verification link is invalid or has expired. Sign in and resend it from the banner."}
             </p>
-            <Button variant="outline" onClick={() => navigate(ROUTES.AUTH)}>
-              Back to Login
+            <Button size="lg" onClick={() => navigate(ROUTES.AUTH)}>
+              Go to sign in
             </Button>
           </>
         )}
+        </div>
       </div>
     </div>
   );

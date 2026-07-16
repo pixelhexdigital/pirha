@@ -62,7 +62,17 @@ const userForgotPasswordValidator = () => {
 };
 
 const userResetForgottenPasswordValidator = () => {
-  return [body("newPassword").notEmpty().withMessage("Password is required")];
+  return [
+    body("newPassword")
+      .notEmpty()
+      .withMessage("Password is required")
+      .matches(
+        /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+])(?=.*[a-zA-Z]).{8,}$/
+      )
+      .withMessage(
+        "Password must be at least 8 characters and include an uppercase, lowercase, number and special character."
+      ),
+  ];
 };
 
 const userAssignRoleValidator = () => {

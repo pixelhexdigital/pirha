@@ -1,59 +1,46 @@
-import { useForm } from "react-hook-form";
-import { number, object, string } from "yup";
+import { object, ref, string } from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useForm } from "react-hook-form";
 
 import Field from "components/Field";
+import PasswordRequirements from "components/PasswordRequirements";
 import { Button } from "components/ui/button";
+import { ButtonSpinner } from "components/Spinner";
 import { useResetPasswordMutation } from "api/authApi";
 import { errorToast, successToast } from "lib/helper";
+import { PASSWORD_REGEX, PASSWORD_WEAK_MESSAGE } from "lib/authConstants";
 
-const CLASS_INPUT = "";
 const DEFAULT_VALUES = {
-  otp: "",
   password: "",
   confirmPassword: "",
 };
 
 const RESET_PASSWORD_SCHEMA = object().shape({
-  otp: number()
-    .typeError("Must be a number")
-    .required("OTP is required")
-    .test(
-      "len",
-      "Must be exactly 4 digits",
-      (val) => val && val.toString().length === 4
-    ),
-  password: string().required("Password is required"),
+  password: string()
+    .required("Password is required")
+    .matches(PASSWORD_REGEX, PASSWORD_WEAK_MESSAGE),
   confirmPassword: string()
-    .test("passwords-match", "Passwords must match", function (value) {
-      return this.parent.password === value;
-    })
-    .required("Required"),
+    .required("Please confirm your password")
+    .oneOf([ref("password")], "Passwords must match"),
 });
 
-const ResetPasswordForm = ({ email, resetToken, onClick }) => {
+const ResetPasswordForm = ({ resetToken, onClick }) => {
   const [resetPassword, { isLoading }] = useResetPasswordMutation();
-
-  const form = useForm({
-    defaultValues: DEFAULT_VALUES,
-    resolver: yupResolver(RESET_PASSWORD_SCHEMA),
-  });
 
   const {
     handleSubmit,
     register,
+    watch,
     formState: { errors },
-  } = form;
+  } = useForm({
+    defaultValues: DEFAULT_VALUES,
+    resolver: yupResolver(RESET_PASSWORD_SCHEMA),
+  });
 
   const onSubmit = async (data) => {
     try {
-      await resetPassword({
-        resetToken,
-        email,
-        otp: data.otp,
-        password: data.password,
-      }).unwrap();
-      successToast("Password reset successfully");
+      await resetPassword({ resetToken, newPassword: data.password }).unwrap();
+      successToast({ message: "Password reset successfully. Please sign in." });
       onClick?.();
     } catch (error) {
       errorToast({ error, message: "Failed to reset password" });
@@ -61,46 +48,31 @@ const ResetPasswordForm = ({ email, resetToken, onClick }) => {
   };
 
   return (
-    <form action="" onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <div className="mb-4">
+        <Field
+          autoFocus
+          type="password"
+          label="New password"
+          autoComplete="new-password"
+          placeholder="Enter a new password"
+          error={errors.password?.message}
+          {...register("password")}
+        />
+        <PasswordRequirements value={watch("password")} />
+      </div>
       <Field
-        disabled
-        value={email}
-        placeholder="Email"
-        className="mb-4"
-        classInput={CLASS_INPUT}
-      />
-      <Field
-        placeholder="OTP"
-        className="mb-4"
-        classInput={CLASS_INPUT}
-        error={errors.otp?.message}
-        {...register("otp")}
-      />
-      <Field
-        className="mb-4"
+        className="mb-6"
         type="password"
-        autoComplete="off"
-        placeholder="Password"
-        classInput={CLASS_INPUT}
-        error={errors.password?.message}
-        {...register("password")}
-      />
-      <Field
-        className="mb-4"
-        type="password"
-        autoComplete="off"
-        placeholder="Re-enter Password"
-        classInput={CLASS_INPUT}
+        label="Confirm password"
+        autoComplete="new-password"
+        placeholder="Re-enter your new password"
         error={errors.confirmPassword?.message}
         {...register("confirmPassword")}
       />
-
-      <Button
-        title="Reset password"
-        type="submit"
-        loader={isLoading}
-        className="w-full mb-6 btn-blue btn-large"
-      />
+      <Button size="lg" type="submit" disabled={isLoading} className="w-full">
+        {isLoading ? <ButtonSpinner /> : "Reset Password"}
+      </Button>
     </form>
   );
 };

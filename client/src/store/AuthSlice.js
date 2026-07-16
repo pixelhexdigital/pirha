@@ -15,6 +15,7 @@ const initialState = {
   onboardingState: "",
   restaurantId: null,
   userRole: null,
+  isEmailVerified: true,
 };
 
 const AuthSlice = createSlice({
@@ -48,6 +49,8 @@ const AuthSlice = createSlice({
         state.refreshToken = action.payload.refreshToken;
         state.restaurantId = action.payload.restaurant._id;
         state.onboardingState = action.payload.restaurant.onboardingState;
+        state.isEmailVerified =
+          action.payload.restaurant?.isEmailVerified ?? true;
         state.userRole = USER_ROLES.RESTAURANT_ADMIN; // Set userRole based on the authenticated user
       }
     );
@@ -78,6 +81,7 @@ export const selectIsOnboardingComplete = (state) =>
 export const selectUserRole = (state) => state.Auth.userRole;
 export const selectCustomerAccessToken = (state) =>
   state.Auth.customerAccessToken;
+export const selectIsEmailVerified = (state) => state.Auth.isEmailVerified;
 
 export const { setCredentials, loggedOut, setOnboardingState } =
   AuthSlice.actions;

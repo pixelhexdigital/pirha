@@ -111,9 +111,7 @@ const registerUser = asyncHandler(async (req, res) => {
     subject: "Please verify your email for BNM-India",
     mailgenContent: emailVerificationMailgenContent(
       restaurant.username,
-      `${req.protocol}://${req.get(
-        "host"
-      )}/api/v1/users/verify-email/${unHashedToken}`
+      `${process.env.CLIENT_URL || process.env.CORS_ORIGIN}/verify-email/${unHashedToken}`
     ),
   });
 
@@ -308,9 +306,7 @@ const resendEmailVerification = asyncHandler(async (req, res) => {
     subject: "Please verify your email for BNM-India",
     mailgenContent: emailVerificationMailgenContent(
       restaurant.username,
-      `${req.protocol}://${req.get(
-        "host"
-      )}/api/v1/users/verify-email/${unHashedToken}`
+      `${process.env.CLIENT_URL || process.env.CORS_ORIGIN}/verify-email/${unHashedToken}`
     ),
   });
   return res
@@ -392,12 +388,9 @@ const forgotPasswordRequest = asyncHandler(async (req, res) => {
     subject: "Password reset request",
     mailgenContent: forgotPasswordMailgenContent(
       restaurant.username,
-      // ! NOTE: Following link should be the link of the frontend page responsible to request password reset
-      // ! Frontend will send the below token with the new password in the request body to the backend reset password endpoint
-      // * Ideally take the url from the .env file which should be teh url of the frontend
-      `${req.protocol}://${req.get(
-        "host"
-      )}/api/v1/users/reset-password/${unHashedToken}`
+      // Link points at the frontend reset page; it POSTs { newPassword } with
+      // the token to the backend reset-password endpoint.
+      `${process.env.CLIENT_URL || process.env.CORS_ORIGIN}/reset-password/${unHashedToken}`
     ),
   });
   return res

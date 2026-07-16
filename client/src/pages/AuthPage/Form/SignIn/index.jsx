@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { object, string } from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
@@ -10,94 +9,59 @@ import { Button } from "components/ui/button";
 import { ButtonSpinner } from "components/Spinner";
 import { useLoginMutation } from "api/authApi";
 import { errorToast, successToast } from "lib/helper";
+import { PASSWORD_REGEX, PASSWORD_WEAK_MESSAGE } from "lib/authConstants";
 
 const ONBOARDING_COMPLETE = "COMPLETED";
 
-// Input class styles
-const CLASS_INPUT = "";
-
-// Password validation regex
-const PASSWORD_REGEX =
-  /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+])(?=.*[a-zA-Z]).{8,}$/;
-
-// Default form values
 const DEFAULT_VALUES = {
   username: "",
   password: "",
 };
 
-// Button labels
 const BUTTON_LABELS = {
   FORGOT_PASSWORD: "Forgot password?",
   SIGN_IN: "Sign In",
 };
 
-// Error messages
-const ERROR_MESSAGES = {
-  USERNAME_REQUIRED: "Username is required",
-  USERNAME_MIN_LENGTH: "Username must be at least 5 characters",
-  PASSWORD_REQUIRED: "Password is required",
-  PASSWORD_WEAK:
-    "Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special case character",
-};
-
-// Yup schema for form validation
 const LOGIN_FORM_SCHEMA = object().shape({
   username: string()
-    .required(ERROR_MESSAGES.USERNAME_REQUIRED)
-    .min(5, ERROR_MESSAGES.USERNAME_MIN_LENGTH),
+    .required("Username is required")
+    .min(5, "Username must be at least 5 characters"),
   password: string()
-    .required(ERROR_MESSAGES.PASSWORD_REQUIRED)
-    .test({
-      name: "password",
-      message: ERROR_MESSAGES.PASSWORD_WEAK,
-      test: (value) => PASSWORD_REGEX.test(value),
-    }),
+    .required("Password is required")
+    .matches(PASSWORD_REGEX, PASSWORD_WEAK_MESSAGE),
 });
 
 const SignInTab = ({ onClick }) => {
   const navigate = useNavigate();
 
-  // Hook to manage login mutation
   const [login, { isLoading: isLoginLoading }] = useLoginMutation();
 
-  // useForm hook for managing form state and validation
   const {
     handleSubmit,
     register,
     formState: { errors },
-    watch,
-    setValue,
   } = useForm({
     defaultValues: DEFAULT_VALUES,
     resolver: yupResolver(LOGIN_FORM_SCHEMA),
   });
 
-  // Watching the username field to convert it to lowercase
-  const watchedUserName = watch("username");
-
-  useEffect(() => {
-    setValue("username", watchedUserName.toLowerCase());
-  }, [watchedUserName, setValue]);
-
   const handleRedirect = (data) => {
     const { onboardingState } = data?.restaurant || {};
-    if (onboardingState === ONBOARDING_COMPLETE) {
-      navigate(ROUTES.DASHBOARD, { replace: true });
-    } else {
-      navigate(ROUTES.ONBOARDING, { replace: true });
-    }
+    navigate(
+      onboardingState === ONBOARDING_COMPLETE
+        ? ROUTES.DASHBOARD
+        : ROUTES.ONBOARDING,
+      { replace: true }
+    );
   };
 
-  // Handle form submission for signing in
   const handleSignIn = async (data) => {
-    const payload = {
-      username: data.username,
-      password: data.password,
-    };
-
     try {
-      const response = await login(payload).unwrap();
+      const response = await login({
+        username: data.username.trim().toLowerCase(),
+        password: data.password,
+      }).unwrap();
       successToast({ data: response, message: "Logged in successfully" });
       handleRedirect(response);
     } catch (error) {
@@ -106,53 +70,48 @@ const SignInTab = ({ onClick }) => {
   };
 
   return (
-    <>
-      <form onSubmit={handleSubmit(handleSignIn)}>
-        <Field
-          placeholder="Username"
-          className="w-full mb-4"
-          icon="profile"
-          autoComplete="off"
-          error={errors.username?.message}
-          classInput={CLASS_INPUT}
-          {...register("username")}
-        />
-        <Field
-          className="mb-4"
-          type="password"
-          placeholder="Password"
-          icon="lock"
-          autoComplete="current-password"
-          classInput={CLASS_INPUT}
-          error={errors.password?.message}
-          {...register("password")}
-        />
+    <form onSubmit={handleSubmit(handleSignIn)}>
+      <Field
+        autoFocus
+        label="Username"
+        placeholder="Your username"
+        className="w-full mb-4"
+        icon="profile"
+        autoComplete="username"
+        error={errors.username?.message}
+        {...register("username")}
+      />
+      <Field
+        className="mb-4"
+        type="password"
+        label="Password"
+        placeholder="Your password"
+        icon="lock"
+        autoComplete="current-password"
+        error={errors.password?.message}
+        {...register("password")}
+      />
 
-        <div className="w-full mb-6 text-end">
-          <Button
-            variant="link"
-            type="button"
-            onClick={onClick}
-            className="text-foreground hover:text-primary/90"
-          >
-            {BUTTON_LABELS.FORGOT_PASSWORD}
-          </Button>
-        </div>
-
+      <div className="w-full mb-6 text-end">
         <Button
-          size="lg"
-          type="submit"
-          disabled={isLoginLoading}
-          className="w-full mb-4"
+          variant="link"
+          type="button"
+          onClick={onClick}
+          className="h-auto p-0 text-sm text-muted-foreground hover:text-primary"
         >
-          {isLoginLoading ? (
-            <ButtonSpinner />
-          ) : (
-            BUTTON_LABELS.SIGN_IN
-          )}
+          {BUTTON_LABELS.FORGOT_PASSWORD}
         </Button>
-      </form>
-    </>
+      </div>
+
+      <Button
+        size="lg"
+        type="submit"
+        disabled={isLoginLoading}
+        className="w-full mb-4"
+      >
+        {isLoginLoading ? <ButtonSpinner /> : BUTTON_LABELS.SIGN_IN}
+      </Button>
+    </form>
   );
 };
 
