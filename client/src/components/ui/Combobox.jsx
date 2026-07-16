@@ -34,24 +34,29 @@ export function Combobox({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      {label && <div className="flex mb-2 font-semibold base2">{label}</div>}
+      {label && (
+        <div className="flex mb-2 text-sm font-medium text-foreground">
+          {label}
+        </div>
+      )}
       <PopoverTrigger asChild>
         <Button
           variant="outline"
           role="combobox"
           aria-expanded={open}
+          aria-invalid={!!error}
           className={twMerge(
-            "w-full justify-between h-13 px-3.5 py-3 bg-n-8 border-2 border-n-2 rounded-xl base2 text-n-7 outline-none transition-colors placeholder:text-n-4/50 focus:bg-transparent dark:bg-n-6 dark:border-n-6 dark:text-n-3 dark:focus:bg-transparent",
+            "w-full justify-between h-12 px-3.5 py-3 rounded-lg text-sm font-normal",
+            !value && "text-muted-foreground",
+            error && "border-destructive",
             buttonClassName
           )}
         >
-          {value ? (
-            <p className="text-n-7">
-              {data?.find((items) => items?.value === value)?.label}
-            </p>
-          ) : (
-            <p className="text-n-4/50">{placeholder}</p>
-          )}
+          <span className="truncate">
+            {value
+              ? data?.find((items) => items?.value === value)?.label
+              : placeholder}
+          </span>
           <ChevronsUpDown className="w-4 h-4 ml-2 opacity-50 shrink-0" />
         </Button>
       </PopoverTrigger>
@@ -82,7 +87,11 @@ export function Combobox({
           </CommandList>
         </Command>
       </PopoverContent>
-      {error && <div className="mt-2 text-destructive caption1">{error}</div>}
+      {error && (
+        <div role="alert" className="mt-2 text-destructive text-xs font-medium">
+          {error}
+        </div>
+      )}
     </Popover>
   );
 }

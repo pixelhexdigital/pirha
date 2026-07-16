@@ -10,39 +10,57 @@ const STATUS_CONFIG = {
     dotColor: "bg-warning",
     badge: "bg-warning/10 text-warning border-warning/20 hover:bg-warning/10",
   },
+  inprogress: {
+    dotColor: "bg-warning",
+    badge: "bg-warning/10 text-warning border-warning/20 hover:bg-warning/10",
+  },
   ready: {
     dotColor: "bg-success",
-    badge:
-      "bg-success/10 text-success border-success/20 hover:bg-success/10",
+    badge: "bg-success/10 text-success border-success/20 hover:bg-success/10",
   },
   served: {
     dotColor: "bg-purple-500",
     badge:
       "bg-purple-500/10 text-purple-500 border-purple-500/20 hover:bg-purple-500/10",
   },
+  completed: {
+    dotColor: "bg-success",
+    badge: "bg-success/10 text-success border-success/20 hover:bg-success/10",
+  },
+  billed: {
+    dotColor: "bg-indigo-500",
+    badge:
+      "bg-indigo-500/10 text-indigo-500 border-indigo-500/20 hover:bg-indigo-500/10",
+  },
   cancelled: {
     dotColor: "bg-destructive",
     badge:
       "bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/10",
   },
-  billed: {
-    dotColor: "bg-indigo-500",
-    badge:
-      "bg-indigo-500/10 text-indigo-400 border-indigo-500/20 hover:bg-indigo-500/10",
-  },
 };
 
-const StatusBadge = ({ status }) => {
-  const normalizedStatus = status?.toLowerCase();
+// Friendly display labels, keyed by normalized status. Falls back to the raw
+// status string for anything not mapped here.
+const STATUS_LABELS = {
+  new: "New",
+  preparing: "Preparing",
+  inprogress: "In Progress",
+  ready: "Ready",
+  served: "Served",
+  completed: "Completed",
+  billed: "Billed",
+  cancelled: "Cancelled",
+};
+
+const StatusBadge = ({ status, label }) => {
+  const normalizedStatus = status?.toLowerCase().replace(/\s+/g, "");
   const config = STATUS_CONFIG[normalizedStatus];
+  const displayLabel = label || STATUS_LABELS[normalizedStatus] || status;
 
   return (
     <Badge
       variant="outline"
-      className={twMerge(
-        "gap-1.5 font-medium",
-        config?.badge
-      )}
+      className={twMerge("gap-1.5 font-medium capitalize", config?.badge)}
     >
       <span
         className={twMerge(
@@ -50,7 +68,7 @@ const StatusBadge = ({ status }) => {
           config?.dotColor || "bg-muted-foreground"
         )}
       />
-      {status}
+      {displayLabel}
     </Badge>
   );
 };
