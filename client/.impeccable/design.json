@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-16T00:00:00.000Z",
+  "title": "Design System: Pirha",
+  "extensions": {
+    "colorMeta": {
+      "pirha-magenta": {
+        "role": "primary",
+        "displayName": "Pirha Magenta",
+        "canonical": "hsl(330.6 82.1% 54.1%)",
+        "tonalRamp": ["#3d0a24", "#5e0f38", "#84154e", "#ab1a65", "#d1257c", "#ea2a88", "#f26daa", "#fbd0e6"]
+      },
+      "deep-indigo": {
+        "role": "secondary",
+        "displayName": "Deep Indigo",
+        "canonical": "hsl(238 80% 18%)",
+        "tonalRamp": ["#04051f", "#070a33", "#0a0e4a", "#0e1266", "#141a8f", "#1e2bb8", "#5566d6", "#c8cdf2"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "hsl(222.2 84% 4.9%)",
+        "tonalRamp": ["#020817", "#0f172a", "#1e293b", "#334155", "#475569", "#64748b", "#94a3b8", "#e2e8f0"]
+      },
+      "warm-white": {
+        "role": "neutral",
+        "displayName": "Warm White",
+        "canonical": "hsl(0 11% 98%)",
+        "tonalRamp": ["#6b6a6a", "#8f8e8e", "#b3b2b2", "#cccbcb", "#e0dfdf", "#efeeee", "#f6f5f5", "#faf9f9"]
+      },
+      "success": {
+        "role": "semantic",
+        "displayName": "Success Green",
+        "canonical": "hsl(142 71% 45%)",
+        "tonalRamp": ["#052e16", "#14532d", "#166534", "#15803d", "#16a34a", "#22c55e", "#4ade80", "#bbf7d0"]
+      },
+      "warning": {
+        "role": "semantic",
+        "displayName": "Warning Amber",
+        "canonical": "hsl(38 92% 50%)",
+        "tonalRamp": ["#451a03", "#78350f", "#92400e", "#b45309", "#d97706", "#f59e0b", "#fbbf24", "#fde68a"]
+      },
+      "info": {
+        "role": "semantic",
+        "displayName": "Info Blue",
+        "canonical": "hsl(217 91% 60%)",
+        "tonalRamp": ["#172554", "#1e3a8a", "#1e40af", "#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa", "#bfdbfe"]
+      },
+      "destructive": {
+        "role": "semantic",
+        "displayName": "Destructive Red",
+        "canonical": "hsl(0 84.2% 60.2%)",
+        "tonalRamp": ["#450a0a", "#7f1d1d", "#991b1b", "#b91c1c", "#dc2626", "#ef4444", "#f87171", "#fecaca"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display / H1", "purpose": "Largest heading; page titles. Ceiling of the fixed rem scale (3.75rem)." },
+      "headline": { "displayName": "Headline / H3", "purpose": "Section headings inside app pages." },
+      "title": { "displayName": "Title / H5", "purpose": "Card titles, panel and modal headers." },
+      "body": { "displayName": "Body", "purpose": "Default reading text; cap prose at 65-75ch." },
+      "label": { "displayName": "Label", "purpose": "UI workhorse: buttons, form labels, table cells, nav." },
+      "caption": { "displayName": "Caption", "purpose": "Metadata, timestamps, helper and badge text." }
+    },
+    "shadows": [
+      { "name": "resting", "value": "0 1px 2px 0 rgb(0 0 0 / 0.05)", "purpose": "Inputs and secondary controls at rest (Tailwind shadow-sm)." },
+      { "name": "raised", "value": "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)", "purpose": "Cards, primary buttons, popovers (Tailwind shadow)." },
+      { "name": "ring", "value": "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 0 0 2px hsl(var(--border) / 0.5)", "purpose": "Selected/focused container emphasis: soft shadow + translucent border ring (.shadow-ring)." }
+    ],
+    "motion": [
+      { "name": "transition-colors", "value": "150ms ease", "purpose": "Default color/background transition on interactive controls." },
+      { "name": "accordion", "value": "0.2s ease-out", "purpose": "Radix accordion expand/collapse (accordion-down / accordion-up keyframes)." },
+      { "name": "spin", "value": "1s linear infinite", "purpose": "Spinner and ButtonSpinner rotation (animate-spin)." }
+    ],
+    "breakpoints": [
+      { "name": "ss", "value": "480px" },
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" },
+      { "name": "container-2xl", "value": "1400px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Highest-emphasis, service-moving action. One per view.",
+      "html": "<button class=\"ds-btn-primary\">Create order</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; height: 36px; padding: 8px 16px; font: 500 0.875rem/1.5 ui-sans-serif, system-ui, sans-serif; letter-spacing: -0.02em; color: hsl(var(--primary-foreground, 210 40% 98%)); background: hsl(var(--primary, 330.6 82.1% 54.1%)); border: none; border-radius: 6px; box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1); cursor: pointer; transition: background 150ms ease; } .ds-btn-primary:hover { background: hsl(330.6 82.1% 54.1% / 0.9); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 1px hsl(var(--ring, 222.2 84% 4.9%)); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Indigo brand-anchored secondary action.",
+      "html": "<button class=\"ds-btn-secondary\">View bill</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; height: 36px; padding: 8px 16px; font: 500 0.875rem/1.5 ui-sans-serif, system-ui, sans-serif; letter-spacing: -0.02em; color: hsl(var(--secondary-foreground, 210 40% 98%)); background: hsl(var(--secondary, 238 80% 18%)); border: none; border-radius: 6px; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); cursor: pointer; transition: background 150ms ease; } .ds-btn-secondary:hover { background: hsl(238 80% 18% / 0.8); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Low-emphasis action; surface fill with hairline border.",
+      "html": "<button class=\"ds-btn-outline\">Cancel</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; height: 36px; padding: 8px 16px; font: 500 0.875rem/1.5 ui-sans-serif, system-ui, sans-serif; letter-spacing: -0.02em; color: hsl(var(--foreground, 222.2 84% 4.9%)); background: hsl(var(--background, 0 11% 98%)); border: 1px solid hsl(var(--input, 214.3 31.8% 91.4%)); border-radius: 6px; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); cursor: pointer; transition: background 150ms ease, color 150ms ease; } .ds-btn-outline:hover { background: hsl(var(--accent, 210 40% 96.1%)); }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Standard field: 40px tall, hairline border, quiet 1px focus ring.",
+      "html": "<input class=\"ds-input\" placeholder=\"Table number\" />",
+      "css": ".ds-input { display: flex; width: 100%; height: 40px; padding: 4px 12px; font: 400 0.875rem/1.5 ui-sans-serif, system-ui, sans-serif; color: hsl(var(--foreground, 222.2 84% 4.9%)); background: transparent; border: 1px solid hsl(var(--input, 214.3 31.8% 91.4%)); border-radius: 6px; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); transition: box-shadow 150ms ease; } .ds-input::placeholder { color: hsl(var(--muted-foreground, 215.4 16.3% 46.9%)); } .ds-input:focus-visible { outline: none; box-shadow: 0 0 0 1px hsl(var(--ring, 222.2 84% 4.9%)); }"
+    },
+    {
+      "name": "Status Badge (Ready)",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Signature order-lifecycle badge: colored dot + tinted pill. Shown here in the 'ready' (success) state.",
+      "html": "<span class=\"ds-status-badge\"><span class=\"ds-status-dot\"></span>Ready</span>",
+      "css": ".ds-status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; font: 500 0.75rem/1.33 ui-sans-serif, system-ui, sans-serif; color: hsl(var(--success, 142 71% 45%)); background: hsl(var(--success, 142 71% 45%) / 0.1); border: 1px solid hsl(var(--success, 142 71% 45%) / 0.2); border-radius: 6px; } .ds-status-dot { width: 6px; height: 6px; border-radius: 9999px; background: hsl(var(--success, 142 71% 45%)); flex-shrink: 0; }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Surface container: 12px corners, soft shadow, hairline border, 24px padding.",
+      "html": "<div class=\"ds-card\"><h3 class=\"ds-card-title\">Table 4</h3><p class=\"ds-card-desc\">2 orders in progress</p></div>",
+      "css": ".ds-card { background: hsl(var(--card, 0 0% 100%)); color: hsl(var(--card-foreground, 222.2 84% 4.9%)); border: 1px solid hsl(var(--border, 214.3 31.8% 91.4%)); border-radius: 12px; box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1); padding: 24px; } .ds-card-title { margin: 0 0 6px; font: 600 1.5rem/1.2 ui-sans-serif, system-ui, sans-serif; letter-spacing: -0.03em; } .ds-card-desc { margin: 0; font: 400 0.875rem/1.5 ui-sans-serif, system-ui, sans-serif; color: hsl(var(--muted-foreground, 215.4 16.3% 46.9%)); }"
+    },
+    {
+      "name": "Nav Item (Sidebar)",
+      "kind": "nav",
+      "refersTo": "button-ghost",
+      "description": "LeftSidebar rail item; active state uses a magenta-tinted rounded pill.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-item is-active\"><span class=\"ds-nav-ico\"></span>Orders</a><a class=\"ds-nav-item\"><span class=\"ds-nav-ico\"></span>Tables</a></nav>",
+      "css": ".ds-nav { display: flex; flex-direction: column; gap: 4px; width: 200px; } .ds-nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; font: 500 0.875rem/1.5 ui-sans-serif, system-ui, sans-serif; letter-spacing: -0.02em; color: hsl(var(--muted-foreground, 215.4 16.3% 46.9%)); border-radius: 9999px; text-decoration: none; cursor: pointer; transition: background 150ms ease, color 150ms ease; } .ds-nav-item:hover { background: hsl(var(--accent, 210 40% 96.1%)); color: hsl(var(--foreground, 222.2 84% 4.9%)); } .ds-nav-item.is-active { background: hsl(var(--primary, 330.6 82.1% 54.1%) / 0.1); color: hsl(var(--primary, 330.6 82.1% 54.1%)); } .ds-nav-ico { width: 18px; height: 18px; border-radius: 4px; background: currentColor; opacity: 0.7; flex-shrink: 0; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Open Kitchen",
+    "overview": "Pirha is a restaurant service-operations tool, and its interface is built like an open kitchen: everything that matters is visible at a glance, nothing important hides behind clutter, and the tone stays human even at full tempo. Staff reach for this system mid-service, under time pressure, to move orders through faster and with fewer mistakes. The design's job is to disappear into that work. Warmth lives in one confident magenta and generous, legible type; clarity comes from restraint everywhere else. The system explicitly rejects the generic SaaS dashboard with heavy card clutter: surfaces are calm and operational, color is earned not sprayed, and depth stays quiet. The look is familiar on purpose so staff trust every control on first contact.",
+    "keyCharacteristics": [
+      "Single magenta accent reserved for primary actions and live status - never decoration.",
+      "Cool slate neutrals for structure; deep indigo for brand anchor and dark-mode ground.",
+      "Full light + dark theme, class-toggled, brand-consistent across both.",
+      "System sans at a fixed rem scale - no display fonts, no fluid headings in the UI.",
+      "Soft-layered depth: gentle shadows + hairline borders, calm at rest.",
+      "Semantic status vocabulary (success / warning / info / destructive) with a signature dotted badge."
+    ],
+    "rules": [
+      { "name": "The One Loud Voice Rule", "body": "Pirha Magenta is used on <=10% of any screen - primary action and live status only. If two magenta things compete for the eye on one view, one of them is wrong.", "section": "colors" },
+      { "name": "The Indigo-Not-Black Rule", "body": "Dark mode is grounded in deep indigo (#040525), never in neutral black or gray. The brand hue must survive the theme flip.", "section": "colors" },
+      { "name": "The Tinted-Status Rule", "body": "Status colors appear as a /10 background + solid text + /20 border trio, never full-saturation fills, so many live statuses can share a dense view without shouting.", "section": "colors" },
+      { "name": "The System-Sans Rule", "body": "No display or decorative fonts anywhere in the product UI. Emphasis comes from a heavier weight of the system sans, never a serif or script.", "section": "typography" },
+      { "name": "The Fixed-Scale Rule", "body": "Headings use fixed rem steps, not viewport-fluid clamp(). A title that shrinks inside a sidebar looks broken, not responsive.", "section": "typography" },
+      { "name": "The Border-Carries-Structure Rule", "body": "A hairline border, not a deep shadow, is the primary way surfaces are separated. Shadows stay in the 0.05-0.10 alpha range.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do reserve Pirha Magenta (#EA2A88) for primary actions and live status only - the One Loud Voice Rule (<=10% of any screen).",
+      "Do ground dark mode in deep indigo (#040525 / #080A30), never neutral black.",
+      "Do render statuses with the tinted /10 bg + solid text + /20 border trio and a leading dot.",
+      "Do use the fixed rem type scale and the system sans in a heavier weight for emphasis.",
+      "Do convey depth with soft shadows (0.05-0.10 alpha) plus hairline #E2E8F0 borders.",
+      "Do give every interactive control its full state set: default, hover, focus-visible ring, active, disabled, loading.",
+      "Do keep muted text at Slate (#64748B) or darker so it clears 4.5:1."
+    ],
+    "donts": [
+      "Don't build the generic SaaS dashboard with heavy card clutter - no nested cards, no card for every stat, no decorative panels.",
+      "Don't spray the magenta as decoration, gradient, or on inactive states.",
+      "Don't introduce a display or script typeface for flavor in UI labels, buttons, or data.",
+      "Don't use fluid clamp() headings in the app UI; a heading that shrinks in a sidebar looks broken.",
+      "Don't stack heavy drop shadows; if a shadow reads as visible gray haze it is too dark.",
+      "Don't use border-left/border-right greater than 1px as a colored accent stripe.",
+      "Don't lean on modals as the first answer; exhaust inline and progressive alternatives.",
+      "Don't let placeholder or muted text drift lighter than Slate."
+    ]
+  }
+}
