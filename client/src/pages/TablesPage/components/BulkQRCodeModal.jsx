@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { QRCodeSVG } from "qrcode.react";
 
 import {
   Dialog,
@@ -43,54 +42,50 @@ export function BulkQRCodeModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Generate Bulk QR Codes</DialogTitle>
+          <DialogTitle>Download table QR codes</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col space-y-4">
-          <div className="flex items-center space-x-2">
+          <label
+            htmlFor="select-all"
+            className="flex items-center gap-2 text-sm font-medium cursor-pointer"
+          >
             <Checkbox
               id="select-all"
-              checked={selectedTables.length === tables.length}
+              checked={
+                tables.length > 0 && selectedTables.length === tables.length
+              }
               onCheckedChange={handleSelectAll}
             />
-            <label
-              htmlFor="select-all"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Select All
-            </label>
-          </div>
-          <ScrollArea className="h-[300px] border rounded-md p-4">
+            Select all
+          </label>
+          <ScrollArea className="h-[300px] border rounded-md p-2">
             {tables.map((table) => (
-              <div key={table._id} className="flex items-center space-x-2 mb-2">
+              <label
+                key={table._id}
+                htmlFor={`table-${table._id}`}
+                className="flex items-center gap-2 px-2 py-2 text-sm font-medium rounded-md cursor-pointer hover:bg-muted"
+              >
                 <Checkbox
                   id={`table-${table._id}`}
                   checked={selectedTables.includes(table._id)}
                   onCheckedChange={() => handleSelectTable(table._id)}
                 />
-                <label
-                  htmlFor={`table-${table._id}`}
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Table {table.title}
-                </label>
-                <QRCodeSVG
-                  id={`qr-code-${table._id}`}
-                  value={`https://your-restaurant-url.com/table/${table._id}`}
-                  size={64}
-                  level="M"
-                  className="hidden"
-                />
-              </div>
+                Table {table.title}
+              </label>
             ))}
           </ScrollArea>
           <Button
             onClick={downloadBulkQRCodes}
-            disabled={selectedTables.length === 0}
+            disabled={selectedTables.length === 0 || isDownloading}
           >
             {isDownloading ? (
               <ButtonSpinner />
+            ) : selectedTables.length > 0 ? (
+              `Download ${selectedTables.length} QR code${
+                selectedTables.length === 1 ? "" : "s"
+              }`
             ) : (
-              "Download Selected QR Codes"
+              "Download QR codes"
             )}
           </Button>
         </div>

@@ -8,6 +8,7 @@ import { useGenerateTableQrMutation } from "api/tableApi";
 import { Button } from "components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -29,19 +30,33 @@ import { Switch } from "components/ui/switch";
 import { errorToast, successToast } from "lib/helper";
 import { ButtonSpinner } from "components/Spinner";
 
+const MAX_CAPACITY = 50;
+const MAX_BULK = 50;
+
 const formSchema = z
   .object({
     prefixOfTables: z.string().min(1, "Prefix is required"),
     startNumber: z.number().min(1, "Start number must be at least 1"),
     endNumber: z.number().min(1, "End number must be at least 1"),
-    capacity: z.number().min(1, "Capacity must be at least 1"),
+    capacity: z
+      .number()
+      .min(1, "Capacity must be at least 1")
+      .max(MAX_CAPACITY, `Capacity can't exceed ${MAX_CAPACITY}`),
     isBulkCreation: z.boolean().default(false),
   })
   .refine((data) => !data.isBulkCreation || data.endNumber > data.startNumber, {
-    message:
-      "For bulk creation, the end number must be greater than the start number.",
+    message: "The end number must be greater than the start number.",
     path: ["endNumber"],
-  });
+  })
+  .refine(
+    (data) =>
+      !data.isBulkCreation ||
+      data.endNumber - data.startNumber + 1 <= MAX_BULK,
+    {
+      message: `You can create up to ${MAX_BULK} tables at once.`,
+      path: ["endNumber"],
+    }
+  );
 
 export function AddTableDialog({ children }) {
   const [open, setOpen] = useState(false);
@@ -63,6 +78,21 @@ export function AddTableDialog({ children }) {
   const { handleSubmit, reset, control, watch } = form;
 
   const isBulkCreation = watch("isBulkCreation");
+  const prefix = watch("prefixOfTables");
+  const startNumber = watch("startNumber");
+  const endNumber = watch("endNumber");
+
+  const count =
+    isBulkCreation && endNumber >= startNumber
+      ? endNumber - startNumber + 1
+      : 1;
+
+  const preview =
+    prefix && startNumber
+      ? isBulkCreation && count > 1
+        ? `Creates ${prefix.toUpperCase()}${startNumber}–${prefix.toUpperCase()}${endNumber} (${count} tables)`
+        : `Creates ${prefix.toUpperCase()}${startNumber}`
+      : null;
 
   async function onSubmit(data) {
     const payload = {
@@ -77,14 +107,14 @@ export function AddTableDialog({ children }) {
       const response = await generateTableQr(payload).unwrap();
       successToast({
         data: response,
-        message: "Table and QR codes generated successfully",
+        message: "Tables and QR codes created",
       });
       reset();
       setOpen(false);
     } catch (error) {
       errorToast({
         error,
-        message: "Failed to generate table QR codes, please try again",
+        message: "Failed to create tables, please try again",
       });
     }
   }
@@ -94,9 +124,9 @@ export function AddTableDialog({ children }) {
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New Table(s)</DialogTitle>
+          <DialogTitle>Add tables</DialogTitle>
           <DialogDescription>
-            Create a new table or bulk create multiple tables.
+            Create a single table or a numbered range in one go.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -106,12 +136,12 @@ export function AddTableDialog({ children }) {
               name="prefixOfTables"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Table Prefix</FormLabel>
+                  <FormLabel>Table prefix</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., A, B, C" {...field} />
+                    <Input placeholder="e.g. A" maxLength={3} {...field} />
                   </FormControl>
                   <FormDescription>
-                    The prefix for the table number(s).
+                    Tables are named prefix + number (e.g. A1, A2).
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -121,11 +151,11 @@ export function AddTableDialog({ children }) {
               control={control}
               name="isBulkCreation"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                <FormItem className="flex flex-row items-center justify-between p-3 border rounded-lg">
                   <div className="space-y-0.5">
-                    <FormLabel>Bulk Creation</FormLabel>
+                    <FormLabel>Create a range</FormLabel>
                     <FormDescription>
-                      Enable to create multiple tables at once.
+                      Add several numbered tables at once.
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -138,16 +168,17 @@ export function AddTableDialog({ children }) {
               )}
             />
             {isBulkCreation ? (
-              <>
+              <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={control}
                   name="startNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Start Number</FormLabel>
+                      <FormLabel>Start number</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
+                          min={1}
                           {...field}
                           onChange={(e) =>
                             field.onChange(Number(e.target.value))
@@ -163,10 +194,11 @@ export function AddTableDialog({ children }) {
                   name="endNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>End Number</FormLabel>
+                      <FormLabel>End number</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
+                          min={1}
                           {...field}
                           onChange={(e) =>
                             field.onChange(Number(e.target.value))
@@ -177,17 +209,18 @@ export function AddTableDialog({ children }) {
                     </FormItem>
                   )}
                 />
-              </>
+              </div>
             ) : (
               <FormField
                 control={control}
                 name="startNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Table Number</FormLabel>
+                    <FormLabel>Table number</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
+                        min={1}
                         {...field}
                         onChange={(e) => field.onChange(Number(e.target.value))}
                       />
@@ -202,10 +235,12 @@ export function AddTableDialog({ children }) {
               name="capacity"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Capacity</FormLabel>
+                  <FormLabel>Seats per table</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
+                      min={1}
+                      max={MAX_CAPACITY}
                       {...field}
                       onChange={(e) => field.onChange(Number(e.target.value))}
                     />
@@ -214,7 +249,15 @@ export function AddTableDialog({ children }) {
                 </FormItem>
               )}
             />
-            <DialogFooter>
+            {preview && (
+              <p className="text-sm text-muted-foreground">{preview}</p>
+            )}
+            <DialogFooter className="gap-2">
+              <DialogClose asChild>
+                <Button variant="outline" type="button">
+                  Cancel
+                </Button>
+              </DialogClose>
               <Button
                 disabled={generatingQr}
                 type="submit"
@@ -222,8 +265,10 @@ export function AddTableDialog({ children }) {
               >
                 {generatingQr ? (
                   <ButtonSpinner />
+                ) : count > 1 ? (
+                  `Add ${count} tables`
                 ) : (
-                  "Add Table(s)"
+                  "Add table"
                 )}
               </Button>
             </DialogFooter>

@@ -242,7 +242,16 @@ const createBackgroundCanvas = () => {
 };
 
 const generateQRCode = async (tables, restaurant, baseURL) => {
-  baseURL = process.env.BASE_URL || baseURL;
+  // QR codes must open the CLIENT menu — the client root handles
+  // `?restaurantId=&tableId=` and renders the ordering page. This must never be
+  // the API BASE_URL. Prefer an explicit CLIENT_URL, then the configured CORS
+  // origin, then whatever the caller passed.
+  const clientUrl = (
+    process.env.CLIENT_URL ||
+    process.env.CORS_ORIGIN ||
+    baseURL ||
+    ""
+  ).replace(/\/+$/, "");
   const zip = new JSZip();
   const bgCanvas = createBackgroundCanvas(); // Cached once
 
@@ -253,7 +262,7 @@ const generateQRCode = async (tables, restaurant, baseURL) => {
     // Draw cached background
     ctx.drawImage(bgCanvas, 0, 0);
 
-    const qrCodeText = `${baseURL}?tableId=${table._id}&restaurantId=${restaurant._id}`;
+    const qrCodeText = `${clientUrl}/?tableId=${table._id}&restaurantId=${restaurant._id}`;
 
     // Generate QR Code
     const qrCanvas = createCanvas(200, 200);

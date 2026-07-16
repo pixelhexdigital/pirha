@@ -14,13 +14,13 @@ export default function TablesPage() {
           description="View and manage restaurant tables"
         >
           <AddTableDialog>
-            <Button className="flex items-center gap-2 px-4">
-              <Plus className="h-4 w-4" />
-              Add New Table
+            <Button className="gap-2">
+              <Plus className="w-4 h-4" />
+              Add table
             </Button>
           </AddTableDialog>
         </PageHeader>
-        <div className="p-4 space-y-4 flex-1">
+        <div className="flex-1">
           <TableGrid />
         </div>
       </div>

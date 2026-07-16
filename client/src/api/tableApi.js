@@ -25,7 +25,7 @@ export const tableApi = createApi({
 
       serializeQueryArgs: ({ endpointName, queryArgs }) => {
         // Exclude 'page' from cache key
-        const { page, ...filterArgs } = queryArgs || {};
+        const { page: _p, ...filterArgs } = queryArgs || {}; // eslint-disable-line no-unused-vars
         return `${endpointName}-${JSON.stringify(filterArgs)}`;
       },
 
@@ -85,34 +85,42 @@ export const tableApi = createApi({
         method: "DELETE",
       }),
       onQueryStarted: async (id, { dispatch, getState, queryFulfilled }) => {
+        const cacheEntries = getState().tableApi.queries;
+        const activeQuery = Object.keys(cacheEntries).find((key) =>
+          key.startsWith("getMyTables")
+        );
+        if (!activeQuery) return;
+
+        const queryArgs = cacheEntries[activeQuery]?.originalArgs;
+        if (!queryArgs) return;
+
+        // Optimistically remove the table and keep the summary counts in sync.
+        const patchResult = dispatch(
+          tableApi.util.updateQueryData("getMyTables", queryArgs, (draft) => {
+            if (!draft.data?.tables) return;
+            const removed = draft.data.tables.find((table) => table._id === id);
+            draft.data.tables = draft.data.tables.filter(
+              (table) => table._id !== id
+            );
+            draft.data.totalTables = Math.max(
+              0,
+              (draft.data.totalTables || 0) - 1
+            );
+            if (removed?.status === "Free") {
+              draft.data.freeTables = Math.max(0, (draft.data.freeTables || 0) - 1);
+            } else if (removed?.status === "Occupied") {
+              draft.data.occupiedTables = Math.max(
+                0,
+                (draft.data.occupiedTables || 0) - 1
+              );
+            }
+          })
+        );
+
         try {
-          // Find the active query arguments from cache
-          const cacheEntries = getState().tableApi.queries;
-          const activeQuery = Object.keys(cacheEntries).find((key) =>
-            key.startsWith("getMyTables")
-          );
-
-          if (!activeQuery) return; // If there's no cached query, exit early
-
-          // Extract page and limit from the active query
-          const queryArgs = cacheEntries[activeQuery]?.originalArgs;
-          if (!queryArgs) return; // Ensure we have valid query arguments
-
-          // Optimistically update cache before API call
-          dispatch(
-            tableApi.util.updateQueryData("getMyTables", queryArgs, (draft) => {
-              if (draft.data?.tables) {
-                draft.data.tables = draft.data.tables.filter(
-                  (table) => table._id !== id
-                );
-              }
-            })
-          );
-
-          // Wait for API response
           await queryFulfilled;
         } catch {
-          // Rollback handled by RTK Query cache invalidation
+          patchResult.undo();
         }
       },
     }),
@@ -123,37 +131,49 @@ export const tableApi = createApi({
         method: "PATCH",
         body: data,
       }),
-      onQueryStarted: async (data, { dispatch, getState, queryFulfilled }) => {
-        try {
-          // Find the active query arguments from cache
-          const cacheEntries = getState().tableApi.queries;
-          const activeQuery = Object.keys(cacheEntries).find((key) =>
-            key.startsWith("getMyTables")
-          );
+      onQueryStarted: async (
+        { tableId, ...changes },
+        { dispatch, getState, queryFulfilled }
+      ) => {
+        const cacheEntries = getState().tableApi.queries;
+        const activeQuery = Object.keys(cacheEntries).find((key) =>
+          key.startsWith("getMyTables")
+        );
+        if (!activeQuery) return;
 
-          if (!activeQuery) return; // If there's no cached query, exit early
+        const queryArgs = cacheEntries[activeQuery]?.originalArgs;
+        if (!queryArgs) return;
 
-          // Extract page and limit from the active query
-          const queryArgs = cacheEntries[activeQuery]?.originalArgs;
-          if (!queryArgs) return; // Ensure we have valid query arguments
-
-          // Optimistically update cache before API call
-          dispatch(
-            tableApi.util.updateQueryData("getMyTables", queryArgs, (draft) => {
-              if (draft.data?.tables) {
-                // Find the table in cache and update it
-                draft.data.tables = draft.data.tables.map((table) =>
-                  table._id === data.tableId ? { ...table, ...data } : table
+        // Optimistically merge the change and adjust the free/occupied counts
+        // when the status flips, so the summary stays in sync.
+        const patchResult = dispatch(
+          tableApi.util.updateQueryData("getMyTables", queryArgs, (draft) => {
+            const table = draft.data?.tables?.find((t) => t._id === tableId);
+            if (!table || !draft.data) return;
+            const prevStatus = table.status;
+            Object.assign(table, changes);
+            if (changes.status && changes.status !== prevStatus) {
+              if (prevStatus === "Free") {
+                draft.data.freeTables = Math.max(0, (draft.data.freeTables || 0) - 1);
+              } else if (prevStatus === "Occupied") {
+                draft.data.occupiedTables = Math.max(
+                  0,
+                  (draft.data.occupiedTables || 0) - 1
                 );
-
               }
-            })
-          );
+              if (changes.status === "Free") {
+                draft.data.freeTables = (draft.data.freeTables || 0) + 1;
+              } else if (changes.status === "Occupied") {
+                draft.data.occupiedTables = (draft.data.occupiedTables || 0) + 1;
+              }
+            }
+          })
+        );
 
-          // Wait for API response
+        try {
           await queryFulfilled;
         } catch {
-          // Rollback handled by RTK Query cache invalidation
+          patchResult.undo();
         }
       },
     }),
@@ -163,24 +183,6 @@ export const tableApi = createApi({
         method: "GET",
         url: `/${tableId}`,
       }),
-    }),
-
-    deleteTablesBatch: builder.mutation({
-      query: (data) => ({
-        url: "/delete-batch",
-        method: "POST",
-        body: data,
-      }),
-      invalidatesTags: ["Table"],
-    }),
-
-    updateTablesBatch: builder.mutation({
-      query: (data) => ({
-        url: "/edit-batch",
-        method: "POST",
-        body: data,
-      }),
-      invalidatesTags: ["Table"],
     }),
   }),
 });
@@ -192,6 +194,4 @@ export const {
   useDeleteTableByIdMutation,
   useUpdateTableByIdMutation,
   useGetTableDetailsByIdMutation,
-  useDeleteTablesBatchMutation,
-  useUpdateTablesBatchMutation,
 } = tableApi;

@@ -1,3 +1,6 @@
+import { X } from "lucide-react";
+
+import { Button } from "components/ui/button";
 import { Input } from "components/ui/input";
 import { Label } from "components/ui/label";
 import {
@@ -15,6 +18,7 @@ export function TableFilters({
   setSearchQuery,
 }) {
   const { status, minCapacity } = filter;
+  const hasActiveFilters = Boolean(searchQuery || status || minCapacity);
 
   const setStatus = (value) => {
     if (value === "All") {
@@ -33,8 +37,13 @@ export function TableFilters({
     }));
   };
 
+  const clearAll = () => {
+    setSearchQuery("");
+    setFilter((prev) => ({ ...prev, status: "", minCapacity: "" }));
+  };
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4 mb-6">
+    <div className="grid grid-cols-1 gap-4 mt-4 mb-6 md:grid-cols-3 lg:grid-cols-4">
       <div className="space-y-1.5">
         <Label htmlFor="search-filter">Search</Label>
         <Input
@@ -68,6 +77,18 @@ export function TableFilters({
           placeholder="Enter minimum capacity"
         />
       </div>
+      {hasActiveFilters && (
+        <div className="flex items-end">
+          <Button
+            variant="ghost"
+            onClick={clearAll}
+            className="gap-2 text-muted-foreground"
+          >
+            <X className="size-4" />
+            Clear filters
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

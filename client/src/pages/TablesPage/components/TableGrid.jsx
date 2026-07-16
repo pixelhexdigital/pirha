@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
-import { Download } from "lucide-react";
+import { Download, LayoutGrid } from "lucide-react";
 import {
   useDeleteTableByIdMutation,
   useDownloadQrMutation,
@@ -17,6 +17,7 @@ import { Button } from "components/ui/button";
 import { Skeleton } from "components/ui/skeleton";
 import { Card } from "components/ui/card";
 import Spinner from "components/Spinner";
+import EmptyState from "components/EmptyState";
 import { errorToast, successToast } from "lib/helper";
 import { TableSummary } from "pages/TablesPage/components/TableSummary";
 import { TableFilters } from "pages/TablesPage/components/TableFilters";
@@ -49,12 +50,9 @@ export function TableGrid() {
     search: debouncedQuery,
     ...filter,
   });
-  const [deleteTableById, { isLoading: isDeleting }] =
-    useDeleteTableByIdMutation();
-  const [updateTableById, { isLoading: isUpdating }] =
-    useUpdateTableByIdMutation();
-  const [getTableDetailsById, { isLoading: isGettingDetails }] =
-    useGetTableDetailsByIdMutation();
+  const [deleteTableById] = useDeleteTableByIdMutation();
+  const [updateTableById] = useUpdateTableByIdMutation();
+  const [getTableDetailsById] = useGetTableDetailsByIdMutation();
   const [downloadQr, { isLoading: isDownloading }] = useDownloadQrMutation();
 
   const tableSummaryData = {
@@ -64,6 +62,9 @@ export function TableGrid() {
   };
 
   const hasNextPage = tableData?.data?.hasNextPage || false;
+  const isFiltered = Boolean(
+    debouncedQuery || filter.status || filter.minCapacity
+  );
 
   useEffect(() => {
     if (tableData?.data?.tables) {
@@ -175,38 +176,51 @@ export function TableGrid() {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
       />
-      <div className="flex sm:items-center justify-between p-4  sm:flex-row flex-col gap-4">
-        <h2 className="text-2xl font-bold">Tables</h2>
-        <Button onClick={handleBulkQRGenerate}>
-          <Download className="mr-2 h-4 w-4" /> Download Bulk QR Codes
+      <div className="flex justify-end mb-3">
+        <Button variant="outline" onClick={handleBulkQRGenerate}>
+          <Download className="w-4 h-4 mr-2" /> Download bulk QR codes
         </Button>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-2.5">
-        {isLoading && !tables.length
-          ? [...Array(8)].map((_, i) => (
-              <Card key={i} className="p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <Skeleton className="h-5 w-20" />
-                  <Skeleton className="h-5 w-16 rounded-full" />
-                </div>
-                <Skeleton className="h-4 w-24" />
-                <div className="flex gap-2 pt-2">
-                  <Skeleton className="h-8 flex-1 rounded-md" />
-                  <Skeleton className="h-8 w-8 rounded-md" />
-                </div>
-              </Card>
-            ))
-          : tables.map((table) => (
-              <TableCard
-                key={table._id}
-                table={table}
-                onClick={() => handleDetailsClick(table._id)}
-                onQuickAction={handleQuickAction}
-                onDelete={handleDelete}
-                onQrCodeDownload={handleDownloadQr}
-              />
-            ))}
-      </div>
+      {isLoading && !tables.length ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {[...Array(8)].map((_, i) => (
+            <Card key={i} className="p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <Skeleton className="w-20 h-5" />
+                <Skeleton className="w-16 h-5 rounded-full" />
+              </div>
+              <Skeleton className="w-24 h-4" />
+              <div className="flex gap-2 pt-2">
+                <Skeleton className="flex-1 h-8 rounded-md" />
+                <Skeleton className="w-8 h-8 rounded-md" />
+              </div>
+            </Card>
+          ))}
+        </div>
+      ) : tables.length === 0 ? (
+        <EmptyState
+          icon={LayoutGrid}
+          title={isFiltered ? "No tables match your filters" : "No tables yet"}
+          description={
+            isFiltered
+              ? "Try adjusting or clearing your filters above."
+              : "Add your first table to start taking QR orders."
+          }
+        />
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {tables.map((table) => (
+            <TableCard
+              key={table._id}
+              table={table}
+              onClick={() => handleDetailsClick(table._id)}
+              onQuickAction={handleQuickAction}
+              onDelete={handleDelete}
+              onQrCodeDownload={handleDownloadQr}
+            />
+          ))}
+        </div>
+      )}
       {isFetching && tables.length > 0 && <Spinner size="lg" className="mt-4" />}
 
       {/* This div acts as a trigger for infinite scroll */}
