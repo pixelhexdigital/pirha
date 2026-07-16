@@ -7,8 +7,9 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ChevronDown, ChevronRight, Circle, Minus } from "lucide-react";
+import { ChevronDown, ChevronRight, Minus } from "lucide-react";
 
+import StatusBadge from "components/StatusBadge";
 import {
   Table,
   TableBody,
@@ -17,25 +18,8 @@ import {
   TableHeader,
   TableRow,
 } from "components/ui/table";
+import { numberToCurrency } from "lib/helper";
 import { useState } from "react";
-
-const STATUS_COLORS = {
-  new: "#f6ad55",
-  inProgress: "#4e60ff",
-  ready: "#1abf70",
-  completed: "#1abf70",
-  billed: "#1abf70",
-  cancelled: "#ff5c60",
-};
-
-const STATUS_TEXT = {
-  new: "New Order",
-  inProgress: "In Progress",
-  completed: "Completed",
-  ready: "Ready",
-  billed: "Billed",
-  cancelled: "Cancelled",
-};
 
 const columns = [
   {
@@ -102,37 +86,16 @@ const columns = [
   {
     accessorKey: "totalAmount",
     header: "Amount",
-    cell: ({ row }) => {
-      const amount = row.getValue("totalAmount");
-
-      // Format the amount as a dollar amount
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "INR",
-      }).format(amount);
-
-      return <div className="w-full">{formatted}</div>;
-    },
+    cell: ({ row }) => (
+      <div className="w-full">
+        {numberToCurrency(row.getValue("totalAmount"), "INR", 2)}
+      </div>
+    ),
   },
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => {
-      let status = row.getValue("status");
-
-      status = typeof status === "string" ? status.toLowerCase() : status;
-
-      return (
-        <div className="flex items-center gap-2">
-          <Circle
-            size={8}
-            fill={STATUS_COLORS[status]}
-            color={STATUS_COLORS[status]}
-          />
-          {STATUS_TEXT[status]}
-        </div>
-      );
-    },
+    cell: ({ row }) => <StatusBadge status={row.getValue("status")} />,
   },
 ];
 

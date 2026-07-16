@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { addToCart } from "store/CartSlice";
 import { selectIsNonVegOnly, selectIsVegOnly } from "store/MiscellaneousSlice";
+import { numberToCurrency } from "lib/helper";
 
 const DEBOUNCE_DELAY = 500;
 
@@ -151,7 +152,9 @@ const MenuPage = () => {
 
                     <h3 className="font-semibold text-lg">{menu.title}</h3>
 
-                    <p className="font-medium text-lg mt-1">{"\u20B9"}{menu.price}</p>
+                    <p className="font-medium text-lg mt-1">
+                      {numberToCurrency(menu.price, "INR", 0)}
+                    </p>
 
                     {menu.description && (
                       <p className="text-sm text-muted-foreground mt-1 line-clamp-2">

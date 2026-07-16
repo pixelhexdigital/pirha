@@ -41,7 +41,6 @@ import {
 } from "store/MiscellaneousSlice";
 import { errorToast, successToast, numberToCurrency } from "lib/helper";
 
-const CLASS_INPUT = "";
 
 const FORM_SCHEMA = object().shape({
   userName: string().required("Name is required"),
@@ -122,7 +121,7 @@ const Cart = () => {
     <Sheet open={sheetOpen} onOpenChange={onOpenChange}>
       <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-background to-transparent h-24 pointer-events-none" />
 
-      <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-between items-center p-4 bg-primary text-primary-foreground shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-between items-center p-4 bg-primary text-primary-foreground shadow-lg animate-in slide-in-from-bottom-4 fade-in duration-300">
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center bg-primary-foreground rounded-full w-10 h-10">
             <ShoppingBag size={18} className="text-primary" />
@@ -196,7 +195,7 @@ const Cart = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 rounded-none"
+                        className="h-10 w-10 rounded-none"
                         onClick={() => dispatch(decreaseQuantity({ item }))}
                       >
                         <Minus className="h-3 w-3" />
@@ -206,7 +205,7 @@ const Cart = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 rounded-none"
+                        className="h-10 w-10 rounded-none"
                         onClick={() => dispatch(increaseQuantity({ item }))}
                       >
                         <Plus className="h-3 w-3" />
@@ -217,7 +216,7 @@ const Cart = () => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-destructive hover:text-destructive/90"
+                      className="h-10 w-10 text-destructive hover:text-destructive/90"
                       onClick={() => {
                         // Remove all quantities of this item
                         for (let i = 0; i < item.quantity; i++) {
@@ -258,14 +257,12 @@ const Cart = () => {
                   <Field
                     placeholder="Enter Your Name"
                     autoComplete="name"
-                    classInput={CLASS_INPUT}
                     error={errors.userName?.message}
                     {...register("userName")}
                   />
                   <Field
                     placeholder="Enter Your Mobile No"
                     autoComplete="tel"
-                    classInput={CLASS_INPUT}
                     error={errors.mobileNo?.message}
                     {...register("mobileNo")}
                   />

@@ -17,7 +17,6 @@ import {
 } from "components/ui/dialog";
 import Field from "components/Field";
 
-const CLASS_INPUT = "";
 
 const DEFAULT_VALUES = {
   name: "",
@@ -120,7 +119,8 @@ const CategoriesForm = ({
             <button
               type="button"
               onClick={() => imageRef.current.click()}
-              className="absolute flex items-center justify-center transition-all duration-300 ease-in-out transform right-[0.60rem] bottom-2 size-10 bg-primary hover:scale-105 hover:bg-primary/90 hover:text-primary-foreground rounded-br-lg rounded-tl-lg shadow-md"
+              aria-label={imageUrl ? "Change image" : "Upload image"}
+              className="absolute flex items-center justify-center transition-all duration-200 ease-in-out transform right-[0.60rem] bottom-2 size-10 bg-primary hover:scale-105 hover:bg-primary/90 hover:text-primary-foreground rounded-br-lg rounded-tl-lg shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:hover:scale-100"
             >
               {imageUrl ? (
                 <Pencil size={22} color="white" />
@@ -135,7 +135,6 @@ const CategoriesForm = ({
               placeholder="Name of the Category"
               autoComplete="off"
               error={errors.name?.message}
-              classInput={CLASS_INPUT}
               {...register("name")}
             />
           </div>

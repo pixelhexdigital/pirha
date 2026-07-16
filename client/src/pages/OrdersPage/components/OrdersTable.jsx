@@ -7,7 +7,6 @@ import {
   Check,
 } from "lucide-react";
 import { format } from "date-fns";
-import { twMerge } from "tailwind-merge";
 
 import StatusBadge from "components/StatusBadge";
 import EmptyState from "components/EmptyState";
@@ -50,15 +49,6 @@ const statusMap = {
   "Mark as Served": "Served",
   "Generate Bill": "Billed",
   "Cancel Order": "Cancelled",
-};
-
-const STATUS_BORDER_COLORS = {
-  new: "border-l-info",
-  preparing: "border-l-warning",
-  ready: "border-l-success",
-  served: "border-l-purple-500",
-  cancelled: "border-l-destructive",
-  billed: "border-l-indigo-500",
 };
 
 export function OrdersTable({ data, onAction, isLoading }) {
@@ -130,12 +120,7 @@ export function OrdersTable({ data, onAction, isLoading }) {
 
                 return (
                   <Fragment key={order._id}>
-                    <TableRow
-                      className={twMerge(
-                        "hover:bg-muted/50 border-l-4",
-                        STATUS_BORDER_COLORS[orderStatus] || "border-l-transparent"
-                      )}
-                    >
+                    <TableRow className="hover:bg-muted/50">
                       <TableCell>
                         <Button
                           variant="ghost"

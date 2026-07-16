@@ -1,17 +1,19 @@
 import { twMerge } from "tailwind-merge";
 
+// Veg = green, non-veg = red is the FSSAI food-labelling convention; routing
+// it through semantic tokens preserves that meaning while staying theme-aware.
 const FOOD_GROUP_BG_COLORS = {
-  veg: "bg-green-500",
-  "non-veg": "bg-red-500",
-  egg: "bg-yellow-500",
-  vegan: "bg-blue-500",
+  veg: "bg-success",
+  "non-veg": "bg-destructive",
+  egg: "bg-warning",
+  vegan: "bg-info",
 };
 
 const FOOD_GROUP_BORDER_COLORS = {
-  veg: "border-green-500",
-  "non-veg": "border-red-500",
-  egg: "border-yellow-500",
-  vegan: "border-blue-500",
+  veg: "border-success",
+  "non-veg": "border-destructive",
+  egg: "border-warning",
+  vegan: "border-info",
 };
 
 const FoodGroupIndicator = ({ foodGroup, className }) => {

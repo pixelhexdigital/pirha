@@ -125,7 +125,7 @@ const CategoriesPage = () => {
                   key={_id}
                   to={`${ROUTES.MENU}/${tableId}/${restaurantId}/${name}`}
                   state={{ items } || {}}
-                  className="group flex flex-col items-center justify-center p-6 bg-card hover:bg-accent border rounded-xl shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
+                  className="group flex flex-col items-center justify-center p-6 bg-card hover:bg-accent border rounded-xl shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
                 >
                   <div className="size-20 rounded-full bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/15 transition-colors">
                     {image?.url ? (

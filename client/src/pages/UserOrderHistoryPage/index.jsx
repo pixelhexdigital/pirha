@@ -76,7 +76,7 @@ const UserOrderHistoryPage = () => {
         {isLoading ? (
           <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="border rounded-lg bg-card shadow-sm p-4 space-y-3">
+              <div key={i} className="border rounded-xl bg-card shadow-sm p-4 space-y-3">
                 <div className="flex justify-between items-center">
                   <div className="space-y-2">
                     <Skeleton className="h-5 w-32" />
@@ -102,7 +102,7 @@ const UserOrderHistoryPage = () => {
               <Accordion type="single" collapsible key={order._id}>
                 <AccordionItem
                   value={order._id}
-                  className="border rounded-lg bg-card shadow-sm"
+                  className="border rounded-xl bg-card shadow-sm"
                 >
                   <AccordionTrigger className="px-4 py-3 hover:no-underline">
                     <div className="flex flex-1 justify-between items-center">

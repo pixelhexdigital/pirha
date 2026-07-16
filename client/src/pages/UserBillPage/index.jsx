@@ -13,6 +13,9 @@ import {
 import { errorToast, numberToCurrency } from "lib/helper";
 import { useGenerateTableBillMutation } from "api/billApi";
 
+const TAX_RATE = 0.05;
+const SERVICE_CHARGE_RATE = 0.1;
+
 const UserBillPage = () => {
   const navigate = useNavigate();
   const { tableId, restaurantId } = useParams();
@@ -28,8 +31,8 @@ const UserBillPage = () => {
 
   const subtotal =
     cartData?.reduce((acc, item) => acc + item.price * item.quantity, 0) || 0;
-  const tax = subtotal * 0.05;
-  const serviceCharge = subtotal * 0.1;
+  const tax = subtotal * TAX_RATE;
+  const serviceCharge = subtotal * SERVICE_CHARGE_RATE;
   const total = subtotal + tax + serviceCharge;
 
   const now = new Date();
@@ -92,7 +95,7 @@ const UserBillPage = () => {
       </div>
 
       <main className="container max-w-md mx-auto px-4 py-6">
-        <div className="bg-card border rounded-lg shadow-sm p-6 mb-6">
+        <div className="bg-card border rounded-xl shadow-sm p-6 mb-6">
           <div className="text-center mb-6">
             <h2 className="text-xl font-bold">
               {restaurantDetails?.restroName || "Restaurant"}
@@ -151,7 +154,19 @@ const UserBillPage = () => {
 
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <p>Service Charge (10%)</p>
+              <p className="text-muted-foreground">Subtotal</p>
+              <p>{numberToCurrency(subtotal, "INR", 2)}</p>
+            </div>
+            <div className="flex justify-between text-sm">
+              <p className="text-muted-foreground">
+                Tax ({(TAX_RATE * 100).toFixed(0)}%)
+              </p>
+              <p>{numberToCurrency(tax, "INR", 2)}</p>
+            </div>
+            <div className="flex justify-between text-sm">
+              <p className="text-muted-foreground">
+                Service Charge ({(SERVICE_CHARGE_RATE * 100).toFixed(0)}%)
+              </p>
               <p>{numberToCurrency(serviceCharge, "INR", 2)}</p>
             </div>
             <Separator />

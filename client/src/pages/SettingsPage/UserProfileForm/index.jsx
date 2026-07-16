@@ -26,7 +26,6 @@ import Spinner from "components/Spinner";
 import { ButtonSpinner } from "components/Spinner";
 
 // Input class styles
-const CLASS_INPUT = "";
 
 // Default form values
 const DEFAULT_VALUES = {
@@ -234,7 +233,6 @@ const UserProfileForm = () => {
             <Field
               placeholder={PLACEHOLDERS.RESTRO_NAME}
               label={PLACEHOLDERS.RESTRO_NAME}
-              classInput={CLASS_INPUT}
               error={errors.restroName?.message}
               {...register("restroName")}
             />
@@ -242,7 +240,6 @@ const UserProfileForm = () => {
               placeholder={PLACEHOLDERS.OWNER_NAME}
               label={PLACEHOLDERS.OWNER_NAME}
               autoComplete="off"
-              classInput={CLASS_INPUT}
               error={errors.ownerFullName?.message}
               {...register("ownerFullName")}
             />
@@ -250,7 +247,6 @@ const UserProfileForm = () => {
               label={PLACEHOLDERS.LOCATION}
               placeholder={PLACEHOLDERS.LOCATION}
               autoComplete="off"
-              classInput={CLASS_INPUT}
               error={errors.location?.message}
               {...register("location")}
             />
@@ -267,7 +263,6 @@ const UserProfileForm = () => {
                     error={errors.restroType?.message}
                     label={PLACEHOLDERS.RESTRO_TYPE}
                     placeholder={PLACEHOLDERS.RESTRO_TYPE}
-                    buttonClassName={CLASS_INPUT}
                   />
                 )}
               />
@@ -278,7 +273,6 @@ const UserProfileForm = () => {
               max={moment().format("YYYY")}
               label={PLACEHOLDERS.YEAR}
               placeholder={PLACEHOLDERS.YEAR}
-              classInput={CLASS_INPUT}
               error={errors.yearOfEstablishment?.message}
               {...register("yearOfEstablishment")}
             />

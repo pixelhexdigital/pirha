@@ -10,8 +10,9 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ChevronDown, ChevronRight, Circle, Minus, MoreHorizontal } from "lucide-react";
+import { ChevronDown, ChevronRight, Minus, MoreHorizontal } from "lucide-react";
 
+import StatusBadge from "components/StatusBadge";
 import { Button } from "components/ui/button";
 // import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -30,23 +31,10 @@ import {
   DropdownMenuTrigger,
 } from "components/ui/dropdown-menu";
 import Layout from "components/Layout";
+import PageHeader from "components/PageHeader";
 import { useGetOrdersDataQuery } from "api/adminApi";
 import { selectOrders } from "store/OrderSlice";
-
-// CONSTANTS FOR STATUS COLORS AND TEXT
-const STATUS_COLORS = {
-  new: "#f6ad55",
-  inProgress: "#4e60ff",
-  completed: "#1abf70",
-  cancelled: "#ff5c60",
-};
-
-const STATUS_TEXT = {
-  new: "New Order",
-  inProgress: "In Progress",
-  completed: "Completed",
-  cancelled: "Cancelled",
-};
+import { numberToCurrency } from "lib/helper";
 
 const columns = [
   {
@@ -96,19 +84,15 @@ const columns = [
   {
     accessorKey: "price",
     header: "Amount",
-    cell: ({ row }) => {
-      const amount = parseFloat(
-        row.original?.totalAmount || row.getValue("price")
-      );
-
-      // Format the amount as a dollar amount
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "INR",
-      }).format(amount);
-
-      return <div className="w-full">{formatted}</div>;
-    },
+    cell: ({ row }) => (
+      <div className="w-full">
+        {numberToCurrency(
+          parseFloat(row.original?.totalAmount || row.getValue("price")),
+          "INR",
+          2
+        )}
+      </div>
+    ),
   },
   {
     accessorKey: "updatedAt",
@@ -123,22 +107,7 @@ const columns = [
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => {
-      let status = row.getValue("status");
-
-      status = typeof status === "string" ? status.toLowerCase() : status;
-
-      return (
-        <div className="flex items-center gap-2">
-          <Circle
-            size={8}
-            fill={STATUS_COLORS[status]}
-            color={STATUS_COLORS[status]}
-          />
-          {STATUS_TEXT[status]}
-        </div>
-      );
-    },
+    cell: ({ row }) => <StatusBadge status={row.getValue("status")} />,
   },
   {
     accessorKey: "actions",
@@ -174,14 +143,14 @@ const columns = [
 const OrderDetailsPage = () => {
   const ordersData = useSelector(selectOrders);
 
-  const [pageNo, setPageNo] = useState(1);
+  const [pageNo] = useState(1);
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
   const [expanded, setExpanded] = useState({});
 
-  const { isLoading, isFetching, refetch } = useGetOrdersDataQuery(
+  useGetOrdersDataQuery(
     { pageNo, status: "New" },
     { refetchOnMountOrArgChange: true }
   );
@@ -213,8 +182,8 @@ const OrderDetailsPage = () => {
 
   return (
     <Layout>
+      <PageHeader title="Orders" />
       <div className="space-y-4 w-[98%] mx-auto">
-        <h2 className="h4">Orders</h2>
         <div className="w-full p-4 space-y-4 bg-card rounded-md shadow-md ring-1 ring-border">
           <Table>
             <TableHeader>

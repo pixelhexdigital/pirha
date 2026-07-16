@@ -39,14 +39,14 @@ export default function FeatureComingSoon() {
           allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
         ></iframe>
       ) : (
-        <div className="text-6xl mb-4 animate-bounce">👨‍🍳</div>
+        <div className="text-6xl mb-4 animate-pulse">👨‍🍳</div>
       )}
 
       <h2 className="text-3xl font-semibold text-foreground mt-6">
         Chef’s Special in Progress!
       </h2>
       <p className="text-muted-foreground max-w-md mb-6">
-        We're preparing something delicious for you. This feature will be served
+        We&apos;re preparing something delicious for you. This feature will be served
         hot and fresh very soon!
       </p>
       <Button

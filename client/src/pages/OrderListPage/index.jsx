@@ -39,7 +39,7 @@ const PAGINATION_LIMIT = 20;
 const OrderListPage = () => {
   const ordersData = useSelector(selectOrders);
   const [activeFilter, setActiveFilter] = useState(FILTER_BUTTONS[0].value);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage] = useState(1);
 
   const { orders } = ordersData || {};
 

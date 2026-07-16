@@ -6,17 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import EmptyState from "components/EmptyState";
+import StatusBadge from "components/StatusBadge";
 import { twMerge } from "tailwind-merge";
-
-const statusStyles = {
-  new: "bg-info/10 text-info border-info/20",
-  preparing: "bg-warning/10 text-warning border-warning/20",
-  ready: "bg-success/10 text-success border-success/20",
-};
 
 function KitchenOrderSkeleton() {
   return (
-    <Card className="flex flex-col border-l-4 border-l-muted">
+    <Card className="flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between pb-3 space-y-0">
         <div className="flex items-center gap-2">
           <Skeleton className="h-4 w-32" />
@@ -57,9 +52,11 @@ export function KitchenOrdersView({ orders, onStatusChange, isLoading }) {
     const diff = new Date().getTime() - new Date(orderTime).getTime();
     const minutes = Math.floor(diff / 60000);
 
-    if (minutes > 15) return "border-l-4 border-l-destructive";
-    if (minutes > 5) return "border-l-4 border-l-warning";
-    return "border-l-4 border-l-success";
+    // Aging orders get a full-border + faint background tint (never a
+    // side-stripe). The pulsing time label carries the rest of the signal.
+    if (minutes > 15) return "border-destructive/40 bg-destructive/[0.04]";
+    if (minutes > 5) return "border-warning/40 bg-warning/[0.04]";
+    return "";
   };
 
   const getTimeColor = (orderTime) => {
@@ -110,15 +107,7 @@ export function KitchenOrdersView({ orders, onStatusChange, isLoading }) {
                 {order?.items?.length} items
               </Badge>
             </div>
-            <Badge
-              variant="outline"
-              className={twMerge(
-                "capitalize",
-                statusStyles[order?.status?.toLowerCase()]
-              )}
-            >
-              {order?.status}
-            </Badge>
+            <StatusBadge status={order?.status} />
           </CardHeader>
           <Separator />
           <CardContent className="pt-4">

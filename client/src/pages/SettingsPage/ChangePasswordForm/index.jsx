@@ -16,7 +16,6 @@ import { errorToast, successToast } from "lib/helper";
 import { ButtonSpinner } from "components/Spinner";
 
 // Input class styles
-const CLASS_INPUT = "";
 
 // Default form values
 const DEFAULT_VALUES = {
@@ -84,7 +83,6 @@ const ChangePasswordForm = () => {
               placeholder="Enter your current password"
               error={errors.currentPassword?.message}
               {...register("currentPassword")}
-              classInput={CLASS_INPUT}
             />
             <Field
               label="New Password"
@@ -92,7 +90,6 @@ const ChangePasswordForm = () => {
               placeholder="Enter your new password"
               error={errors.newPassword?.message}
               {...register("newPassword")}
-              classInput={CLASS_INPUT}
             />
             <Field
               label="Confirm New Password"
@@ -100,7 +97,6 @@ const ChangePasswordForm = () => {
               placeholder="Confirm your new password"
               error={errors.confirmNewPassword?.message}
               {...register("confirmNewPassword")}
-              classInput={CLASS_INPUT}
             />
           </div>
           <Button

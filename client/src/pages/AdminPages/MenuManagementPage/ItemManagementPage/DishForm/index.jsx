@@ -24,7 +24,6 @@ import {
 } from "components/ui/select";
 import Field from "components/Field";
 
-const CLASS_INPUT = "";
 
 const DEFAULT_VALUES = {
   title: "",
@@ -154,7 +153,8 @@ const DishForm = ({
             <button
               type="button"
               onClick={() => imageRef.current.click()}
-              className="absolute flex items-center justify-center transition-all duration-300 ease-in-out transform right-[0.60rem] bottom-2 size-10 bg-primary hover:scale-105 hover:bg-primary/90 hover:text-primary-foreground rounded-br-lg rounded-tl-lg shadow-md"
+              aria-label={imageUrl ? "Change image" : "Upload image"}
+              className="absolute flex items-center justify-center transition-all duration-200 ease-in-out transform right-[0.60rem] bottom-2 size-10 bg-primary hover:scale-105 hover:bg-primary/90 hover:text-primary-foreground rounded-br-lg rounded-tl-lg shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:hover:scale-100"
             >
               {imageUrl ? (
                 <Pencil size={22} color="white" />
@@ -169,7 +169,6 @@ const DishForm = ({
               placeholder="Name of the dish"
               autoComplete="off"
               error={errors.title?.message}
-              classInput={CLASS_INPUT}
               {...register("title")}
             />
             <Field
@@ -177,7 +176,6 @@ const DishForm = ({
               placeholder="Description"
               autoComplete="off"
               error={errors.description?.message}
-              classInput={CLASS_INPUT}
               {...register("description")}
             />
             <Field
@@ -186,7 +184,6 @@ const DishForm = ({
               type="number"
               autoComplete="off"
               error={errors.price?.message}
-              classInput={CLASS_INPUT}
               {...register("price")}
             />
             <Field
@@ -195,7 +192,6 @@ const DishForm = ({
               type="number"
               autoComplete="off"
               error={errors.discount?.message}
-              classInput={CLASS_INPUT}
               {...register("discount")}
             />
 
@@ -209,7 +205,7 @@ const DishForm = ({
                     defaultValue={field.value}
                     onValueChange={field.onChange}
                   >
-                    <SelectTrigger className={CLASS_INPUT}>
+                    <SelectTrigger>
                       <SelectValue placeholder="Item Type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -239,7 +235,7 @@ const DishForm = ({
                     defaultValue={field.value}
                     onValueChange={field.onChange}
                   >
-                    <SelectTrigger className={CLASS_INPUT}>
+                    <SelectTrigger>
                       <SelectValue placeholder="Food Group" />
                     </SelectTrigger>
                     <SelectContent>

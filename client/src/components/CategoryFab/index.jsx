@@ -67,7 +67,7 @@ const CategoryFab = () => {
               key={category._id}
               size="sm"
               variant="secondary"
-              className={`shadow-md transition-all ${category.name === categoryName ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""}`}
+              className={`shadow-md transition-colors ${category.name === categoryName ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""}`}
               onClick={() => handleCategoryClick(category)}
             >
               {categoryIcons[category.name] || (
@@ -79,10 +79,10 @@ const CategoryFab = () => {
 
         <Button
           size="icon"
-          className="rounded-full bg-primary hover:bg-primary/90 shadow-lg"
+          className="h-14 w-14 rounded-full bg-primary hover:bg-primary/90 shadow-lg"
           onClick={toggleMenu}
         >
-          {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           <span className="sr-only">{isOpen ? "Close menu" : "Open menu"}</span>
         </Button>
       </div>

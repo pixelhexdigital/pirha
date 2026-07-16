@@ -21,10 +21,12 @@ import {
   TableRow,
 } from "components/ui/table";
 
+// Restrained, dark-mode-safe icon tints for the KPI tiles. Magenta (primary)
+// is deliberately excluded — it is reserved for actions/live status, not decor.
 const CARD_COLORS = [
-  { border: "border-l-primary", bg: "bg-primary/10", text: "text-primary" },
-  { border: "border-l-info", bg: "bg-info/10", text: "text-info" },
-  { border: "border-l-success", bg: "bg-success/10", text: "text-success" },
+  { bg: "bg-info/10", text: "text-info" },
+  { bg: "bg-success/10", text: "text-success" },
+  { bg: "bg-warning/10", text: "text-warning" },
 ];
 
 const DashboardPage = () => {
@@ -58,8 +60,8 @@ const DashboardPage = () => {
       <PageHeader title="Dashboard" />
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
         {isDashboardLoading
-          ? CARD_COLORS.map((colors, index) => (
-              <Card key={index} className={`border-l-4 ${colors.border}`}>
+          ? CARD_COLORS.map((_, index) => (
+              <Card key={index}>
                 <CardContent className="flex items-center gap-4 p-5">
                   <Skeleton className="size-12 rounded-xl" />
                   <div className="space-y-2">
@@ -72,7 +74,7 @@ const DashboardPage = () => {
           : DASHBOARD_CARD_DATA.map((item, index) => {
               const colors = CARD_COLORS[index % CARD_COLORS.length];
               return (
-                <Card key={index} className={`border-l-4 ${colors.border}`}>
+                <Card key={index}>
                   <CardContent className="flex items-center gap-4 p-5">
                     <div
                       className={`flex items-center justify-center size-12 rounded-xl ${colors.bg} ${colors.text}`}
@@ -95,7 +97,7 @@ const DashboardPage = () => {
           <CardTitle>Recent Orders</CardTitle>
           <Link
             to={ROUTES.ORDER}
-            className="text-sm text-primary hover:underline flex items-center gap-1"
+            className="text-sm text-primary hover:underline flex items-center gap-1 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             View All Orders
             <ArrowRight className="size-3.5" />

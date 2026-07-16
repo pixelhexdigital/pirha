@@ -20,7 +20,7 @@ const OrderSlice = createSlice({
   },
 });
 
-export const {} = OrderSlice.actions;
+export const _actions = OrderSlice.actions;
 
 export default OrderSlice.reducer;
 

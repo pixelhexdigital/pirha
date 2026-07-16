@@ -19,7 +19,7 @@ function App() {
   //   !lastFetchTime ||
   //   currentTime.diff(moment(Number(lastFetchTime)), "days") >= 1;
 
-  const { refetch } = useGetEnumValuesQuery(undefined, {
+  useGetEnumValuesQuery(undefined, {
     skip: isEnumValuesLoaded,
   });
 

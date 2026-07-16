@@ -20,7 +20,7 @@ export function OrderSummary() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{summaryData.totalOrders}</div>
-          <p className="text-xs text-muted-foreground">Today's orders</p>
+          <p className="text-xs text-muted-foreground">Today&apos;s orders</p>
         </CardContent>
       </Card>
       <Card>
@@ -32,7 +32,7 @@ export function OrderSummary() {
           <div className="text-2xl font-bold">
             ₹{summaryData.totalRevenue.toFixed(2)}
           </div>
-          <p className="text-xs text-muted-foreground">Today's revenue</p>
+          <p className="text-xs text-muted-foreground">Today&apos;s revenue</p>
         </CardContent>
       </Card>
       <Card>
