@@ -12,17 +12,6 @@ import { ButtonSpinner } from "components/Spinner";
 
 const MAX_ALLOWED_TABLES = 5;
 
-// Constants for class names and placeholders
-const CLASS_INPUT = "";
-const PLACEHOLDERS = {
-  PREFIX_OF_TABLES: "Prefix of tables",
-  NUMBER_OF_TABLES: "Number of tables",
-  START: "Start",
-  START_NUMBER: "Start Number",
-  END_NUMBER: "End Number",
-  TABLE_NUMBER: "Table Number",
-};
-
 // Validation schema
 const CREATE_TABLE_SCHEMA = object().shape({
   numberOfTables: number()
@@ -88,44 +77,39 @@ const CreateTablePage = ({ onNext }) => {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="w-full max-w-xl px-4 mx-auto"
-    >
-      <p className="mb-4 font-semibold text-foreground">
-        Create tables for your restaurant by generating QR codes for them here.
-      </p>
-      <Controller
-        name="prefixOfTables"
-        control={control}
-        render={({ field }) => (
-          <Combobox
-            data={alphabetOptions}
-            value={field.value}
-            setValue={field.onChange}
-            showSearchInput={true}
-            error={errors.prefixOfTables?.message}
-            label={PLACEHOLDERS.PREFIX_OF_TABLES}
-            placeholder={PLACEHOLDERS.PREFIX_OF_TABLES}
-            buttonClassName={CLASS_INPUT}
-          />
-        )}
-      />
-      <div className="my-4">
-        <Field
-          type="number"
-          max={MAX_ALLOWED_TABLES}
-          min={1}
-          placeholder={PLACEHOLDERS.NUMBER_OF_TABLES}
-          className="w-full"
-          classInput={CLASS_INPUT}
-          error={errors.numberOfTables?.message}
-          {...register("numberOfTables")}
+    <form onSubmit={handleSubmit(onSubmit)} className="w-full">
+      <div className="mb-4">
+        <Controller
+          name="prefixOfTables"
+          control={control}
+          render={({ field }) => (
+            <Combobox
+              data={alphabetOptions}
+              value={field.value}
+              setValue={field.onChange}
+              showSearchInput={true}
+              error={errors.prefixOfTables?.message}
+              label="Table prefix"
+              placeholder="Select a prefix"
+            />
+          )}
         />
       </div>
+      <Field
+        autoFocus
+        type="number"
+        max={MAX_ALLOWED_TABLES}
+        min={1}
+        label="Number of tables"
+        placeholder="e.g. 5"
+        note={`Up to ${MAX_ALLOWED_TABLES} tables — you can add more later.`}
+        className="mb-6"
+        error={errors.numberOfTables?.message}
+        {...register("numberOfTables")}
+      />
 
       <Button type="submit" size="lg" className="w-full" disabled={generatingQr}>
-        {generatingQr ? <ButtonSpinner /> : "Generate QR"}
+        {generatingQr ? <ButtonSpinner /> : "Generate QR codes"}
       </Button>
     </form>
   );

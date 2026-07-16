@@ -1,15 +1,13 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useNavigate } from "react-router-dom";
 import { object, string } from "yup";
 import { useSelector } from "react-redux";
+import { twMerge } from "tailwind-merge";
 import { MinusIcon, PlusIcon, Trash2Icon } from "lucide-react";
-import { useDispatch } from "react-redux";
 
 import Field from "components/Field";
 import { Button } from "components/ui/button";
-import { ROUTES } from "routes/RouterConfig";
 import MenuItemAddDialog from "./MenuItemAddDialog";
 import {
   useAddItemToCategoryMutation,
@@ -17,7 +15,7 @@ import {
   useDeleteMenuCategoryMutation,
   useGetMyMenuQuery,
 } from "api/menuApi";
-import { selectRestaurantId, setOnboardingState } from "store/AuthSlice";
+import { selectRestaurantId } from "store/AuthSlice";
 import {
   selectFoodGroups,
   selectMenuItemTypes,
@@ -41,16 +39,13 @@ const predefinedCategories = [
   "Appetizers",
 ];
 
-const AddMenuPage = () => {
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
+const AddMenuPage = ({ onComplete }) => {
   const itemType = useSelector(selectMenuItemTypes);
   const foodGroup = useSelector(selectFoodGroups);
   const restaurantId = useSelector(selectRestaurantId);
 
   const [categories, setCategories] = useState([]);
   const [showAddCategory, setShowAddCategory] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [currentCategory, setCurrentCategory] = useState(null);
 
@@ -82,7 +77,6 @@ const AddMenuPage = () => {
 
   const onCategorySubmit = (data) => {
     const { categoryName } = data || {};
-    setSelectedCategory(data.categoryName);
     setValue("categoryName", "");
     handleAddCategory(categoryName);
   };
@@ -165,40 +159,30 @@ const AddMenuPage = () => {
     }
   };
 
-  const handleSelectCategory = (category) => {
-    setSelectedCategory(category);
-    setValue("categoryName", category);
-  };
-
   const handleOnboardDone = async () => {
     try {
       await onboardDone().unwrap();
-      dispatch(setOnboardingState("COMPLETED"));
-      navigate(ROUTES.DASHBOARD, { replace: true });
+      onComplete();
     } catch (error) {
       errorToast({ error, message: "Failed to complete onboarding" });
     }
   };
 
   return (
-    <div className="w-full max-w-xl px-4 pb-4 mx-auto">
-      <h2 className="mb-4 font-semibold text-muted-foreground">
-        Add your menu categories and items to get started with your restaurant
-        menu setup 🍔. You can always edit or add more items later.
-      </h2>
+    <div className="w-full">
       {isLoading ? (
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="p-4 rounded-md bg-muted space-y-3">
-              <Skeleton className="h-6 w-32" />
+            <div key={i} className="p-4 space-y-3 border rounded-lg">
+              <Skeleton className="w-32 h-6" />
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <Skeleton className="h-4 w-40" />
-                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="w-40 h-4" />
+                  <Skeleton className="w-16 h-4" />
                 </div>
                 <Separator />
               </div>
-              <Skeleton className="h-8 w-28 rounded-md" />
+              <Skeleton className="h-8 rounded-md w-28" />
             </div>
           ))}
         </div>
@@ -206,39 +190,51 @@ const AddMenuPage = () => {
         categories?.map((category) => (
           <div
             key={category._id}
-            className="relative p-4 mb-4 space-y-4 rounded-md bg-muted"
+            className="relative p-4 mb-4 space-y-3 border rounded-lg"
           >
-            <h3 className="mb-2 text-lg font-semibold">{category.name}</h3>
-            <ul className="p-0 space-y-2">
-              {category?.items?.map((item, idx) => (
-                <li key={item._id || idx} className="flex justify-between pb-2 mb-2 border-b last:border-b-0">
-                  <div>
-                    <p className="mb-1">{item?.title}</p>
-                    <p className="text-sm text-muted-foreground">{item?.description}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">
+            <h3 className="pr-8 text-lg font-semibold">{category.name}</h3>
+            {category?.items?.length ? (
+              <ul className="p-0 space-y-2">
+                {category.items.map((item, idx) => (
+                  <li
+                    key={item._id || idx}
+                    className="flex justify-between gap-3 pb-2 border-b last:border-b-0 last:pb-0"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate">{item?.title}</p>
+                      {item?.description && (
+                        <p className="text-sm truncate text-muted-foreground">
+                          {item.description}
+                        </p>
+                      )}
+                    </div>
+                    <p className="font-medium shrink-0">
                       {numberToCurrency(item.price)}
-                      {item?.discount > 0 && `(${item.discount} off)`}
                     </p>
-                  </div>
-                </li>
-              ))}
-            </ul>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No dishes yet — add your first below.
+              </p>
+            )}
             <Button
               onClick={() => openModal(category)}
               size="sm"
-              className="mb-2"
+              variant="outline"
+              className="gap-1.5"
             >
-              Add Menu Item
+              <PlusIcon size={14} /> Add dish
             </Button>
             <Button
-              size="sm"
+              size="icon"
               variant="ghost"
+              aria-label={`Delete ${category.name} category`}
               onClick={() => handleDeleteCategory(category._id)}
-              className="absolute top-2 right-2 hover:text-destructive"
+              className="absolute size-8 top-2 right-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
             >
-              <Trash2Icon size={20} />
+              <Trash2Icon size={16} />
             </Button>
           </div>
         ))
@@ -248,9 +244,8 @@ const AddMenuPage = () => {
         <AddCategoryForm
           handleSubmit={handleSubmit}
           onCategorySubmit={onCategorySubmit}
+          onQuickAdd={handleAddCategory}
           categories={categories}
-          selectedCategory={selectedCategory}
-          handleSelectCategory={handleSelectCategory}
           errors={errors}
           register={register}
         />
@@ -259,11 +254,19 @@ const AddMenuPage = () => {
       {categories.length > 0 && (
         <Button
           onClick={() => setShowAddCategory((prev) => !prev)}
-          size="lg"
-          variant="secondary"
-          className="text-center rounded-2xl max-w-fit"
+          size="sm"
+          variant="outline"
+          className="gap-2"
         >
-          {showAddCategory ? <MinusIcon size={24} /> : <PlusIcon size={24} />}
+          {showAddCategory ? (
+            <>
+              <MinusIcon size={16} /> Cancel
+            </>
+          ) : (
+            <>
+              <PlusIcon size={16} /> Add category
+            </>
+          )}
         </Button>
       )}
 
@@ -274,18 +277,21 @@ const AddMenuPage = () => {
         itemType={itemType}
         foodGroup={foodGroup}
       />
-      <Button
-        onClick={handleOnboardDone}
-        size="lg"
-        className="w-full mt-4"
-        disabled={categories.length === 0}
-      >
-        {onboardDoneLoading ? (
-          <ButtonSpinner />
-        ) : (
-          "Complete Onboarding 🚀"
+      <div className="pt-6 mt-6 border-t">
+        <Button
+          onClick={handleOnboardDone}
+          size="lg"
+          className="w-full"
+          disabled={categories.length === 0 || onboardDoneLoading}
+        >
+          {onboardDoneLoading ? <ButtonSpinner /> : "Finish setup"}
+        </Button>
+        {categories.length === 0 && (
+          <p className="mt-2 text-xs text-center text-muted-foreground">
+            Add at least one category to finish.
+          </p>
         )}
-      </Button>
+      </div>
     </div>
   );
 };
@@ -295,48 +301,49 @@ export default AddMenuPage;
 const AddCategoryForm = ({
   handleSubmit,
   onCategorySubmit,
+  onQuickAdd,
   categories,
-  selectedCategory,
-  handleSelectCategory,
   errors,
   register,
 }) => {
+  const suggestions = predefinedCategories.filter(
+    (category) => !categories.some((cat) => cat.name === category)
+  );
+
   return (
     <form
       onSubmit={handleSubmit(onCategorySubmit)}
-      className="pt-4 mb-4 border-t"
+      className={twMerge("mb-4", categories.length > 0 && "pt-4 border-t")}
     >
-      <h3 className="mb-2 text-lg font-semibold">Add Category</h3>
-      <p className="mb-4 text-muted-foreground">
-        Choose from the predefined categories or enter a new category name
+      <h3 className="mb-1 text-lg font-semibold">Add a category</h3>
+      <p className="mb-4 text-sm text-muted-foreground">
+        Tap a suggestion to add it instantly, or type your own.
       </p>
 
-      <div className="flex flex-wrap gap-4 mb-4">
-        {predefinedCategories
-          ?.filter(
-            (category) => !categories.some((cat) => cat.name === category)
-          )
-          ?.map((category) => (
+      {suggestions.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-4">
+          {suggestions.map((category) => (
             <button
               key={category}
               type="button"
-              className={`px-4 py-2 rounded-full border ${selectedCategory === category ? "bg-secondary text-secondary-foreground" : "bg-muted text-foreground"}`}
-              onClick={() => handleSelectCategory(category)}
+              onClick={() => onQuickAdd(category)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors border rounded-full border-input bg-background text-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
+              <PlusIcon size={14} className="text-muted-foreground" />
               {category}
             </button>
           ))}
-      </div>
+        </div>
+      )}
       <Field
         type="text"
-        placeholder="Or enter new category name"
+        placeholder="Or enter a new category name"
         className="w-full"
-        classInput=""
         error={errors.categoryName?.message}
         {...register("categoryName")}
       />
-      <Button type="submit" size="lg" className="w-full mt-5">
-        {categories.length === 0 ? "Add Category" : "Add More Category"}
+      <Button type="submit" size="lg" className="w-full mt-4">
+        Add category
       </Button>
     </form>
   );

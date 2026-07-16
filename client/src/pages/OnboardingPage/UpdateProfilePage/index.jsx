@@ -16,7 +16,6 @@ import { Combobox } from "components/ui/Combobox";
 import Spinner, { ButtonSpinner } from "components/Spinner";
 
 // Input class styles
-const CLASS_INPUT = "";
 
 // Default form values
 const DEFAULT_VALUES = {
@@ -35,15 +34,6 @@ const ERROR_MESSAGES = {
   RESTRO_TYPE_REQUIRED: "Restaurant type is required",
   YEAR_REQUIRED: "Year of establishment is required",
   YEAR_NUMBER: "Year of establishment must be a number",
-};
-
-// Input placeholders
-const PLACEHOLDERS = {
-  RESTRO_NAME: "Restaurant Name",
-  OWNER_NAME: "Owner's Full Name",
-  LOCATION: "Location",
-  RESTRO_TYPE: "Restaurant Type",
-  YEAR: "Year of Establishment",
 };
 
 // Yup schema for form validation
@@ -162,20 +152,17 @@ const UpdateProfilePage = ({ nextStep }) => {
 
   if (isUserLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[70vh]">
+      <div className="flex items-center justify-center min-h-[16rem]">
         <Spinner size="lg" />
       </div>
     );
   }
 
   return (
-    <form
-      onSubmit={handleSubmit(handleProfileUpdate)}
-      className="w-full max-w-xl px-4 mx-auto"
-    >
-      <div className="flex flex-col items-center justify-center gap-4 mb-8">
-        <div className="relative">
-          <div className="flex items-center justify-center w-32 h-32 border-2 border-muted-foreground/25 border-dashed rounded-full bg-muted">
+    <form onSubmit={handleSubmit(handleProfileUpdate)} className="w-full">
+      <div className="flex flex-col items-center justify-center gap-3 mb-8">
+        <div className="relative rounded-full transition-shadow has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring has-[:focus-visible]:ring-offset-2">
+          <div className="flex items-center justify-center border-2 border-dashed rounded-full size-24 sm:size-32 border-muted-foreground/25 bg-muted">
             {image ? (
               <img
                 src={image || "/placeholder.svg"}
@@ -189,62 +176,69 @@ const UpdateProfilePage = ({ nextStep }) => {
           <input
             type="file"
             accept="image/*"
+            aria-label="Upload restaurant logo"
             onChange={handleImageUpload}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
         </div>
-        {isUploading && <p className="text-sm text-info">Uploading...</p>}
+        {isUploading ? (
+          <p role="status" aria-live="polite" className="text-sm text-info">
+            Uploading…
+          </p>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            {image ? "Change logo" : "Add your logo"}
+          </p>
+        )}
       </div>
       <Field
+        autoFocus
         className="mb-4"
-        placeholder={PLACEHOLDERS.RESTRO_NAME}
-        label={PLACEHOLDERS.RESTRO_NAME}
-        classInput={CLASS_INPUT}
+        label="Restaurant name"
+        placeholder="e.g. The Copper Spoon"
         error={errors.restroName?.message}
         {...register("restroName")}
       />
       <Field
         className="mb-4"
-        placeholder={PLACEHOLDERS.OWNER_NAME}
-        label={PLACEHOLDERS.OWNER_NAME}
-        autoComplete="off"
-        classInput={CLASS_INPUT}
+        label="Owner's full name"
+        placeholder="e.g. Priya Sharma"
+        autoComplete="name"
         error={errors.ownerFullName?.message}
         {...register("ownerFullName")}
       />
       <Field
         className="mb-4"
-        label={PLACEHOLDERS.LOCATION}
-        placeholder={PLACEHOLDERS.LOCATION}
+        label="Location"
+        placeholder="City or area"
         autoComplete="off"
-        classInput={CLASS_INPUT}
         error={errors.location?.message}
         {...register("location")}
       />
-      <Controller
-        name="restroType"
-        control={control}
-        render={({ field }) => (
-          <Combobox
-            data={RESTRO_TYPES}
-            value={field.value}
-            setValue={(value) => field.onChange(value)}
-            showSearchInput={true}
-            error={errors.restroType?.message}
-            label={PLACEHOLDERS.RESTRO_TYPE}
-            placeholder={PLACEHOLDERS.RESTRO_TYPE}
-            buttonClassName={CLASS_INPUT}
-          />
-        )}
-      />
+      <div className="mb-4">
+        <Controller
+          name="restroType"
+          control={control}
+          render={({ field }) => (
+            <Combobox
+              data={RESTRO_TYPES}
+              value={field.value}
+              setValue={(value) => field.onChange(value)}
+              showSearchInput={true}
+              error={errors.restroType?.message}
+              label="Restaurant type"
+              placeholder="Select a type"
+            />
+          )}
+        />
+      </div>
       <Field
         type="number"
         min={1900}
         max={moment().format("YYYY")}
-        label={PLACEHOLDERS.YEAR}
-        placeholder={PLACEHOLDERS.YEAR}
-        className="my-4"
-        classInput={CLASS_INPUT}
+        label="Year established"
+        placeholder="e.g. 2019"
+        className="mb-4"
         error={errors.yearOfEstablishment?.message}
         {...register("yearOfEstablishment")}
       />

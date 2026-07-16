@@ -29,7 +29,6 @@ const ADD_ITEM_SCHEMA = object().shape({
   foodGroup: string().required("Food group is required"),
 });
 
-const CLASS_INPUT = "";
 
 const defaultValues = {
   itemName: "",
@@ -63,18 +62,18 @@ const MenuItemAddDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-lg">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Add Menu Item</DialogTitle>
+          <DialogTitle>Add a dish</DialogTitle>
           <DialogDescription>
-            Add your menu item details below
+            Fill in the details for this menu item.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <Field
+            autoFocus
             label="Name"
-            placeholder="Enter item name"
-            classInput={CLASS_INPUT}
+            placeholder="e.g. Margherita Pizza"
             error={errors.itemName?.message}
             {...register("itemName")}
           />
@@ -84,7 +83,6 @@ const MenuItemAddDialog = ({
             placeholder="Enter item description"
             autoComplete="off"
             error={errors.description?.message}
-            classInput={CLASS_INPUT}
             {...register("description")}
           />
           <Field
@@ -93,7 +91,6 @@ const MenuItemAddDialog = ({
             min={0}
             step={0.01}
             placeholder="Enter item price"
-            classInput={CLASS_INPUT}
             error={errors.itemPrice?.message}
             {...register("itemPrice")}
           />
@@ -101,14 +98,16 @@ const MenuItemAddDialog = ({
             name="itemType"
             control={control}
             render={({ field }) => (
-              <div className="space-y-2">
-                <p className="flex mb-2 font-semibold base2">Item Type</p>
+              <div>
+                <p className="mb-2 text-sm font-medium text-foreground">
+                  Item type
+                </p>
                 <Select
                   defaultValue={field.value}
                   onValueChange={field.onChange}
                 >
-                  <SelectTrigger className={CLASS_INPUT}>
-                    <SelectValue placeholder="Select Item Type " />
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select item type" />
                   </SelectTrigger>
                   <SelectContent>
                     {itemType.map((type) => (
@@ -119,7 +118,7 @@ const MenuItemAddDialog = ({
                   </SelectContent>
                 </Select>
                 {errors.itemType?.message && (
-                  <div className="mt-2 text-destructive caption1">
+                  <div className="mt-2 text-xs font-medium text-destructive">
                     {errors.itemType?.message}
                   </div>
                 )}
@@ -131,14 +130,16 @@ const MenuItemAddDialog = ({
             name="foodGroup"
             control={control}
             render={({ field }) => (
-              <div className="space-y-2">
-                <p className="flex font-semibold base2">Food Group</p>
+              <div>
+                <p className="mb-2 text-sm font-medium text-foreground">
+                  Food group
+                </p>
                 <Select
                   defaultValue={field.value}
                   onValueChange={field.onChange}
                 >
-                  <SelectTrigger className={CLASS_INPUT}>
-                    <SelectValue placeholder="Select Food Group" />
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select food group" />
                   </SelectTrigger>
                   <SelectContent>
                     {foodGroup.map((group) => (
@@ -149,7 +150,7 @@ const MenuItemAddDialog = ({
                   </SelectContent>
                 </Select>
                 {errors.foodGroup?.message && (
-                  <div className="mt-2 text-destructive caption1">
+                  <div className="mt-2 text-xs font-medium text-destructive">
                     {errors.foodGroup?.message}
                   </div>
                 )}
@@ -157,7 +158,9 @@ const MenuItemAddDialog = ({
             )}
           />
           <DialogFooter>
-            <Button type="submit">Save changes</Button>
+            <Button type="submit" size="lg">
+              Add item
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
