@@ -4,7 +4,10 @@ import { Subscription } from "../../../models/apps/manageRestaurant/subscription
 import { ApiError } from "../../../utils/ApiError.js";
 import { ApiResponse } from "../../../utils/ApiResponse.js";
 import { asyncHandler } from "../../../utils/asyncHandler.js";
-import { uploadOnCloudinary } from "../../../utils/cloudinary.js";
+import {
+  uploadOnCloudinary,
+  removeFromCloudinary,
+} from "../../../utils/cloudinary.js";
 
 // Fetch all menus for a restaurant
 const fetchMenus = asyncHandler(async (req, res) => {
@@ -176,19 +179,14 @@ const deleteCategory = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Category not found");
   }
 
-  // Extract item IDs from the category
-  const itemIds = category.items.map((item) => item._id);
-
-  if (itemIds && itemIds.length) {
-    throw new ApiError(404, "Category containing items can not be deleted");
+  // Guard: a category must be emptied before it can be removed, so items are
+  // never deleted out from under active orders by accident.
+  if (category.items?.length) {
+    throw new ApiError(
+      400,
+      "Remove all items from this category before deleting it."
+    );
   }
-
-  // Delete all items associated with the category
-  await Menu.updateOne(
-    { restaurantId },
-    { $pull: { "categories.$[cat].items": { _id: { $in: itemIds } } } },
-    { arrayFilters: [{ "cat._id": categoryId }] }
-  );
 
   // Remove the category from the categories array
   menu.categories = menu.categories.filter(

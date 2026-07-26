@@ -1,31 +1,16 @@
 import { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  LucideEdit2,
-  MoreVerticalIcon,
-  SlidersVertical,
-  Trash2,
-} from "lucide-react";
-import { twMerge } from "tailwind-merge";
-
-import Placeholder from "assets/placeholder.svg";
+import { FolderPlus, Plus, SlidersVertical } from "lucide-react";
 
 import CategoriesForm from "./CategoriesForm";
+import MenuManagementCard from "../MenuManagementCard";
 import Layout from "components/Layout";
+import PageHeader from "components/PageHeader";
+import EmptyState from "components/EmptyState";
 import { ButtonSpinner } from "components/Spinner";
 import { Skeleton } from "components/ui/skeleton";
 import { Button } from "components/ui/button";
-import { Card } from "components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "components/ui/dropdown-menu";
-import { Badge } from "components/ui/badge";
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,13 +22,6 @@ import {
   AlertDialogTitle,
 } from "components/ui/alert-dialog";
 import { selectRestaurantId } from "store/AuthSlice";
-import {
-  removeCategoryById,
-  selectMenuCategoryData,
-  toggleCategoryAvailability,
-  updateCategoryImage,
-  updateMenuCategoryById,
-} from "store/MenuSlice";
 import { ROUTES } from "routes/RouterConfig";
 import {
   useAddMenuCategoryMutation,
@@ -62,51 +40,52 @@ const DEFAULT_DELETE_CATEGORY_DATA = {
 
 const CategoriesManagementPage = () => {
   const restaurantId = useSelector(selectRestaurantId);
-  const menuData = useSelector(selectMenuCategoryData);
+  const navigate = useNavigate();
 
   const [isFormVisible, setFormVisible] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [pendingCategoryId, setPendingCategoryId] = useState(null);
   const [deleteCategoryData, setDeleteCategoryData] = useState(
     DEFAULT_DELETE_CATEGORY_DATA
   );
 
-  const { isLoading } = useGetMenuCategoryByRestaurantIdQuery(restaurantId, {
-    skip: !restaurantId || menuData?.length,
-  });
-  const [addItemToCategoryMutationFn, { isLoading: isAddingCategory }] =
+  // Single source of truth: categories come straight from the query cache.
+  const { data, isLoading } = useGetMenuCategoryByRestaurantIdQuery(
+    restaurantId,
+    { skip: !restaurantId }
+  );
+  const categories = data?.menu?.categories ?? [];
+
+  const [addCategoryMutationFn, { isLoading: isAddingCategory }] =
     useAddMenuCategoryMutation();
-  const [updateItemInCategoryMutationFn, { isLoading: isUpdatingCategory }] =
+  const [updateCategoryMutationFn, { isLoading: isUpdatingCategory }] =
     useUpdateMenuCategoryMutation();
-  const [toggleCategoryAvailabilityMutationFn] =
-    useToggleCategoryAvailabilityMutation();
-  const [
-    updateCategoryImageMutationFn,
-    { isLoading: isUpdatingCategoryImage },
-  ] = useUpdateImageOfCategoryMutation();
+  const [toggleCategoryMutationFn] = useToggleCategoryAvailabilityMutation();
+  const [updateCategoryImageMutationFn, { isLoading: isUpdatingCategoryImage }] =
+    useUpdateImageOfCategoryMutation();
   const [deleteCategoryMutationFn, { isLoading: isDeletingCategory }] =
     useDeleteMenuCategoryMutation();
 
-  const redirectToCategoriesManagement = () => {
-    navigate(ROUTES.MENU_MANAGEMENT);
-  };
-
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
   const buttonLoader = Boolean(
     isAddingCategory || isUpdatingCategory || isUpdatingCategoryImage
   );
 
-  const addCategoryToMenu = async (payload) => {
+  const navigateToItems = () => navigate(ROUTES.MENU_MANAGEMENT);
+
+  const openAddCategory = () => {
+    setSelectedCategory(null);
+    setFormVisible(true);
+  };
+
+  const createCategory = async (payload) => {
     try {
-      const { data } = await addItemToCategoryMutationFn({
+      // The server returns the created category directly as `data`.
+      const { data: newCategory } = await addCategoryMutationFn({
         name: payload.category.name,
       }).unwrap();
 
-      const imagePayload = {
-        ...payload,
-        categoryId: data.data._id,
-      };
-      changeItemImage({ data: imagePayload, isAddingCategory: true });
+      const imagePayload = { ...payload, categoryId: newCategory._id };
+      await changeCategoryImage({ data: imagePayload, isAdding: true });
     } catch (error) {
       errorToast({ error, message: "Failed to add category" });
     }
@@ -114,56 +93,54 @@ const CategoriesManagementPage = () => {
 
   const editCategory = async (payload) => {
     try {
-      await updateItemInCategoryMutationFn(payload).unwrap();
-      dispatch(updateMenuCategoryById(payload));
-      changeItemImage({ data: payload, isAddingCategory: false });
+      await updateCategoryMutationFn(payload).unwrap();
+      await changeCategoryImage({ data: payload, isAdding: false });
     } catch (error) {
       errorToast({ error, message: "Failed to update category" });
     }
   };
 
-  const handleFormSubmit = async (data) => {
-    const payload = {
-      category: { ...data },
-    };
+  const handleFormSubmit = async (formData) => {
+    const payload = { category: { ...formData } };
 
     if (selectedCategory) {
       payload.categoryId = selectedCategory._id;
       editCategory(payload);
     } else {
-      addCategoryToMenu(payload);
+      createCategory(payload);
     }
   };
 
-  const updateCategoryAvailability = async (categoryId, isActive) => {
+  const handleToggleCategory = async (category, nextActive) => {
+    setPendingCategoryId(category._id);
     try {
-      const payload = { isActive, categoryId };
-      await toggleCategoryAvailabilityMutationFn(payload).unwrap();
-      dispatch(toggleCategoryAvailability(payload));
+      await toggleCategoryMutationFn({
+        categoryId: category._id,
+        isActive: nextActive,
+        restaurantId,
+      }).unwrap();
     } catch (error) {
       errorToast({ error, message: "Failed to update availability" });
+    } finally {
+      setPendingCategoryId(null);
     }
   };
 
-  const changeItemImage = async ({ data, isAddingCategory }) => {
-    const message = isAddingCategory
-      ? "Category added successfully"
-      : "Category updated successfully";
+  const changeCategoryImage = async ({ data: payloadData, isAdding }) => {
+    const message = isAdding ? "Category added" : "Category updated";
+    const { imageFile, isImageChanged } = payloadData.category;
 
-    const { imageFile, isImageChanged, imageUrl } = data.category;
     if (!imageFile || !isImageChanged) {
       setFormVisible(false);
       successToast({ message });
       return;
     }
-    const payload = {
-      categoryId: data.categoryId,
-      categoryImage: imageFile,
-    };
 
     try {
-      await updateCategoryImageMutationFn(payload).unwrap();
-      dispatch(updateCategoryImage({ categoryId: data.categoryId, imageUrl }));
+      await updateCategoryImageMutationFn({
+        categoryId: payloadData.categoryId,
+        categoryImage: imageFile,
+      }).unwrap();
       setFormVisible(false);
       successToast({ message });
     } catch (error) {
@@ -173,192 +150,127 @@ const CategoriesManagementPage = () => {
 
   const deleteCategory = async () => {
     try {
-      const payload = {
+      await deleteCategoryMutationFn({
         categoryId: deleteCategoryData.categoryId,
-      };
-      const { data } = await deleteCategoryMutationFn(payload).unwrap();
-      dispatch(removeCategoryById(payload));
+      }).unwrap();
       setDeleteCategoryData(DEFAULT_DELETE_CATEGORY_DATA);
-      successToast({ data });
+      successToast({ message: "Category deleted" });
     } catch (error) {
       errorToast({ error, message: "Failed to delete category" });
     }
   };
 
-  const onCloseDishForm = () => {
+  const onCloseForm = () => {
     setFormVisible(false);
     setSelectedCategory(null);
   };
 
+  const noCategories = !isLoading && categories.length === 0;
+
   return (
     <Layout>
-      <div className="flex sm:items-center justify-between p-4 border-b sm:flex-row flex-col gap-4 mb-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-bold tracking-tight">Menu Items</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage your restaurant menu items and categories
-          </p>
-        </div>
-        <Button
-          variant="outline"
-          onClick={redirectToCategoriesManagement}
-          className="h-9"
-        >
+      <PageHeader
+        title="Categories"
+        description="Organize your menu into categories"
+      >
+        <Button variant="outline" onClick={navigateToItems} className="h-9">
           <SlidersVertical className="mr-3 size-4" />
           Manage Menu Items
         </Button>
-      </div>
-      <div className="space-y-4 w-[98%] mx-auto bg-card rounded-md shadow-md ring-1 ring-border">
-        <div className="grid grid-cols-1 gap-4 p-4 lg:grid-cols-3 sm:grid-cols-2">
-          {isLoading ? (
-            [...Array(6)].map((_, index) => (
-              <Skeleton key={index} className="w-full h-[350px] rounded-lg" />
-            ))
+        <Button onClick={openAddCategory} className="h-9">
+          {isAddingCategory ? (
+            <ButtonSpinner />
           ) : (
             <>
-              <button
-                onClick={() => {
-                  setFormVisible(true);
-                  setSelectedCategory(null);
-                }}
-                className="flex flex-col items-center justify-center w-full p-4 transition duration-200 border-2 border-dashed rounded-lg border-muted-foreground/25 hover:border-primary/50 hover:bg-primary/5 min-h-80 group"
-              >
-                {!isAddingCategory ? (
-                  <>
-                    <div className="flex items-center justify-center size-14 rounded-full bg-primary/10 mb-3 group-hover:bg-primary/20 transition-colors">
-                      <span className="text-2xl text-primary font-light">+</span>
-                    </div>
-                    <h3 className="font-semibold text-foreground">Add New Category</h3>
-                    <p className="text-xs text-muted-foreground mt-1">Click to add a category</p>
-                  </>
-                ) : (
-                  <ButtonSpinner />
-                )}
-              </button>
+              <Plus className="mr-2 size-4" />
+              Add category
+            </>
+          )}
+        </Button>
+      </PageHeader>
 
-              {menuData?.map((category) => (
-                <Card
-                  key={category?._id}
-                  className="overflow-hidden transition-all duration-300 ease-in-out delay-150 border rounded-lg shadow-sm hover:shadow-md border-primary/10 hover:border-primary/20 bg-card hover:-translate-y-1 "
-                >
-                  <div className="relative aspect-video">
-                    <img
-                      src={category?.image?.url || Placeholder}
-                      alt={category?.name}
-                      className="w-full h-full min-h-[22rem] aspect-square object-cover"
-                    />
-                    <div className="absolute right-2 top-2">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="w-8 h-8 bg-card"
-                          >
-                            <MoreVerticalIcon className="w-4 h-4 text-foreground" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setFormVisible(true);
-                              setSelectedCategory(category);
-                            }}
-                          >
-                            <LucideEdit2 className="w-4 h-4 mr-2" />
-                            Edit Item
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() =>
-                              updateCategoryAvailability(
-                                category?._id,
-                                !category?.isActive
-                              )
-                            }
-                          >
-                            {category?.isActive
-                              ? "Mark as Unavailable"
-                              : "Mark as Available"}
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() =>
-                              setDeleteCategoryData({
-                                categoryId: category?._id,
-                                categoryName: category?.name,
-                              })
-                            }
-                            className="text-destructive"
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Delete Item
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </div>
-                  <div className="p-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h3 className="font-semibold">{category?.name}</h3>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between mt-2">
+      {noCategories ? (
+        <div className="mx-auto w-[98%]">
+          <EmptyState
+            icon={FolderPlus}
+            title="No categories yet"
+            description="Categories group your dishes — think Starters, Mains, Desserts. Create your first one to start building the menu."
+          >
+            <Button onClick={openAddCategory}>Add your first category</Button>
+          </EmptyState>
+        </div>
+      ) : (
+        <div className="mx-auto w-[98%] space-y-4 rounded-md bg-card shadow-md ring-1 ring-border">
+          <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3">
+            {isLoading
+              ? [...Array(6)].map((_, index) => (
+                  <Skeleton key={index} className="h-[320px] w-full rounded-lg" />
+                ))
+              : categories.map((category) => (
+                  <MenuManagementCard
+                    key={category?._id}
+                    imageUrl={category?.image?.url}
+                    title={category?.name}
+                    footerLeft={
                       <Link
                         to={ROUTES.MENU_MANAGEMENT}
                         state={{ categoryIdFromState: category?._id }}
-                        className="font-semibold hover:underline text-primary/80"
+                        className="font-medium text-primary hover:underline"
                       >
-                        No of items: {category?.items.length}
+                        {category?.items?.length ?? 0} items
                       </Link>
-                      <Badge
-                        variant={category?.isActive ? "default" : "outline"}
-                        className={twMerge(
-                          category?.isActive
-                            ? "text-primary/80 border-primary bg-primary/10 hover:bg-primary/10 hover:text-primary/80 hover:border-primary group hover:font-semibold"
-                            : "text-foreground"
-                        )}
-                      >
-                        {category?.isActive ? "Available" : "Unavailable"}
-                      </Badge>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </>
-          )}
+                    }
+                    isActive={category?.isActive}
+                    isToggling={pendingCategoryId === category?._id}
+                    onToggleAvailability={(next) =>
+                      handleToggleCategory(category, next)
+                    }
+                    onEdit={() => {
+                      setSelectedCategory(category);
+                      setFormVisible(true);
+                    }}
+                    onDelete={() =>
+                      setDeleteCategoryData({
+                        categoryId: category?._id,
+                        categoryName: category?.name,
+                      })
+                    }
+                    editLabel="Edit category"
+                    deleteLabel="Delete category"
+                  />
+                ))}
+          </div>
         </div>
-      </div>
+      )}
+
       <CategoriesForm
         isOpen={isFormVisible}
         loader={buttonLoader}
         onSubmit={handleFormSubmit}
         defaultValues={selectedCategory}
-        onClose={onCloseDishForm}
+        onClose={onCloseForm}
       />
+
       <AlertDialog
-        open={deleteCategoryData.categoryId}
+        open={Boolean(deleteCategoryData.categoryId)}
         onOpenChange={() => setDeleteCategoryData(DEFAULT_DELETE_CATEGORY_DATA)}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogTitle>Delete this category?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete{" "}
               <span className="font-semibold">
                 {deleteCategoryData.categoryName}
               </span>{" "}
-              From the menu.
+              from the menu. Categories that still contain items can&apos;t be
+              deleted &mdash; remove the items first.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex flex-row items-center justify-end gap-4">
-            <AlertDialogCancel className="w-24 mt-0">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="mt-0 w-24">Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={deleteCategory} className="w-24">
-              {isDeletingCategory ? (
-                <ButtonSpinner />
-              ) : (
-                "Continue"
-              )}
+              {isDeletingCategory ? <ButtonSpinner /> : "Continue"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

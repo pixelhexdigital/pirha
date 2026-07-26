@@ -29,7 +29,6 @@ const DEFAULT_VALUES = {
   title: "",
   description: "",
   price: 0,
-  discount: 0,
   itemType: "",
   foodGroup: "",
   imageUrl: "",
@@ -39,9 +38,7 @@ const DEFAULT_VALUES = {
 
 const ERROR_MESSAGES = {
   TITLE_REQUIRED: "Title is required",
-  DESCRIPTION_REQUIRED: "Description is required",
   PRICE_REQUIRED: "Price is required",
-  DISCOUNT_REQUIRED: "Discount is required",
   ITEM_TYPE_REQUIRED: "Item type is required",
   MUST_BE_NUMBER: "Must be a number",
   FOOD_GROUP_REQUIRED: "Food group is required",
@@ -53,7 +50,6 @@ const FORM_SCHEMA = object().shape({
   price: number()
     .required(ERROR_MESSAGES.PRICE_REQUIRED)
     .typeError(ERROR_MESSAGES.MUST_BE_NUMBER),
-  // discount: number().typeError(ERROR_MESSAGES.MUST_BE_NUMBER),
   itemType: string().required(ERROR_MESSAGES.ITEM_TYPE_REQUIRED),
   foodGroup: string().required(ERROR_MESSAGES.FOOD_GROUP_REQUIRED),
 });
@@ -87,12 +83,11 @@ const DishForm = ({
   const { imageUrl } = watch();
 
   useEffect(() => {
-    const { title, description, price, discount, itemType, foodGroup, image } =
+    const { title, description, price, itemType, foodGroup, image } =
       defaultValues || {};
     setValue("title", title);
     setValue("description", description);
     setValue("price", price);
-    setValue("discount", discount);
     setValue("itemType", itemType);
     setValue("foodGroup", foodGroup);
     setValue("imageUrl", image?.url);
@@ -134,7 +129,7 @@ const DishForm = ({
             {imageUrl ? (
               <img
                 src={imageUrl || ""}
-                alt="Avatar"
+                alt="Dish preview"
                 className="border border-input size-[12.5rem] rounded-xl object-cover cursor-default shadow-md"
               />
             ) : (
@@ -163,8 +158,9 @@ const DishForm = ({
               )}
             </button>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field
+              className="sm:col-span-2"
               label="Name of the dish"
               placeholder="Name of the dish"
               autoComplete="off"
@@ -172,27 +168,21 @@ const DishForm = ({
               {...register("title")}
             />
             <Field
+              className="sm:col-span-2"
+              textarea
               label="Description"
-              placeholder="Description"
+              placeholder="A short, appetizing description"
               autoComplete="off"
               error={errors.description?.message}
               {...register("description")}
             />
             <Field
-              label="Price"
-              placeholder="Price"
+              label="Price (₹)"
+              placeholder="0"
               type="number"
               autoComplete="off"
               error={errors.price?.message}
               {...register("price")}
-            />
-            <Field
-              label="Discount"
-              placeholder="Discount"
-              type="number"
-              autoComplete="off"
-              error={errors.discount?.message}
-              {...register("discount")}
             />
 
             <Controller
@@ -202,7 +192,7 @@ const DishForm = ({
                 <div className="space-y-2">
                   <div className="flex font-semibold base2">Item Type</div>
                   <Select
-                    defaultValue={field.value}
+                    value={field.value}
                     onValueChange={field.onChange}
                   >
                     <SelectTrigger>
@@ -232,7 +222,7 @@ const DishForm = ({
                 <div className="space-y-2">
                   <div className="flex font-semibold base2">Food Group</div>
                   <Select
-                    defaultValue={field.value}
+                    value={field.value}
                     onValueChange={field.onChange}
                   >
                     <SelectTrigger>
@@ -256,11 +246,15 @@ const DishForm = ({
             />
           </div>
 
-          <DialogFooter className="flex flex-row justify-end gap-10 mt-5">
-            <Button type="submit" className="items-center min-w-24">
+          <DialogFooter className="mt-5 flex flex-row justify-end gap-3">
+            <DialogClose asChild>
+              <Button type="button" variant="outline" className="min-w-24">
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button type="submit" className="min-w-24">
               {loader ? <ButtonSpinner /> : title}
             </Button>
-            <DialogClose>Cancel</DialogClose>
           </DialogFooter>
         </form>
       </DialogContent>

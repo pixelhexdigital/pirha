@@ -100,7 +100,7 @@ const CategoriesForm = ({
             {imageUrl ? (
               <img
                 src={imageUrl || ""}
-                alt="Avatar"
+                alt="Category preview"
                 className="border border-input size-[12.5rem] rounded-xl object-cover cursor-default shadow-md"
               />
             ) : (
@@ -139,11 +139,15 @@ const CategoriesForm = ({
             />
           </div>
 
-          <DialogFooter className="flex flex-row justify-end gap-10 mt-5">
-            <Button type="submit" className="items-center min-w-24">
+          <DialogFooter className="mt-5 flex flex-row justify-end gap-3">
+            <DialogClose asChild>
+              <Button type="button" variant="outline" className="min-w-24">
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button type="submit" className="min-w-24">
               {loader ? <ButtonSpinner /> : name}
             </Button>
-            <DialogClose>Cancel</DialogClose>
           </DialogFooter>
         </form>
       </DialogContent>

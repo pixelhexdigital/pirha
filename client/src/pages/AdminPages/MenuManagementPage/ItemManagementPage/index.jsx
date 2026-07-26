@@ -1,21 +1,18 @@
 import { useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { twMerge } from "tailwind-merge";
-import {
-  LucideEdit2,
-  MoreVerticalIcon,
-  SlidersVertical,
-  Trash2,
-} from "lucide-react";
-import Placeholder from "assets/placeholder.svg";
+import { Plus, Search, SlidersVertical, UtensilsCrossed } from "lucide-react";
 
 import DishForm from "./DishForm";
+import MenuManagementCard from "../MenuManagementCard";
 import Layout from "components/Layout";
 import { ButtonSpinner } from "components/Spinner";
 import PageHeader from "components/PageHeader";
+import EmptyState from "components/EmptyState";
 import FoodGroupIndicator from "components/FoodGroupIndicator";
 import { Button } from "components/ui/button";
+import { Input } from "components/ui/input";
 import { Skeleton } from "components/ui/skeleton";
 import {
   AlertDialog,
@@ -27,10 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "components/ui/alert-dialog";
-import {
-  selectFoodGroups,
-  selectMenuItemTypes,
-} from "store/MiscellaneousSlice";
+import { selectFoodGroups, selectMenuItemTypes } from "store/MiscellaneousSlice";
 import {
   useAddItemToCategoryMutation,
   useDeleteItemFromCategoryMutation,
@@ -39,58 +33,47 @@ import {
   useUpdateImageOfItemMutation,
   useUpdateItemInCategoryMutation,
 } from "api/menuApi";
-import {
-  selectMenuData,
-  selectMenuCategoryData,
-  updateItemImage,
-  toggleItemAvailability,
-  updateMenuDataByItemId,
-  addItemToCategory,
-  removeItemFromCategoryById,
-} from "store/MenuSlice";
 import { selectRestaurantId } from "store/AuthSlice";
 import { ROUTES } from "routes/RouterConfig";
-import { errorToast, successToast } from "lib/helper";
-import { Card } from "components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "components/ui/dropdown-menu";
-import { Badge } from "components/ui/badge";
+import { errorToast, successToast, numberToCurrency } from "lib/helper";
+import { useDebounce } from "hooks/useDebounce";
 
 const DEFAULT_DELETE_ITEM_DATA = {
   itemId: null,
   itemName: null,
 };
 
+const SEARCH_DEBOUNCE = 300;
+
 const ItemManagementPage = () => {
-  const dispatch = useDispatch();
   const restaurantId = useSelector(selectRestaurantId);
   const itemType = useSelector(selectMenuItemTypes);
   const foodGroup = useSelector(selectFoodGroups);
-  const menuData = useSelector(selectMenuData);
-  const categoriesData = useSelector(selectMenuCategoryData);
 
   const [isFormVisible, setFormVisible] = useState(false);
   const [activeCategory, setActiveCategory] = useState();
   const [selectedDish, setSelectedDish] = useState(null);
-  const [deleteItemData, setDeleteItemData] = useState(
-    DEFAULT_DELETE_ITEM_DATA
-  );
+  const [searchQuery, setSearchQuery] = useState("");
+  const [pendingItemId, setPendingItemId] = useState(null);
+  const [deleteItemData, setDeleteItemData] = useState(DEFAULT_DELETE_ITEM_DATA);
 
-  const { isLoading } = useGetMenuCategoryByRestaurantIdQuery(restaurantId);
-  const [addItemToCategoryMutationFn, { isLoading: isAddingItem }] =
+  const debouncedSearch = useDebounce(searchQuery, SEARCH_DEBOUNCE);
+
+  // Single source of truth: the menu comes straight from the query cache.
+  const { data, isLoading } = useGetMenuCategoryByRestaurantIdQuery(
+    restaurantId,
+    { skip: !restaurantId }
+  );
+  const categoriesData = data?.menu?.categories ?? [];
+
+  const [addItemMutationFn, { isLoading: isAddingItem }] =
     useAddItemToCategoryMutation();
-  const [updateItemInCategoryMutationFn, { isLoading: isUpdatingItem }] =
+  const [updateItemMutationFn, { isLoading: isUpdatingItem }] =
     useUpdateItemInCategoryMutation();
-  const [toggleItemAvailabilityMutationFn] =
-    useToggleItemAvailabilityMutation();
-  const [updateImageOfItemMutationFn, { isLoading: isUpdatingItemImage }] =
+  const [toggleItemMutationFn] = useToggleItemAvailabilityMutation();
+  const [updateItemImageMutationFn, { isLoading: isUpdatingItemImage }] =
     useUpdateImageOfItemMutation();
-  const [deleteItemFromCategoryMutationFn, { isLoading: isDeletingItem }] =
+  const [deleteItemMutationFn, { isLoading: isDeletingItem }] =
     useDeleteItemFromCategoryMutation();
 
   const navigate = useNavigate();
@@ -101,32 +84,29 @@ const ItemManagementPage = () => {
   );
 
   useEffect(() => {
-    if (!categoriesData) return;
+    if (!categoriesData.length) return;
+    const stillExists = categoriesData.some((c) => c._id === activeCategory);
+    if (stillExists) return;
     const id = categoryIdFromState || categoriesData[0]?._id;
     setActiveCategory(id);
-  }, [categoriesData, categoryIdFromState]);
+  }, [categoriesData, categoryIdFromState, activeCategory]);
 
   const handleCategoryChange = (categoryId) => {
     setActiveCategory(categoryId);
+    setSearchQuery("");
   };
 
-  const navigateToCategory = () => {
-    navigate(ROUTES.CATEGORIES_MANAGEMENT);
+  const navigateToCategory = () => navigate(ROUTES.CATEGORIES_MANAGEMENT);
+
+  const openAddDish = () => {
+    setSelectedDish(null);
+    setFormVisible(true);
   };
 
   const addItemToMenu = async (payload) => {
     try {
-      const { data } = await addItemToCategoryMutationFn(payload).unwrap();
-      dispatch(
-        addItemToCategory({
-          categoryId: payload.categoryId,
-          newItem: data,
-        })
-      );
-      const imagePayload = {
-        ...payload,
-        itemId: data?._id,
-      };
+      const { data: newItem } = await addItemMutationFn(payload).unwrap();
+      const imagePayload = { ...payload, itemId: newItem?._id };
       changeItemImage({ data: imagePayload, isAddingItem: true });
     } catch (error) {
       errorToast({ error, message: "Failed to add item to menu" });
@@ -135,24 +115,17 @@ const ItemManagementPage = () => {
 
   const editItemInCategory = async (payload) => {
     try {
-      await updateItemInCategoryMutationFn(payload).unwrap();
-      dispatch(
-        updateMenuDataByItemId({
-          categoryId: payload.categoryId,
-          itemId: payload.itemId,
-          updatedItem: payload.item,
-        })
-      );
+      await updateItemMutationFn(payload).unwrap();
       changeItemImage({ data: payload, isAddingItem: false });
     } catch (error) {
       errorToast({ error, message: "Failed to update item in menu" });
     }
   };
 
-  const handleFormSubmit = async (data) => {
+  const handleFormSubmit = async (formData) => {
     const payload = {
       categoryId: activeCategory,
-      item: { ...data },
+      item: { ...formData },
     };
 
     if (selectedDish) {
@@ -163,42 +136,38 @@ const ItemManagementPage = () => {
     }
   };
 
-  const updateItemAvailability = async (itemId, isActive) => {
+  const handleToggleItem = async (item, nextActive) => {
+    setPendingItemId(item._id);
     try {
-      const payload = {
-        isActive,
-        itemId,
+      await toggleItemMutationFn({
         categoryId: activeCategory,
-      };
-
-      await toggleItemAvailabilityMutationFn(payload);
-      dispatch(toggleItemAvailability(payload));
+        itemId: item._id,
+        isActive: nextActive,
+        restaurantId,
+      }).unwrap();
     } catch (error) {
       errorToast({ error, message: "Failed to update availability" });
+    } finally {
+      setPendingItemId(null);
     }
   };
 
-  const changeItemImage = async ({ data, isAddingItem }) => {
-    const message = isAddingItem
-      ? "Item added successfully"
-      : "Item updated successfully";
+  const changeItemImage = async ({ data: payloadData, isAddingItem: adding }) => {
+    const message = adding ? "Item added" : "Item updated";
+    const { imageFile, isImageChanged } = payloadData.item;
 
-    const { imageFile, isImageChanged, imageUrl } = data.item;
     if (!imageFile || !isImageChanged) {
       setFormVisible(false);
       successToast({ message });
       return;
     }
-    const payload = {
-      categoryId: data.categoryId,
-      itemId: data.itemId,
-      itemImage: imageFile,
-      imageUrl: imageUrl,
-    };
 
     try {
-      await updateImageOfItemMutationFn(payload);
-      dispatch(updateItemImage(payload));
+      await updateItemImageMutationFn({
+        categoryId: payloadData.categoryId,
+        itemId: payloadData.itemId,
+        itemImage: imageFile,
+      }).unwrap();
       setFormVisible(false);
       successToast({ message });
     } catch (error) {
@@ -208,13 +177,12 @@ const ItemManagementPage = () => {
 
   const deleteItemFromCategory = async () => {
     try {
-      const payload = {
+      await deleteItemMutationFn({
         categoryId: activeCategory,
         itemId: deleteItemData.itemId,
-      };
-      await deleteItemFromCategoryMutationFn(payload);
-      dispatch(removeItemFromCategoryById(payload));
+      }).unwrap();
       setDeleteItemData(DEFAULT_DELETE_ITEM_DATA);
+      successToast({ message: "Item deleted" });
     } catch (error) {
       errorToast({ error, message: "Failed to delete item from category" });
     }
@@ -225,182 +193,170 @@ const ItemManagementPage = () => {
     setSelectedDish(null);
   };
 
-  const selectedCategory = menuData?.categories?.find(
+  const visibleCategories = categoriesData.filter(
+    (category) => category.isActive || category._id === categoryIdFromState
+  );
+  const selectedCategory = categoriesData.find(
     (category) => category._id === activeCategory
   );
+  const categoryItems = selectedCategory?.items ?? [];
+  const filteredItems = debouncedSearch
+    ? categoryItems.filter((item) => {
+        const query = debouncedSearch.toLowerCase();
+        return (
+          item.title?.toLowerCase().includes(query) ||
+          item.description?.toLowerCase().includes(query)
+        );
+      })
+    : categoryItems;
+
+  const noCategories = !isLoading && categoriesData.length === 0;
 
   return (
     <Layout>
       <PageHeader
         title="Menu Items"
-        description="Manage your restaurant menu items and categories"
+        description="Manage the dishes in each category"
       >
         <Button variant="outline" onClick={navigateToCategory} className="h-9">
           <SlidersVertical className="mr-3 size-4" />
           Manage Categories
         </Button>
       </PageHeader>
-      <div className="space-y-4 w-[98%] mx-auto bg-card rounded-md shadow-md ring-1 ring-border">
-        <div className="w-full p-4 ">
-          <section className="flex w-full p-2 pb-4 overflow-x-scroll gap-x-7">
-            {isLoading
-              ? [...Array(5)].map((_, index) => (
-                  <Skeleton
-                    key={index}
-                    className="w-[110px] h-[35px] rounded-xl"
-                  />
-                ))
-              : categoriesData
-                  ?.filter(
-                    (category) =>
-                      category.isActive || category._id === categoryIdFromState
-                  )
-                  .map((category) => (
+
+      {noCategories ? (
+        <div className="mx-auto w-[98%]">
+          <EmptyState
+            icon={UtensilsCrossed}
+            title="No categories yet"
+            description="Menu items live inside categories. Create a category first, then add dishes to it."
+          >
+            <Button onClick={navigateToCategory}>Create a category</Button>
+          </EmptyState>
+        </div>
+      ) : (
+        <div className="mx-auto w-[98%] space-y-4 rounded-md bg-card shadow-md ring-1 ring-border">
+          <div className="w-full px-4 pt-4">
+            <section className="flex w-full gap-6 overflow-x-auto border-b border-border">
+              {isLoading
+                ? [...Array(5)].map((_, index) => (
+                    <Skeleton
+                      key={index}
+                      className="mb-3 h-[35px] w-[110px] shrink-0 rounded-xl"
+                    />
+                  ))
+                : visibleCategories.map((category) => (
                     <button
                       key={category?._id}
                       onClick={() => handleCategoryChange(category._id)}
                       className={twMerge(
-                        "flex items-center justify-center pb-3 mb-1 gap-2 transition-all delay-100 border-b-2 hover:text-primary hover:border-primary border-b-transparent",
-                        // category?.isActive ? "text-primary" : "text-gray-500",
+                        "shrink-0 whitespace-nowrap border-b-2 border-transparent pb-3 -mb-px font-medium text-muted-foreground transition-colors hover:text-primary",
                         activeCategory === category._id &&
-                          "text-primary text-[1.2rem] border-primary"
+                          "border-primary text-primary"
                       )}
                     >
-                      <h4>{category?.name}</h4>
+                      {category?.name}
                     </button>
                   ))}
-          </section>
+            </section>
+          </div>
 
-          <div
-            className={twMerge(
-              "w-full h-px ml-2 -mt-[1.35rem] bg-border",
-              isLoading && "-mt-0"
-            )}
-          />
-        </div>
-        <div className="grid grid-cols-1 gap-4 p-4 lg:grid-cols-3 sm:grid-cols-2">
-          {isLoading ? (
-            [...Array(6)].map((_, index) => (
-              <Skeleton key={index} className="w-full h-[350px] rounded-lg" />
-            ))
-          ) : (
-            <>
-              <button
-                onClick={() => {
-                  setFormVisible(true);
-                  setSelectedDish(null);
-                }}
-                className="flex flex-col items-center justify-center w-full p-4 transition duration-200 border-2 border-dashed rounded-lg border-muted-foreground/25 hover:border-primary/50 hover:bg-primary/5 min-h-80 group"
+          {!isLoading && (
+            <div className="flex flex-col gap-3 px-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="relative w-full sm:max-w-xs">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search items in this category..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                  disabled={!categoryItems.length}
+                />
+              </div>
+              <Button
+                onClick={openAddDish}
+                className="h-9 shrink-0"
+                disabled={!activeCategory}
               >
-                {!isAddingItem ? (
-                  <>
-                    <div className="flex items-center justify-center size-14 rounded-full bg-primary/10 mb-3 group-hover:bg-primary/20 transition-colors">
-                      <span className="text-2xl text-primary font-light">+</span>
-                    </div>
-                    <h3 className="font-semibold text-foreground">Add New Dish</h3>
-                    <p className="text-xs text-muted-foreground mt-1">Click to add a menu item</p>
-                  </>
-                ) : (
+                {isAddingItem ? (
                   <ButtonSpinner />
+                ) : (
+                  <>
+                    <Plus className="mr-2 size-4" />
+                    Add dish
+                  </>
                 )}
-              </button>
-              {selectedCategory &&
-                selectedCategory?.items?.map((item) => (
-                  <Card
-                    key={item?._id}
-                    className="overflow-hidden transition duration-300 ease-in-out delay-150 transform border rounded-lg shadow-sm hover:shadow-md border-primary/10 hover:border-primary/20 bg-card hover:-translate-y-1 "
-                  >
-                    <div className="relative aspect-video">
-                      <img
-                        src={item?.image?.url || Placeholder}
-                        alt={item?.name}
-                        className="w-full h-full min-h-[22rem] aspect-square object-cover"
-                      />
-                      <div className="absolute right-2 top-2">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="w-8 h-8 bg-card"
-                            >
-                              <MoreVerticalIcon className="w-4 h-4 text-foreground" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onClick={() => {
-                                setFormVisible(true);
-                                setSelectedDish(item);
-                              }}
-                            >
-                              <LucideEdit2 className="w-4 h-4 mr-2" />
-                              Edit Item
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() =>
-                                updateItemAvailability(
-                                  item?._id,
-                                  !item?.isActive
-                                )
-                              }
-                            >
-                              {item?.isActive
-                                ? "Mark as Unavailable"
-                                : "Mark as Available"}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              onClick={() =>
-                                setDeleteItemData({
-                                  itemId: item?._id,
-                                  itemName: item?.title,
-                                })
-                              }
-                              className="text-destructive"
-                            >
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Delete Item
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <h3 className="font-semibold">{item?.title}</h3>
-                          <p className="text-sm text-muted-foreground line-clamp-2">
-                            {item?.description}
-                          </p>
-                        </div>
-                        <FoodGroupIndicator
-                          foodGroup={item?.foodGroup}
-                          className="p-[4px]"
-                        />
-                      </div>
-                      <div className="flex items-center justify-between mt-4">
-                        <p className="font-semibold">
-                          ₹{item?.price?.toFixed(2)}
-                        </p>
-                        <Badge
-                          variant={item?.isActive ? "default" : "outline"}
-                          className={twMerge(
-                            item?.isActive
-                              ? "text-primary/80 border-primary bg-primary/10 hover:bg-primary/10 hover:text-primary/80 hover:border-primary group hover:font-semibold"
-                              : "text-foreground"
-                          )}
-                        >
-                          {item?.isActive ? "Available" : "Unavailable"}
-                        </Badge>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-            </>
+              </Button>
+            </div>
           )}
+
+          <div className="p-4 pt-0">
+            {isLoading ? (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {[...Array(6)].map((_, index) => (
+                  <Skeleton key={index} className="h-[320px] w-full rounded-lg" />
+                ))}
+              </div>
+            ) : categoryItems.length === 0 ? (
+              <EmptyState
+                icon={UtensilsCrossed}
+                title="No items in this category yet"
+                description="Add your first dish to this category and it'll show up here."
+              >
+                <Button onClick={openAddDish}>Add dish</Button>
+              </EmptyState>
+            ) : filteredItems.length === 0 ? (
+              <EmptyState
+                icon={Search}
+                title="No matching items"
+                description={`Nothing in this category matches "${debouncedSearch}".`}
+              >
+                <Button variant="outline" onClick={() => setSearchQuery("")}>
+                  Clear search
+                </Button>
+              </EmptyState>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {filteredItems.map((item) => (
+                  <MenuManagementCard
+                    key={item?._id}
+                    imageUrl={item?.image?.url}
+                    title={item?.title}
+                    subtitle={item?.description}
+                    meta={
+                      <FoodGroupIndicator
+                        foodGroup={item?.foodGroup}
+                        className="p-[4px]"
+                      />
+                    }
+                    footerLeft={
+                      <span className="font-semibold tabular-nums text-foreground">
+                        {numberToCurrency(item?.price, "INR", 2)}
+                      </span>
+                    }
+                    isActive={item?.isActive}
+                    isToggling={pendingItemId === item?._id}
+                    onToggleAvailability={(next) => handleToggleItem(item, next)}
+                    onEdit={() => {
+                      setSelectedDish(item);
+                      setFormVisible(true);
+                    }}
+                    onDelete={() =>
+                      setDeleteItemData({
+                        itemId: item?._id,
+                        itemName: item?.title,
+                      })
+                    }
+                    editLabel="Edit item"
+                    deleteLabel="Delete item"
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       <DishForm
         isOpen={isFormVisible}
@@ -413,24 +369,21 @@ const ItemManagementPage = () => {
       />
 
       <AlertDialog
-        open={deleteItemData.itemId}
+        open={Boolean(deleteItemData.itemId)}
         onOpenChange={() => setDeleteItemData(DEFAULT_DELETE_ITEM_DATA)}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogTitle>Delete this item?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete{" "}
               <span className="font-semibold">{deleteItemData.itemName}</span>{" "}
-              From the menu.
+              from the menu.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex flex-row items-center justify-end gap-4">
-            <AlertDialogCancel className="w-24 mt-0">Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={deleteItemFromCategory}
-              className="w-24"
-            >
+            <AlertDialogCancel className="mt-0 w-24">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={deleteItemFromCategory} className="w-24">
               {isDeletingItem ? <ButtonSpinner /> : "Continue"}
             </AlertDialogAction>
           </AlertDialogFooter>

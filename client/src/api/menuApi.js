@@ -34,6 +34,7 @@ export const menuApi = createApi({
         method: "POST",
         body: item,
       }),
+      invalidatesTags: ["Menu"],
     }),
 
     updateItemInCategory: builder.mutation({
@@ -42,6 +43,7 @@ export const menuApi = createApi({
         method: "PATCH",
         body: item,
       }),
+      invalidatesTags: ["Menu"],
     }),
 
     updateImageOfItem: builder.mutation({
@@ -59,6 +61,7 @@ export const menuApi = createApi({
           "Content-Type": "multipart/form-data",
         },
       },
+      invalidatesTags: ["Menu"],
     }),
 
     toggleItemAvailability: builder.mutation({
@@ -66,6 +69,30 @@ export const menuApi = createApi({
         url: `/categories/${categoryId}/items/${itemId}/${isActive ? "activate" : "deactivate"}`,
         method: "PATCH",
       }),
+      // Flip the switch instantly; roll back if the server rejects it.
+      async onQueryStarted(
+        { categoryId, itemId, isActive, restaurantId },
+        { dispatch, queryFulfilled }
+      ) {
+        const patch = dispatch(
+          menuApi.util.updateQueryData(
+            "getMenuCategoryByRestaurantId",
+            restaurantId,
+            (draft) => {
+              const category = draft?.menu?.categories?.find(
+                (c) => c._id === categoryId
+              );
+              const item = category?.items?.find((i) => i._id === itemId);
+              if (item) item.isActive = isActive;
+            }
+          )
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patch.undo();
+        }
+      },
       invalidatesTags: ["Menu"],
     }),
 
@@ -110,6 +137,7 @@ export const menuApi = createApi({
           "Content-Type": "multipart/form-data",
         },
       },
+      invalidatesTags: ["Menu"],
     }),
 
     toggleCategoryAvailability: builder.mutation({
@@ -117,6 +145,29 @@ export const menuApi = createApi({
         url: `/categories/${categoryId}/${isActive ? "activate" : "deactivate"}`,
         method: "PATCH",
       }),
+      // Flip the switch instantly; roll back if the server rejects it.
+      async onQueryStarted(
+        { categoryId, isActive, restaurantId },
+        { dispatch, queryFulfilled }
+      ) {
+        const patch = dispatch(
+          menuApi.util.updateQueryData(
+            "getMenuCategoryByRestaurantId",
+            restaurantId,
+            (draft) => {
+              const category = draft?.menu?.categories?.find(
+                (c) => c._id === categoryId
+              );
+              if (category) category.isActive = isActive;
+            }
+          )
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patch.undo();
+        }
+      },
       invalidatesTags: ["Menu"],
     }),
 
@@ -134,7 +185,6 @@ export const {
   useAddItemToCategoryMutation,
   useGetMenuCategoryByRestaurantIdQuery,
   useGetMyMenuQuery,
-  useCreateMenuCategoryMutation,
   useUpdateItemInCategoryMutation,
   useToggleItemAvailabilityMutation,
   useUpdateImageOfCategoryMutation,
