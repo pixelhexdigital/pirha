@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Clock, CheckCircle, UtensilsCrossed } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +8,12 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import EmptyState from "components/EmptyState";
 import StatusBadge from "components/StatusBadge";
+import { ButtonSpinner } from "components/Spinner";
+import {
+  getElapsedLabel,
+  getUrgencyTint,
+  getUrgencyTextColor,
+} from "lib/orderTiming";
 import { twMerge } from "tailwind-merge";
 
 function KitchenOrderSkeleton() {
@@ -33,39 +40,23 @@ function KitchenOrderSkeleton() {
   );
 }
 
-export function KitchenOrdersView({ orders, onStatusChange, isLoading }) {
-  const getTimeDifference = (orderTime) => {
-    const diff = new Date().getTime() - new Date(orderTime).getTime();
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(minutes / 60);
-    const hoursAndMinutes = minutes % 60;
-    const days = Math.floor(hours / 24);
+export function KitchenOrdersView({
+  orders,
+  onStatusChange,
+  isLoading,
+  isUpdating,
+}) {
+  // Track the ticket whose update is in flight so only its button spins,
+  // while every other "Mark as Ready" simply disables to block double-fires.
+  const [pendingId, setPendingId] = useState(null);
 
-    if (days > 0) return `${days} day${days > 1 ? "s" : ""} ago`;
-    if (hours > 0)
-      return `${hours}h ${hoursAndMinutes}m ago`;
-    if (minutes > 0) return `${minutes} min ago`;
-    return "Just now";
-  };
-
-  const getUrgencyStyle = (orderTime) => {
-    const diff = new Date().getTime() - new Date(orderTime).getTime();
-    const minutes = Math.floor(diff / 60000);
-
-    // Aging orders get a full-border + faint background tint (never a
-    // side-stripe). The pulsing time label carries the rest of the signal.
-    if (minutes > 15) return "border-destructive/40 bg-destructive/[0.04]";
-    if (minutes > 5) return "border-warning/40 bg-warning/[0.04]";
-    return "";
-  };
-
-  const getTimeColor = (orderTime) => {
-    const diff = new Date().getTime() - new Date(orderTime).getTime();
-    const minutes = Math.floor(diff / 60000);
-
-    if (minutes > 15) return "text-destructive animate-pulse";
-    if (minutes > 5) return "text-warning";
-    return "text-muted-foreground";
+  const handleMarkReady = async (orderId) => {
+    setPendingId(orderId);
+    try {
+      await onStatusChange(orderId, "Ready");
+    } finally {
+      setPendingId(null);
+    }
   };
 
   if (isLoading) {
@@ -95,7 +86,7 @@ export function KitchenOrdersView({ orders, onStatusChange, isLoading }) {
           key={order._id}
           className={twMerge(
             "flex flex-col hover:shadow-md transition-shadow duration-200",
-            getUrgencyStyle(order?.createdAt)
+            getUrgencyTint(order?.createdAt)
           )}
         >
           <CardHeader className="flex flex-row items-center justify-between pb-3 space-y-0 flex-wrap gap-2">
@@ -114,11 +105,11 @@ export function KitchenOrdersView({ orders, onStatusChange, isLoading }) {
             <div
               className={twMerge(
                 "flex items-center mb-4 text-sm",
-                getTimeColor(order?.createdAt)
+                getUrgencyTextColor(order?.createdAt)
               )}
             >
               <Clock className="w-4 h-4 mr-1.5" />
-              {getTimeDifference(order?.createdAt)}
+              {getElapsedLabel(order?.createdAt)}
             </div>
             <ul className="space-y-2">
               {order?.items.map((item, index) => (
@@ -136,11 +127,19 @@ export function KitchenOrdersView({ orders, onStatusChange, isLoading }) {
               {order?.status?.toLowerCase() === "new" && (
                 <Button
                   size="lg"
-                  onClick={() => onStatusChange(order?._id, "Ready")}
+                  onClick={() => handleMarkReady(order?._id)}
+                  disabled={isUpdating}
+                  aria-label={`Mark order for table ${order?.table} as ready`}
                   className="w-full"
                 >
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Mark as Ready
+                  {pendingId === order?._id ? (
+                    <ButtonSpinner />
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Mark as Ready
+                    </>
+                  )}
                 </Button>
               )}
             </div>

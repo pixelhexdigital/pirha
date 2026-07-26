@@ -4,6 +4,7 @@ import { asyncHandler } from "../../../utils/asyncHandler.js";
 import { Order } from "../../../models/apps/manageRestaurant/order.models.js";
 import { emitSocketEvent } from "../../../socket/index.js";
 import { OrderEventEnum } from "../../../constants.js";
+import { ENUMS } from "../../../constants/enum.js";
 import { Restaurant } from "../../../models/apps/auth/restaurant.models.js";
 import mongoose from "mongoose";
 
@@ -184,4 +185,29 @@ const getOrders = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, orders, "Orders retrieved successfully"));
 });
 
-export { getOrders, updateOrder };
+// Returns how many orders sit in each status for the restaurant, so the client
+// can show queue-depth badges on the status tabs without fetching every list.
+const getOrderStatusCounts = asyncHandler(async (req, res) => {
+  const restaurantId = req.restaurant?._id;
+
+  const grouped = await Order.aggregate([
+    { $match: { restaurantId: new mongoose.Types.ObjectId(restaurantId) } },
+    { $group: { _id: "$status", count: { $sum: 1 } } },
+  ]);
+
+  // Seed every known status at 0 so the client always gets a complete map.
+  const counts = ENUMS.orderStatus.reduce((acc, status) => {
+    acc[status] = 0;
+    return acc;
+  }, {});
+
+  grouped.forEach(({ _id, count }) => {
+    if (_id in counts) counts[_id] = count;
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, counts, "Order status counts retrieved"));
+});
+
+export { getOrders, updateOrder, getOrderStatusCounts };

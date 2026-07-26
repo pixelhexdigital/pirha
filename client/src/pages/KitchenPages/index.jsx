@@ -8,7 +8,7 @@ import {
 import Layout from "components/Layout";
 import PageHeader from "components/PageHeader";
 import RefreshButton from "components/RefreshButton";
-import { errorToast } from "lib/helper";
+import { errorToast, successToast } from "lib/helper";
 import { KitchenOrdersView } from "./components/KitchenOrdersView";
 
 const PAGINATION_LIMIT = 20;
@@ -28,7 +28,8 @@ export default function KitchenPage() {
     limit: PAGINATION_LIMIT,
     status: "New",
   });
-  const [updateOrderStatus] = useUpdateOrderStatusMutation();
+  const [updateOrderStatus, { isLoading: isUpdating }] =
+    useUpdateOrderStatusMutation();
 
   const hasNextPage = orderData?.data?.hasNextPage || false;
 
@@ -48,11 +49,9 @@ export default function KitchenPage() {
   const handleUpdateOrderStatus = async (orderId, newStatus) => {
     try {
       await updateOrderStatus({ orderId, status: newStatus }).unwrap();
-      setOrders(
-        orders.map((order) =>
-          order._id === orderId ? { ...order, status: newStatus } : order
-        )
-      );
+      // Invalidating the "Order" list tag refetches the "New" queue, so the
+      // ticket leaves the board once it's ready — no manual list surgery.
+      successToast({ message: "Order marked ready — sent to the pass." });
     } catch (err) {
       errorToast({ error: err, message: "Failed to update order status" });
     }
@@ -81,6 +80,7 @@ export default function KitchenPage() {
             orders={orders}
             onStatusChange={handleUpdateOrderStatus}
             isLoading={isLoading}
+            isUpdating={isUpdating}
           />
           {hasNextPage && <div ref={ref} className="h-10"></div>}
         </div>

@@ -6,6 +6,9 @@ import { baseQueryWithReAuth } from "lib/baseQueryWithReAuth";
 export const adminApi = createApi({
   reducerPath: "adminApi",
   baseQuery: baseQueryWithReAuth(`${BASE_URL}/api/v1/admin`),
+  // Tags must be declared here or RTK Query silently ignores every
+  // providesTags/invalidatesTags referencing them.
+  tagTypes: ["Order", "OrderCounts", "Tax"],
   endpoints: (builder) => ({
     updateProfile: builder.mutation({
       query: (data) => ({
@@ -104,14 +107,26 @@ export const adminApi = createApi({
       },
     }),
 
+    // Queue-depth per status, powering the count badges on the order tabs.
+    getOrderStatusCounts: builder.query({
+      query: () => "/orders/status-counts",
+      transformResponse: (response) => response.data,
+      providesTags: ["OrderCounts"],
+    }),
+
     updateOrderStatus: builder.mutation({
       query: ({ orderId, status }) => ({
         url: `/orders/${orderId}`,
         method: "PATCH",
         body: { status },
       }),
+      // Invalidate the whole order list (not just this order) so the change
+      // propagates across every status tab and the kitchen board, and refresh
+      // the tab counts since the order just moved between statuses.
       invalidatesTags: (result, error, { orderId }) => [
         { type: "Order", id: orderId },
+        "Order",
+        "OrderCounts",
       ],
     }),
 
@@ -154,6 +169,7 @@ export const {
   useGetOrdersDataQuery,
   useOnboardDoneMutation,
   useGetOrderListQuery,
+  useGetOrderStatusCountsQuery,
   useUpdateOrderStatusMutation,
   useGenerateCustomerBillMutation,
   useGetTaxesQuery,

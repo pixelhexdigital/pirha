@@ -1,17 +1,16 @@
 import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
-import { useDispatch } from "react-redux";
 
 import {
-  adminApi,
   useGetOrderListQuery,
+  useGetOrderStatusCountsQuery,
   useUpdateOrderStatusMutation,
 } from "api/adminApi";
 
 import Layout from "components/Layout";
 import PageHeader from "components/PageHeader";
 import RefreshButton from "components/RefreshButton";
-import { errorToast } from "lib/helper";
+import { errorToast, successToast } from "lib/helper";
 import { OrderTabs } from "./components/OrderTabs";
 import { OrdersTable } from "./components/OrdersTable";
 
@@ -23,6 +22,14 @@ const OrderStatuses = [
   { label: "Billed", value: "Billed" },
 ];
 
+// Warm confirmation copy keyed by the status an order is moving into.
+const STATUS_CHANGE_MESSAGE = {
+  Ready: "Order marked ready — kitchen's all set.",
+  Served: "Order served. Nicely done!",
+  Billed: "Bill generated for this order.",
+  Cancelled: "Order cancelled.",
+};
+
 const PAGINATION_LIMIT = 20;
 
 export default function OrdersPage() {
@@ -30,7 +37,6 @@ export default function OrdersPage() {
   const [activeFilter, setActiveFilter] = useState(OrderStatuses[0].value);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const dispatch = useDispatch();
   const { ref, inView } = useInView({ threshold: 1 });
 
   const {
@@ -44,7 +50,10 @@ export default function OrdersPage() {
     status: activeFilter,
   });
 
-  const [updateOrderStatus] = useUpdateOrderStatusMutation();
+  const { data: statusCounts } = useGetOrderStatusCountsQuery();
+
+  const [updateOrderStatus, { isLoading: isUpdating }] =
+    useUpdateOrderStatusMutation();
 
   const hasNextPage = orderData?.data?.hasNextPage || false;
 
@@ -66,22 +75,14 @@ export default function OrdersPage() {
     setCurrentPage(1); // Reset to first page when filter changes
   };
 
-  const handelAction = async (status, orderId) => {
+  const handleAction = async (status, orderId) => {
     try {
       await updateOrderStatus({ orderId, status }).unwrap();
-
-      // Optimistically remove order from list
-      dispatch(
-        adminApi.util.updateQueryData(
-          "getOrderList",
-          { page: currentPage, limit: PAGINATION_LIMIT, status: activeFilter },
-          (draft) => {
-            draft.data.orders = draft.data.orders.filter(
-              (o) => o._id !== orderId
-            );
-          }
-        )
-      );
+      // The mutation invalidates the "Order" list tag, so RTK Query refetches
+      // every status tab and the order drops out of this one on its own.
+      successToast({
+        message: STATUS_CHANGE_MESSAGE[status] || "Order updated.",
+      });
     } catch (err) {
       errorToast({ error: err, message: "Failed to update order status" });
     }
@@ -110,8 +111,14 @@ export default function OrdersPage() {
             orderStatuses={OrderStatuses}
             defaultValue={OrderStatuses[0].value}
             onStatusChange={handleStatusChange}
+            counts={statusCounts}
           />
-          <OrdersTable data={orders} onAction={handelAction} isLoading={isLoading} />
+          <OrdersTable
+            data={orders}
+            onAction={handleAction}
+            isLoading={isLoading}
+            isUpdating={isUpdating}
+          />
           {hasNextPage && <div ref={ref} className="h-10"></div>}
         </div>
       </div>

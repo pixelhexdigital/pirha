@@ -19,6 +19,7 @@ import { getDashboard } from "../../../controllers/apps/restaurantAdmin/adminDas
 import {
   getOrders,
   updateOrder,
+  getOrderStatusCounts,
 } from "../../../controllers/apps/restaurantAdmin/orderAdmin.controllers.js";
 import {
   fetchTaxes,
@@ -42,6 +43,7 @@ router.route("/dashboard").get(getDashboard);
 router.route("/taxes").get(fetchTaxes).post(registerTax).patch(updateTaxById);
 
 router.route("/orders").get(getOrders);
+router.route("/orders/status-counts").get(getOrderStatusCounts);
 router.route("/orders/:orderId").patch(updateOrder);
 
 router.route("/bills/:customerId").patch(generateCustomerBill);
