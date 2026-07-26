@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { object, string } from "yup";
@@ -51,6 +52,7 @@ const FORM_SCHEMA = object().shape({
 
 const Cart = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const cartData = useSelector(selectCart);
 
   const restaurantDetails = useSelector(selectRestaurantDetails);
@@ -106,10 +108,16 @@ const Cart = () => {
         data: orderData,
         restaurantId: restaurantDetails?._id,
       }).unwrap();
-      successToast({ message: "Order Placed Successfully" });
+      successToast({ message: "Order placed — the kitchen's on it!" });
       dispatch(clearCart());
       setSheetOpen(false);
       reset();
+      // Take the guest to their order history so they can track it.
+      const tableId = tableDetails?._id;
+      const restaurantId = restaurantDetails?._id;
+      if (tableId && restaurantId) {
+        navigate(`/history/${tableId}/${restaurantId}`);
+      }
     } catch (error) {
       errorToast({ error: error });
     }
@@ -128,7 +136,7 @@ const Cart = () => {
           </div>
           <div>
             <p className="font-semibold text-primary-foreground">
-              {numberToCurrency(total, "INR", 0)}
+              {numberToCurrency(total, "INR", 2)}
             </p>
             <p className="text-xs text-primary-foreground/80">
               {totalItems} {totalItems > 1 ? "Items" : "Item"}
@@ -180,7 +188,7 @@ const Cart = () => {
                   <div className="flex justify-between">
                     <h3 className="font-medium truncate">{item.title}</h3>
                     <p className="font-semibold ml-2">
-                      {numberToCurrency(item.price * item.quantity, "INR", 0)}
+                      {numberToCurrency(item.price * item.quantity, "INR", 2)}
                     </p>
                   </div>
 
@@ -237,7 +245,7 @@ const Cart = () => {
         <div className="border-t p-6">
           <div className="flex justify-between font-medium">
             <p>Total</p>
-            <p>{numberToCurrency(total, "INR", 0)}</p>
+            <p>{numberToCurrency(total, "INR", 2)}</p>
           </div>
 
           <SheetFooter className="mt-6">

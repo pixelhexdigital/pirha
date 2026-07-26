@@ -26,7 +26,7 @@ const UserOrderHistoryPage = () => {
   const { tableId, restaurantId } = useParams();
   const [page, setPage] = useState(1);
 
-  const { data, isLoading, isError } = useGetCustomerOrdersQuery({
+  const { data, isLoading, isFetching, isError } = useGetCustomerOrdersQuery({
     page,
     limit: 20,
   });
@@ -122,7 +122,7 @@ const UserOrderHistoryPage = () => {
                       </div>
                       <div className="text-right">
                         <p className="font-medium">
-                          {numberToCurrency(order.totalAmount, "INR", 0)}
+                          {numberToCurrency(order.totalAmount, "INR", 2)}
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
                           {order.items?.length}{" "}
@@ -150,7 +150,7 @@ const UserOrderHistoryPage = () => {
                             {numberToCurrency(
                               (item.price || 0) * item.quantity,
                               "INR",
-                              0
+                              2
                             )}
                           </p>
                         </div>
@@ -159,7 +159,7 @@ const UserOrderHistoryPage = () => {
                     <Separator className="my-3" />
                     <div className="flex justify-between font-medium">
                       <p>Total</p>
-                      <p>{numberToCurrency(order.totalAmount, "INR", 0)}</p>
+                      <p>{numberToCurrency(order.totalAmount, "INR", 2)}</p>
                     </div>
                     <Button
                       variant="outline"
@@ -183,8 +183,9 @@ const UserOrderHistoryPage = () => {
                 variant="outline"
                 className="w-full"
                 onClick={() => setPage((p) => p + 1)}
+                disabled={isFetching}
               >
-                Load More
+                {isFetching ? "Loading…" : "Load More"}
               </Button>
             )}
           </div>

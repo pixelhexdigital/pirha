@@ -5,6 +5,7 @@ import { Download, Share, ArrowLeft, Printer, ShoppingBag } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import EmptyState from "components/EmptyState";
 import { selectCart } from "store/CartSlice";
 import {
   selectRestaurantDetails,
@@ -77,6 +78,44 @@ const UserBillPage = () => {
     window.print();
   };
 
+  // The bill is built from the current cart; once an order is placed the cart
+  // clears, so guard against rendering an empty bill.
+  if (!cartData?.length) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="sticky top-0 z-10 bg-background border-b shadow-sm">
+          <div className="container flex items-center h-16 px-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleBack}
+              className="mr-4"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span className="sr-only">Back</span>
+            </Button>
+            <h1 className="text-xl font-semibold">Bill Details</h1>
+          </div>
+        </div>
+        <main className="container max-w-md mx-auto px-4 py-6">
+          <EmptyState
+            icon={ShoppingBag}
+            title="No items to bill yet"
+            description="Add items to your order and your bill will show up here."
+          >
+            <Button
+              onClick={() =>
+                navigate(`/?tableId=${tableId}&restaurantId=${restaurantId}`)
+              }
+            >
+              Browse the menu
+            </Button>
+          </EmptyState>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="sticky top-0 z-10 bg-background border-b shadow-sm print:hidden">
@@ -141,10 +180,10 @@ const UserBillPage = () => {
                 <p className="w-1/2">{item.title}</p>
                 <p className="w-1/6 text-center">{item.quantity}</p>
                 <p className="w-1/6 text-right">
-                  {numberToCurrency(item.price, "INR", 0)}
+                  {numberToCurrency(item.price, "INR", 2)}
                 </p>
                 <p className="w-1/6 text-right">
-                  {numberToCurrency(item.price * item.quantity, "INR", 0)}
+                  {numberToCurrency(item.price * item.quantity, "INR", 2)}
                 </p>
               </div>
             ))}

@@ -77,7 +77,9 @@ const TopNavBar = ({
   };
 
   const handleViewHistory = () => {
-    navigate(`/history/${tableId}/${restaurantId}`);
+    const tableIdToUse = tableId || tableIdFromSearchParams;
+    const restaurantIdToUse = restaurantId || restaurantIdFromSearchParams;
+    navigate(`/history/${tableIdToUse}/${restaurantIdToUse}`);
   };
 
   return (

@@ -1,14 +1,16 @@
 import { useMemo, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { ImageIcon, Search, SlidersHorizontal } from "lucide-react";
-import { useDebounce } from "hooks/useDebounce";
 
+import { useGetMenuCategoryByRestaurantIdQuery } from "api/menuApi";
+import { useDebounce } from "hooks/useDebounce";
 import TopNavBar from "components/TopNavBar";
 import FoodGroupIndicator from "components/FoodGroupIndicator";
 import EmptyState from "components/EmptyState";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,25 +30,41 @@ const MenuPage = () => {
   const isVegOnly = useSelector(selectIsVegOnly);
   const isNonVegOnly = useSelector(selectIsNonVegOnly);
 
-  const { categoryName } = useParams();
-  const { state } = useLocation();
-  const { items: data } = state || {};
+  // restaurantId comes from the route, or the QR search params as a fallback.
+  const { restaurantId: restaurantIdParam, categoryName } = useParams();
+  const [searchParams] = useSearchParams();
+  const restaurantId =
+    restaurantIdParam && restaurantIdParam !== "null"
+      ? restaurantIdParam
+      : searchParams.get("restaurantId");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState("default");
 
   const debouncedSearchQuery = useDebounce(searchQuery, DEBOUNCE_DELAY);
 
-  const processedData = useMemo(() => {
-    if (!data) return [];
+  // Source the menu from the cached query — surviving refreshes and shared
+  // links — instead of relying on router navigation state.
+  const { data, isLoading } = useGetMenuCategoryByRestaurantIdQuery(
+    restaurantId,
+    { skip: !restaurantId }
+  );
 
-    let result = [...data]?.filter((item) => item.isActive);
+  const categoryItems = useMemo(() => {
+    const category = data?.menu?.categories?.find(
+      (c) => c?.name === categoryName
+    );
+    return category?.items ?? [];
+  }, [data, categoryName]);
+
+  const processedData = useMemo(() => {
+    let result = categoryItems.filter((item) => item.isActive);
 
     if (isVegOnly) {
-      result = result.filter((item) => item.foodGroup.toLowerCase() === "veg");
+      result = result.filter((item) => item.foodGroup?.toLowerCase() === "veg");
     } else if (isNonVegOnly) {
       result = result.filter(
-        (item) => item.foodGroup.toLowerCase() === "non-veg"
+        (item) => item.foodGroup?.toLowerCase() === "non-veg"
       );
     }
 
@@ -54,24 +72,24 @@ const MenuPage = () => {
       const query = debouncedSearchQuery.toLowerCase();
       result = result.filter(
         (item) =>
-          item.title.toLowerCase().includes(query) ||
-          (item.description && item.description.toLowerCase().includes(query))
+          item.title?.toLowerCase().includes(query) ||
+          item.description?.toLowerCase().includes(query)
       );
     }
 
     if (sortOption === "price-asc") {
-      result.sort((a, b) => a.price - b.price);
+      result = [...result].sort((a, b) => a.price - b.price);
     } else if (sortOption === "price-desc") {
-      result.sort((a, b) => b.price - a.price);
+      result = [...result].sort((a, b) => b.price - a.price);
     } else if (sortOption === "name-asc") {
-      result.sort((a, b) => a.title.localeCompare(b.title));
+      result = [...result].sort((a, b) => a.title.localeCompare(b.title));
     }
 
     return result;
-  }, [data, isVegOnly, isNonVegOnly, debouncedSearchQuery, sortOption]);
+  }, [categoryItems, isVegOnly, isNonVegOnly, debouncedSearchQuery, sortOption]);
 
   const handleAddToCart = (menu) => {
-    dispatch(addToCart({ item: menu }));
+    dispatch(addToCart({ item: menu, restaurantId }));
   };
 
   return (
@@ -129,67 +147,91 @@ const MenuPage = () => {
           </DropdownMenu>
         </div>
 
-        {processedData.length === 0 ? (
-          <EmptyState title="No menu items found">
+        {isLoading ? (
+          <div className="space-y-3">
+            {[...Array(5)].map((_, index) => (
+              <div
+                key={index}
+                className="flex gap-4 rounded-xl border bg-card p-4"
+              >
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-5 w-40" />
+                  <Skeleton className="h-5 w-20" />
+                  <Skeleton className="h-9 w-28 rounded-md" />
+                </div>
+                <Skeleton className="h-28 w-2/5 max-w-60 rounded-lg" />
+              </div>
+            ))}
+          </div>
+        ) : processedData.length === 0 ? (
+          <EmptyState
+            title={
+              debouncedSearchQuery ? "No matching items" : "No items to show"
+            }
+            description={
+              debouncedSearchQuery
+                ? `Nothing here matches "${debouncedSearchQuery}".`
+                : "This category doesn't have any available items right now."
+            }
+          >
             {debouncedSearchQuery && (
               <Button variant="outline" onClick={() => setSearchQuery("")}>
-                Clear Search
+                Clear search
               </Button>
             )}
           </EmptyState>
         ) : (
           <div className="space-y-3">
-            {processedData.map((menu) => {
-              return (
-                <div
-                  key={menu._id}
-                  className="flex bg-card border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
-                >
-                  <div className="flex-1 p-4">
-                    <div className="flex items-center gap-2 mb-1">
-                      <FoodGroupIndicator foodGroup={menu.foodGroup} />
-                    </div>
+            {processedData.map((menu) => (
+              <div
+                key={menu._id}
+                className="flex bg-card border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
+              >
+                <div className="flex-1 p-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <FoodGroupIndicator foodGroup={menu.foodGroup} />
+                  </div>
 
-                    <h3 className="font-semibold text-lg">{menu.title}</h3>
+                  <h3 className="font-semibold text-lg">{menu.title}</h3>
 
-                    <p className="font-medium text-lg mt-1">
-                      {numberToCurrency(menu.price, "INR", 0)}
+                  <p className="font-medium text-lg mt-1 tabular-nums">
+                    {numberToCurrency(menu.price, "INR", 2)}
+                  </p>
+
+                  {menu.description && (
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                      {menu.description}
                     </p>
+                  )}
 
-                    {menu.description && (
-                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                        {menu.description}
-                      </p>
-                    )}
-
-                    <Button
-                      onClick={() => handleAddToCart(menu)}
-                      variant="outline"
-                      className="mt-3 text-primary border-primary hover:bg-primary/10"
-                    >
-                      Add to Order
-                    </Button>
-                  </div>
-
-                  <div className="w-2/4 relative max-w-60">
-                    {menu.image?.url ? (
-                      <img
-                        src={menu.image.url || "/placeholder.svg"}
-                        alt={menu.title}
-                        className="h-full w-full object-cover p-1 rounded-r-xl max-h-52"
-                      />
-                    ) : (
-                      <div className="h-full w-full bg-muted flex flex-col gap-2 items-center justify-center rounded-r-xl">
-                        <ImageIcon className="size-8 text-muted-foreground/40" />
-                        <span className="text-muted-foreground/60 text-xs">
-                          No Image
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                  <Button
+                    onClick={() => handleAddToCart(menu)}
+                    variant="outline"
+                    className="mt-3 text-primary border-primary hover:bg-primary/10"
+                  >
+                    Add to Order
+                  </Button>
                 </div>
-              );
-            })}
+
+                <div className="w-2/4 relative max-w-60">
+                  {menu.image?.url ? (
+                    <img
+                      src={menu.image.url}
+                      alt={menu.title}
+                      className="h-full w-full object-cover p-1 rounded-r-xl max-h-52"
+                    />
+                  ) : (
+                    <div className="h-full w-full bg-muted flex flex-col gap-2 items-center justify-center rounded-r-xl">
+                      <ImageIcon className="size-8 text-muted-foreground/40" />
+                      <span className="text-muted-foreground/60 text-xs">
+                        No Image
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </main>

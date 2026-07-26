@@ -5,6 +5,7 @@ const initialState = {
   total: 0,
   totalItems: 0,
   totalUniqueItems: 0,
+  restaurantId: null,
 };
 
 const CartSlice = createSlice({
@@ -12,7 +13,22 @@ const CartSlice = createSlice({
   initialState,
   reducers: {
     addToCart: (state, action) => {
-      const { item } = action.payload;
+      const { item, restaurantId } = action.payload;
+
+      // A cart belongs to a single restaurant. Scanning a different
+      // restaurant's QR starts a fresh cart instead of mixing orders.
+      if (
+        restaurantId &&
+        state.restaurantId &&
+        state.restaurantId !== restaurantId
+      ) {
+        state.cart = [];
+        state.total = 0;
+        state.totalItems = 0;
+        state.totalUniqueItems = 0;
+      }
+      if (restaurantId) state.restaurantId = restaurantId;
+
       const existingItem = state.cart.find((i) => i._id === item._id);
       if (existingItem) {
         existingItem.quantity += 1;

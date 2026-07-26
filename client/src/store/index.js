@@ -14,6 +14,7 @@ import { ordersApi } from "api/orderApi";
 import { authApi } from "api/authApi";
 import { adminApi } from "api/adminApi";
 import { tableApi } from "api/tableApi";
+import { billApi } from "api/billApi";
 import MenuSlice from "store/MenuSlice";
 import TableSlice from "./TableSlice";
 import OrderSlice from "store/OrderSlice";
@@ -33,7 +34,13 @@ const cartPersistConfig = {
   storage: sessionStorage,
   timeout: 200,
   version: 2,
-  whitelist: ["cart", "total", "totalItems", "totalUniqueItems"],
+  whitelist: [
+    "cart",
+    "total",
+    "totalItems",
+    "totalUniqueItems",
+    "restaurantId",
+  ],
 };
 
 // Apply persistReducer to the cart slice
@@ -55,6 +62,7 @@ const rootReducer = combineReducers({
   [adminApi.reducerPath]: adminApi.reducer,
   [tableApi.reducerPath]: tableApi.reducer,
   [userApi.reducerPath]: userApi.reducer,
+  [billApi.reducerPath]: billApi.reducer,
 });
 
 // Create persisted reducer
@@ -73,7 +81,8 @@ export const store = configureStore({
       ordersApi.middleware,
       adminApi.middleware,
       tableApi.middleware,
-      userApi.middleware
+      userApi.middleware,
+      billApi.middleware
     ),
   devTools: import.meta.env.DEV,
   composeEnhancers,

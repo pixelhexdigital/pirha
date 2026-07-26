@@ -17,6 +17,8 @@ export const ordersApi = createApi({
     credentials: "include",
     jsonContentType: "application/json",
   }),
+  // Declared so providesTags/invalidatesTags below actually take effect.
+  tagTypes: ["CustomerOrder"],
   endpoints: (builder) => ({
     createOrder: builder.mutation({
       query: ({ data, restaurantId }) => ({
@@ -25,6 +27,8 @@ export const ordersApi = createApi({
         body: data,
       }),
       transformResponse: (response) => response.data,
+      // Placing an order should surface in the customer's history immediately.
+      invalidatesTags: ["CustomerOrder"],
     }),
     getCustomerOrders: builder.query({
       query: ({ page = 1, limit = 10 } = {}) => ({
